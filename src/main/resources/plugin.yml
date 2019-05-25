@@ -1,0 +1,15 @@
+name: Saika
+main: cat.nyaa.saika.Saika
+description: "Random item craft utility for Nyaacat Minecraft Server"
+version: v1.0
+depend: [NyaaCore,LangUtils]
+authors: [ReinWD]
+website: "https://github.com/NyaaCat/Saika"
+database: false
+api-version: 1.13.2
+commands:
+  saika:
+    description: Commands for Saika plugin
+    permission: saika.command
+    permission-message: "You do not have the required permission: <permission>"
+    usage: "/<command> [SubCommand...] [Arguments...] or /<command> help"
