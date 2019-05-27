@@ -35,7 +35,14 @@ public class Commands extends CommandReceiver {
                         .send(sender);
                 return;
             }
+            String defineTarget = arguments.nextString();
+            switch (defineTarget){
+                case "level":
 
+                    break;
+                case "":
+                    break;
+            }
         }else {
             new Message(I18n.format("error.permission"))
                     .send(sender);

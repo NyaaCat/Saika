@@ -18,6 +18,7 @@ public class Saika extends JavaPlugin{
     @Override
     public void onLoad() {
         super.onLoad();
+        plugin = this;
         configure = new Configure();
         configure.load();
         i18n = new I18n(this);

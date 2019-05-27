@@ -1,18 +1,30 @@
 package cat.nyaa.saika.forge;
 
+import cat.nyaa.nyaacore.configuration.ISerializable;
+import cat.nyaa.nyaacore.utils.ItemStackUtils;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
-public class ForgeIron extends ForgeItem implements Levelable, ForgeMaterial {
+public class ForgeIron extends ForgeItem implements Levelable, ForgeMaterial, ISerializable {
 
-    private int level;
+    @Serializable
+    String level;
+    @Serializable
+    int elementCost;
+    @Serializable
+    String nbt;
 
-    protected ForgeIron(ItemStack itemStack, int level) {
+    ForgeIron(ItemStack itemStack, String level, int elementCost) {
         super(itemStack);
         this.level = level;
+        this.elementCost = elementCost;
+        nbt = ItemStackUtils.itemToBase64(itemStack);
     }
 
+    protected ForgeIron(){}
+
     @Override
-    public int getLevel() {
+    public String getLevel() {
         return level;
     }
 
@@ -21,8 +33,4 @@ public class ForgeIron extends ForgeItem implements Levelable, ForgeMaterial {
         return ForgeItemType.IRON;
     }
 
-    @Override
-    public int getAmount() {
-        return 0;
-    }
 }

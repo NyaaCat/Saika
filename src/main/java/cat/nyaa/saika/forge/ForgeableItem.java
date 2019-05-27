@@ -1,58 +1,123 @@
 package cat.nyaa.saika.forge;
 
+import cat.nyaa.nyaacore.configuration.ISerializable;
+import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.saika.Saika;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Map;
 
-public class ForgeableItem extends ForgeItem implements Elementable, Levelable, Enchantable {
+public class ForgeableItem extends ForgeItem implements Elementable, Levelable, Enchantable, ISerializable {
 
-    private Element element;
-    private int level;
-    private int weight;
+    @Serializable
+    String id = "";
+    @Serializable
+    String nbt = "";
+    @Serializable
+    ForgeInfo forge = new ForgeInfo();
+    @Serializable
+    RecycleInfo recycle = new RecycleInfo();
 
-    public ForgeableItem(ItemStack itemStack, Element element, int level) {
-        this(itemStack, element, level, level);
+    protected ForgeableItem(){}
+
+    ForgeableItem(ItemStack itemStack, String  element, String level, int minCost) {
+        this(itemStack, element, level, minCost, minCost);
     }
 
-    public ForgeableItem(ItemStack itemStack, Element element, int level, int weight) {
+    ForgeableItem(ItemStack itemStack, String element, String level, int minCost, int weight) {
         super(itemStack);
-        this.element = element;
-        this.level = level;
-        this.weight = weight;
+        id = super.id;
+        nbt = ItemStackUtils.itemToBase64(itemStack);
+        forge = new ForgeInfo();
+        forge.element = element;
+        forge.level = level;
+        forge.minCost = minCost;
+        forge.weight = weight;
+    }
+
+    public void setBonus(Bonus bonus){
+        forge.bonus = bonus;
     }
 
     @Override
-    public Element getElement() {
-        return element;
+    public String getElement() {
+        return forge.element;
     }
 
     @Override
-    public int getLevel() {
-        return level;
+    public String getLevel() {
+        return forge.level;
     }
 
     public int getWeight() {
-        return weight;
+        return forge.weight;
     }
 
-    public void setLevel(int level) {
-        this.level = level;
+    public void setLevel(String level) {
+        forge.level = level;
     }
 
-    public void setElement(Element element) {
-        this.element = element;
+    public void setElement(String element) {
+        forge.element = element;
     }
 
     public void setWeight(int weight) {
-        this.weight = weight;
+        forge.weight = weight;
+    }
+
+    public int getMinCost() {
+        return forge.minCost;
+    }
+
+    public void setMinCost(int minCost) {
+        forge.minCost = minCost;
+    }
+
+    @Override
+    public void deserialize(ConfigurationSection config) {
+        ISerializable.deserialize(config,this);
+        super.itemStack = ItemStackUtils.itemFromBase64(nbt);
+        super.id = this.id;
     }
 
     @Override
     public ForgeItemType getType() {
         return ForgeItemType.ITEM;
+    }
+
+    public class ForgeInfo implements ISerializable{
+        @Serializable
+        String element = "";
+        @Serializable
+        String level = "";
+        @Serializable
+        int minCost = 1;
+        @Serializable
+        int weight = 1;
+        @Serializable
+        Bonus bonus = new Bonus();
+
+    }
+
+    public class Bonus implements ISerializable{
+        @Serializable
+        String item = "";
+        @Serializable
+        double chance = 0;
+    }
+
+    public class RecycleInfo implements ISerializable{
+        @Serializable
+        int min = 10;
+        @Serializable
+        int max = 30;
+        @Serializable
+        int hard = 1;
+        @Serializable
+        Bonus bonus = new Bonus();
     }
 
     @Override

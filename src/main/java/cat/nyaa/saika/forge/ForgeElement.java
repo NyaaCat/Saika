@@ -1,18 +1,26 @@
 package cat.nyaa.saika.forge;
 
+import cat.nyaa.nyaacore.configuration.ISerializable;
+import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import org.bukkit.inventory.ItemStack;
 
-public class ForgeElement extends ForgeItem implements Elementable, ForgeMaterial {
+public class ForgeElement extends ForgeItem implements Elementable, ForgeMaterial, ISerializable {
 
-    private Element element;
+    @Serializable
+    String element = "";
+    @Serializable
+    String nbt = "";
 
-    public ForgeElement(ItemStack itemStack, Element element) {
+    public ForgeElement(ItemStack itemStack, String element) {
         super(itemStack);
         this.element = element;
+        this.nbt = ItemStackUtils.itemToBase64(itemStack);
     }
 
+    protected ForgeElement(){}
+
     @Override
-    public Element getElement() {
+    public String getElement() {
         return element;
     }
 
@@ -21,8 +29,4 @@ public class ForgeElement extends ForgeItem implements Elementable, ForgeMateria
         return ForgeItemType.ELEMENT;
     }
 
-    @Override
-    public int getAmount() {
-        return 0;
-    }
 }
