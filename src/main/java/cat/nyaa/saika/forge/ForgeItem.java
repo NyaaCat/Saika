@@ -11,11 +11,10 @@ import org.bukkit.inventory.meta.tags.ItemTagType;
 
 import java.util.UUID;
 
-abstract class ForgeItem {
+abstract class ForgeItem implements BaseManager.NbtedISerializable {
     private static final NamespacedKey ITEM_TAG = new NamespacedKey(Saika.plugin, "forgeItem");
     private static final NamespacedKey ITEM_UUID = new NamespacedKey(Saika.plugin, "forgeUuid");
     static ForgeManager forgeManager = ForgeManager.getForgeManager();
-
 
     ItemStack itemStack;
     String id;
@@ -24,6 +23,9 @@ abstract class ForgeItem {
 
     protected ForgeItem(ItemStack itemStack) {
         this.itemStack = itemStack;
+    }
+
+    protected void addItemTag(){
         ItemMeta itemMeta = itemStack.getItemMeta();
         CustomItemTagContainer forgeItemTags = null;
         if (itemMeta != null) {
@@ -33,7 +35,6 @@ abstract class ForgeItem {
             } else {
                 forgeItemTags = this.createItemTag(customTagContainer);
             }
-            id = forgeManager.registerItem(this);
             forgeItemTags.setCustomTag(ITEM_UUID, ItemTagType.STRING, id);
             itemStack.setItemMeta(itemMeta);
         }
@@ -44,14 +45,23 @@ abstract class ForgeItem {
 //        id = UUID.fromString(configurationSection.getString("uid"));
     }
 
+    public String getId(){
+        return id;
+    }
+
+    public ItemStack getItemStack(){
+        return itemStack;
+    }
+
+    @Override
+    public String toNbt() {
+        return ItemStackUtils.itemToBase64(itemStack);
+    }
+
     private CustomItemTagContainer createItemTag(CustomItemTagContainer customTagContainer) {
         CustomItemTagContainer newContainer = customTagContainer.getAdapterContext().newTagContainer();
         customTagContainer.setCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER, newContainer);
         return newContainer;
-    }
-
-    public String toNbt() {
-        return ItemStackUtils.itemToBase64(itemStack);
     }
 
     public abstract ForgeItemType getType();

@@ -21,9 +21,10 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
     @Serializable
     RecycleInfo recycle = new RecycleInfo();
 
-    protected ForgeableItem(){}
+    protected ForgeableItem() {
+    }
 
-    ForgeableItem(ItemStack itemStack, String  element, String level, int minCost) {
+    ForgeableItem(ItemStack itemStack, String element, String level, int minCost) {
         this(itemStack, element, level, minCost, minCost);
     }
 
@@ -36,9 +37,10 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
         forge.level = level;
         forge.minCost = minCost;
         forge.weight = weight;
+        this.addItemTag();
     }
 
-    public void setBonus(Bonus bonus){
+    public void setBonus(Bonus bonus) {
         forge.bonus = bonus;
     }
 
@@ -78,7 +80,7 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
 
     @Override
     public void deserialize(ConfigurationSection config) {
-        ISerializable.deserialize(config,this);
+        BaseManager.deserialize(config, this);
         super.itemStack = ItemStackUtils.itemFromBase64(nbt);
         super.id = this.id;
     }
@@ -88,7 +90,15 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
         return ForgeItemType.ITEM;
     }
 
-    public class ForgeInfo implements ISerializable{
+    public void setRecycle(int min, int max, int value, String bonus, double chance) {
+        recycle.min = min;
+        recycle.max =max;
+        recycle.hard = value;
+        recycle.bonus.item = bonus;
+        recycle.bonus.chance = chance;
+    }
+
+    public class ForgeInfo implements ISerializable {
         @Serializable
         String element = "";
         @Serializable
@@ -102,14 +112,8 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
 
     }
 
-    public class Bonus implements ISerializable{
-        @Serializable
-        String item = "";
-        @Serializable
-        double chance = 0;
-    }
+    public class RecycleInfo implements ISerializable {
 
-    public class RecycleInfo implements ISerializable{
         @Serializable
         int min = 10;
         @Serializable
@@ -118,6 +122,13 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
         int hard = 1;
         @Serializable
         Bonus bonus = new Bonus();
+    }
+
+    public class Bonus implements ISerializable {
+        @Serializable
+        String item = "";
+        @Serializable
+        double chance = 0;
     }
 
     @Override

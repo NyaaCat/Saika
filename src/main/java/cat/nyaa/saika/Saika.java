@@ -1,5 +1,6 @@
 package cat.nyaa.saika;
 
+import cat.nyaa.saika.forge.ForgeManager;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -10,6 +11,7 @@ public class Saika extends JavaPlugin{
     private I18n i18n;
     private Commands commands;
     private Events events;
+    private ForgeManager manager;
 
     public Configure getConfigure(){
         return configure;
@@ -34,11 +36,18 @@ public class Saika extends JavaPlugin{
         saika.setExecutor(commands);
         saika.setTabCompleter(commands);
         getServer().getPluginManager().registerEvents(events, this);
+        manager = ForgeManager.getForgeManager();
     }
 
     @Override
     public void onDisable() {
         super.onDisable();
+        this.save();
+    }
+
+    private void save() {
+        configure.save();
+        manager.save();
     }
 
     public void reload() {

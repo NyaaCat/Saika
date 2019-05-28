@@ -4,7 +4,7 @@ import cat.nyaa.nyaacore.configuration.ISerializable;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import org.bukkit.inventory.ItemStack;
 
-public class BonusItem implements ISerializable {
+public class BonusItem implements BaseManager.NbtedISerializable {
     @Serializable
     String id = "";
     @Serializable
@@ -17,4 +17,10 @@ public class BonusItem implements ISerializable {
     BonusItem(ItemStack itemStack){
         nbt = ItemStackUtils.itemToBase64(itemStack);
     }
+
+    @Override
+    public String toNbt() {
+        return nbt;
+    }
+
 }
