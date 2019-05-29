@@ -15,6 +15,10 @@ repositories {
     maven { name 'NyaaCentral'; url 'https://raw.githubusercontent.com/NyaaCat/NyaaCentral/maven-repo'}
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile('cat.nyaa:nyaacore:6.3-SNAPSHOT')
