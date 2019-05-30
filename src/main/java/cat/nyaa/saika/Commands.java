@@ -6,10 +6,15 @@ import cat.nyaa.nyaacore.Message;
 import cat.nyaa.saika.forge.EnchantSource.EnchantmentType;
 import cat.nyaa.saika.forge.*;
 import cat.nyaa.saika.forge.ForgeManager.NbtExistException;
+import cat.nyaa.saika.forge.ui.EnchantUi;
+import cat.nyaa.saika.forge.ui.ForgeUi;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.FurnaceInventory;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 
@@ -67,7 +72,8 @@ public class Commands extends CommandReceiver {
                 case "element":
                     String element = arguments.nextString();
                     ForgeElement forgeElement = forgeManager.defineElement(element, is);
-                    new Message(I18n.format("define.success.element", forgeElement.getId()));
+                    new Message(I18n.format("define.success.element", forgeElement.getId()))
+                            .send(sender);
                     break;
                 case "recycle":
                     ForgeRecycler recycler = forgeManager.defineRecycler(is);
@@ -147,7 +153,7 @@ public class Commands extends CommandReceiver {
                     new Message(I18n.format("delete.success.recycle", id))
                             .send(sender);
                 } else {
-                    new Message(I18n.format("delete.success.recycle", id))
+                    new Message(I18n.format("delete.error.recycle", id))
                             .send(sender);
                 }
                 break;
@@ -297,7 +303,8 @@ public class Commands extends CommandReceiver {
 
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         try {
-            forgeManager.addItem(itemInMainHand, level, element, cost, weight);
+            ForgeableItem item = forgeManager.addItem(itemInMainHand, level, element, cost, weight);
+            ((Player) sender).getInventory().setItemInMainHand(item.getItemStack());
         } catch (NbtExistException e) {
             new Message(I18n.format("add.error.nbt_exists"))
                     .send(sender);
@@ -314,10 +321,39 @@ public class Commands extends CommandReceiver {
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         if (forgeManager.hasItem(id)){
             forgeManager.removeForgeableItem(id);
-            new Message(I18n.format("remove.success",id));
+            new Message(I18n.format("remove.success",id))
+                    .send(sender);
         }else {
             new Message(I18n.format("remove.error.no_item"))
                     .send(sender);
+        }
+    }
+
+    @SubCommand("open")
+    public void onOpen(CommandSender sender, Arguments arguments){
+        String action = arguments.nextString();
+        if (!action.equals("forge") && !action.equals("enchant")){
+            throw new IllegalArgumentException();
+        }
+        if(dontHavePermission(sender, PERMISSION_OPEN, action)){
+            return;
+        }
+        if (!(sender instanceof Player)){
+            new Message(I18n.format("error.not_player"))
+                    .send(sender);
+            return;
+        }
+        switch (action){
+            case "forge":
+                ForgeUi forgeUi = new ForgeUi();
+                forgeUi.openInventory((Player) sender);
+                break;
+            case "enchant":
+                EnchantUi enchantUi = new EnchantUi();
+                ((Player) sender).openInventory(enchantUi.getInventory());
+                break;
+            default:
+                break;
         }
     }
 

@@ -17,12 +17,6 @@ public class Events implements Listener {
 
     @EventHandler
     public void onItemClicked(InventoryClickEvent e){
-        ItemStack currentItem = e.getCurrentItem();
-        if (currentItem != null) {
-            HumanEntity whoClicked = e.getWhoClicked();
-            whoClicked.sendMessage(ItemStackUtils.itemToBase64(currentItem));
-            whoClicked.sendMessage(currentItem.getType().toString());
-            whoClicked.sendMessage(String.valueOf(currentItem.getAmount()));
-        }
+
     }
 }

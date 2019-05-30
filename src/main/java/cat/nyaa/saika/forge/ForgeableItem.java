@@ -21,14 +21,14 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
     @Serializable
     RecycleInfo recycle = new RecycleInfo();
 
-    protected ForgeableItem() {
+    ForgeableItem() {
     }
 
-    ForgeableItem(ItemStack itemStack, String element, String level, int minCost) {
-        this(itemStack, element, level, minCost, minCost);
+    ForgeableItem(ItemStack itemStack, String level, String element, int minCost) {
+        this(itemStack, level, element, minCost, minCost);
     }
 
-    ForgeableItem(ItemStack itemStack, String element, String level, int minCost, int weight) {
+    ForgeableItem(ItemStack itemStack, String level, String element, int minCost, int weight) {
         super(itemStack);
         id = super.id;
         nbt = ItemStackUtils.itemToBase64(itemStack);
@@ -37,7 +37,6 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
         forge.level = level;
         forge.minCost = minCost;
         forge.weight = weight;
-        this.addItemTag();
     }
 
     public void setBonus(Bonus bonus) {
@@ -80,9 +79,14 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
 
     @Override
     public void deserialize(ConfigurationSection config) {
-        BaseManager.deserialize(config, this);
+        ISerializable.deserialize(config, this);
         super.itemStack = ItemStackUtils.itemFromBase64(nbt);
         super.id = this.id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+        super.id = id;
     }
 
     @Override
@@ -98,7 +102,7 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
         recycle.bonus.chance = chance;
     }
 
-    public class ForgeInfo implements ISerializable {
+    public static class ForgeInfo implements ISerializable {
         @Serializable
         String element = "";
         @Serializable
@@ -112,7 +116,7 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
 
     }
 
-    public class RecycleInfo implements ISerializable {
+    public static class RecycleInfo implements ISerializable {
 
         @Serializable
         int min = 10;
@@ -124,7 +128,7 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
         Bonus bonus = new Bonus();
     }
 
-    public class Bonus implements ISerializable {
+    public static class Bonus implements ISerializable {
         @Serializable
         String item = "";
         @Serializable

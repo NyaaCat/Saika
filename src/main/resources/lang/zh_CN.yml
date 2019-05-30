@@ -1,0 +1,53 @@
+define:
+  success:
+    iron: "成功创建铸造材料 %s"
+    element: "成功创建元素 %s"
+    recycler: "成功创建回收石 %s"
+    repulse: "成功创建消魔源 %s"
+    enchant: "成功创建附魔源 %s"
+  error:
+    no_item: "主手没有物品"
+    unknown: "未知创建目标"
+    nbt_exists: "已有一个相同NBT的物品，创建失败"
+    invalid_enchant_source: "这不是一个有效的附魔源"
+delete:
+  success:
+    level: "成功删除铸造材料 %s"
+    element: "成功删除元素 %s"
+    enchant: "成功删除附魔源 %s"
+    repulse: "成功删除消魔源 %s"
+    recycle: "成功删除回收石 %s"
+  error:
+    enchant: "没有id为 %s 的附魔源"
+    level: "没有id为 %s 的铸造材料"
+    repulse: "没有id为 %s 的元素"
+    recycle: "没有id为 %s 的回收石"
+    unknown: "未知删除目标"
+modify:
+  error:
+    no_item: "修改目标错误"
+    unknown: "未知修改目标"
+inspect:
+  info: "%s"
+  error:
+    no_item: "目标错误"
+list:
+  error:
+    no_result: "没有满足条件的合成方案"
+  success: "%s"
+bonus:
+  error:
+    no_item: "主手没有物品"
+    unknown_action: "未知命令"
+  success: "成功创建额外产出 %s"
+error:
+  not_player: "只有玩家才能执行此命令"
+  permission: "你没有 %s 权限"
+add:
+  error:
+    no_item: "主手没有物品"
+    nbt_exists: "已有相同NBT物品"
+remove:
+  success: "成功删除物品 %s"
+  error:
+    no_item: "没有id为 %s 的物品"

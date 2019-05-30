@@ -33,4 +33,7 @@ public class ForgeIron extends ForgeItem implements Levelable, ForgeMaterial, IS
         return ForgeItemType.IRON;
     }
 
+    public int getCost() {
+        return elementCost;
+    }
 }

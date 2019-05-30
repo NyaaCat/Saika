@@ -2,6 +2,8 @@ package cat.nyaa.saika.forge;
 
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.saika.Saika;
+import cat.nyaa.saika.forge.roll.ForgeRecipe;
+import cat.nyaa.saika.forge.roll.Roller;
 import com.sun.nio.file.ExtendedOpenOption;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -16,8 +18,12 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import static cat.nyaa.saika.forge.BaseManager.NbtedISerializable;
 import static cat.nyaa.saika.forge.EnchantSource.EnchantmentType;
@@ -33,10 +39,10 @@ public class ForgeManager {
     private ElementManager elementManager;
     private RecycleManager recycleManager;
     private IronManager ironManager;
+    private Roller roller;
     private Map<String, ForgeItem> nbtMap;
 
     private File dataDir;
-
 
     private ForgeManager() {
         plugin = Saika.plugin;
@@ -48,9 +54,13 @@ public class ForgeManager {
         recycleManager = new RecycleManager();
         ironManager = new IronManager();
         nbtMap = new LinkedHashMap<>();
+        roller = new Roller(this);
         load();
     }
 
+    public boolean hasItemOfRecipe(ForgeRecipe recipe){
+        return roller.hasForgeableItem(recipe);
+    }
 
     public static ForgeManager getForgeManager() {
         if (forgeManager == null) {
@@ -200,7 +210,6 @@ public class ForgeManager {
         });
     }
 
-
     public void save() {
         File ids = new File(dataDir, "ids.yml");
         YamlConfiguration idConf = new YamlConfiguration();
@@ -260,8 +269,14 @@ public class ForgeManager {
         return forgeableItemManager.getItem(id);
     }
 
+    public static boolean isForgeItem(ItemStack itemStack) {
+        ItemStack is = itemStack.clone();
+        is.setAmount(1);
+        return forgeManager.nbtMap.containsKey(ItemStackUtils.itemToBase64(is));
+    }
+
     public void saveItem(String id) {
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
                 forgeableItemManager.saveItem(id);
@@ -274,12 +289,12 @@ public class ForgeManager {
         Map<String, ForgeableItem> itemMap = forgeableItemManager.itemMap;
         if (!itemMap.isEmpty()) {
             itemMap.values().stream()
-            .filter(forgeableItem -> level.equals(forgeableItem.getLevel()))
-            .filter(forgeableItem -> element.equals(forgeableItem.getElement()))
-            .forEach(forgeableItem -> {
-                ConfigurationSection section = yml.createSection(forgeableItem.id);
-                forgeableItem.serialize(section);
-            });
+                    .filter(forgeableItem -> level.equals(forgeableItem.getLevel()))
+                    .filter(forgeableItem -> element.equals(forgeableItem.getElement()))
+                    .forEach(forgeableItem -> {
+                        ConfigurationSection section = yml.createSection(forgeableItem.id);
+                        forgeableItem.serialize(section);
+                    });
         }
         return yml;
     }
@@ -294,7 +309,8 @@ public class ForgeManager {
     public ForgeableItem addItem(ItemStack itemInMainHand, String level, String element, int cost, int weight) throws NbtExistException {
         checkNbt(itemInMainHand);
         ForgeableItem item = new ForgeableItem(itemInMainHand, level, element, cost, weight);
-        forgeableItemManager.addItem(element, item);
+        String id = forgeableItemManager.addItem(item);
+        item.setId(id);
         addItemNbt(item);
         saveManager(forgeableItemManager);
         return item;
@@ -304,7 +320,7 @@ public class ForgeManager {
         ForgeableItem item = forgeableItemManager.getItem(id);
         nbtMap.remove(item.toNbt());
         forgeableItemManager.removeItem(id);
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
                 try {
@@ -316,9 +332,53 @@ public class ForgeManager {
         }.runTaskAsynchronously(plugin);
     }
 
+    public List<ForgeableItem> getItemsByRecipie(ForgeRecipe recipe) {
+        ForgeIron iron = recipe.getIronLevel();
+        int ironAmount = recipe.getIronAmount();
+        int elementAmount = recipe.getElementAmount();
+        return forgeableItemManager.itemMap.values().stream()
+                .filter(forgeableItem -> forgeableItem.getElement().equals(recipe.getElement().element))
+                .filter(forgeableItem -> forgeableItem.getLevel().equals(iron.level))
+                .filter(forgeableItem -> ironAmount >= forgeableItem.getMinCost() && elementAmount >= iron.elementCost)
+                .collect(Collectors.toList());
+    }
+
+    public ForgeableItem forgeItem(ForgeRecipe recipe){
+        return roller.rollItem(recipe);
+    }
+
+    public ForgeElement getElement(ItemStack element) {
+        if (element == null)return null;
+        ItemStack is = element.clone();
+        is.setAmount(1);
+        String nbt = ItemStackUtils.itemToBase64(is);
+        ForgeItem forgeItem = nbtMap.get(nbt);
+        if (forgeItem instanceof ForgeElement){
+            return (ForgeElement) forgeItem;
+        }
+        return null;
+    }
+
+    public ForgeIron getIron(ItemStack element) {
+        if (element == null)return null;
+        ItemStack is = element.clone();
+        is.setAmount(1);
+        String nbt = ItemStackUtils.itemToBase64(is);
+        ForgeItem forgeItem = nbtMap.get(nbt);
+        if (forgeItem instanceof ForgeIron){
+            return (ForgeIron) forgeItem;
+        }
+        return null;
+    }
+
+    public ForgeIron getIron(String level) {
+        return ironManager.itemMap.values().stream()
+                .filter(iron -> iron.level.equals(level))
+                .findFirst()
+                .orElse(null);
+    }
+
     class ForgeableItemManager extends BaseManager<ForgeableItem> {
-
-
 
         @Override
         void save() {
@@ -328,7 +388,7 @@ public class ForgeManager {
             }
             if (!itemMap.isEmpty()) {
                 itemMap.forEach((s, forgeableItem) -> {
-                    File ymlFile = new File(dataDir, s);
+                    File ymlFile = new File(parentDir, s+".yml");
                     try {
                         YamlConfiguration conf = new YamlConfiguration();
                         forgeableItem.serialize(conf);
@@ -357,6 +417,7 @@ public class ForgeManager {
                             ForgeableItem item = new ForgeableItem();
                             item.deserialize(conf);
                             item.addItemTag();
+                            addItem(item.id, item);
                         }
                     }
                 }
@@ -369,12 +430,12 @@ public class ForgeManager {
 
         void removeItemFile(String id) throws IOException {
             File parentDir = new File(dataDir, "items");
-            File ymlFile = new File(dataDir, id+".yml");
+            File ymlFile = new File(dataDir, id + ".yml");
             File deleted = new File(dataDir, "deleted");
-            if (!deleted.exists()){
+            if (!deleted.exists()) {
                 deleted.mkdir();
             }
-            Files.move(ymlFile.toPath(), new File(deleted, id+".yml.deleted").toPath());
+            Files.move(ymlFile.toPath(), new File(deleted, id + ".yml.deleted").toPath());
         }
 
         public void saveItem(String id) {

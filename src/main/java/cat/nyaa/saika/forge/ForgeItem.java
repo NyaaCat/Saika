@@ -12,8 +12,8 @@ import org.bukkit.inventory.meta.tags.ItemTagType;
 import java.util.UUID;
 
 abstract class ForgeItem implements BaseManager.NbtedISerializable {
-    private static final NamespacedKey ITEM_TAG = new NamespacedKey(Saika.plugin, "forgeItem");
-    private static final NamespacedKey ITEM_UUID = new NamespacedKey(Saika.plugin, "forgeUuid");
+    public static final NamespacedKey ITEM_TAG = new NamespacedKey(Saika.plugin, "forgeItem");
+    public static final NamespacedKey ITEM_UUID = new NamespacedKey(Saika.plugin, "forgeUuid");
     static ForgeManager forgeManager = ForgeManager.getForgeManager();
 
     ItemStack itemStack;
@@ -65,15 +65,5 @@ abstract class ForgeItem implements BaseManager.NbtedISerializable {
     }
 
     public abstract ForgeItemType getType();
-
-    public static boolean isForgeItem(ItemStack itemStack){
-        if (!itemStack.hasItemMeta()){
-            return false;
-        }
-        CustomItemTagContainer container = itemStack.getItemMeta().getCustomTagContainer();
-        CustomItemTagContainer customTag = container.getCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER);
-        String uuid = customTag.getCustomTag(ITEM_UUID, ItemTagType.STRING);
-        return forgeManager.hasItem(UUID.fromString(uuid));
-    }
 
 }
