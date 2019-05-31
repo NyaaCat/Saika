@@ -354,6 +354,11 @@ public class ForgeManager {
                 .orElse(null);
     }
 
+    public void reload() {
+        nbtMap.clear();
+        this.load();
+    }
+
     class ForgeableItemManager extends BaseManager<ForgeableItem> {
 
         @Override

@@ -57,5 +57,6 @@ public class Saika extends JavaPlugin{
     public void reload() {
         configure.load();
         i18n.load();
+        manager.reload();
     }
 }
