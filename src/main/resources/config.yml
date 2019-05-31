@@ -1,2 +1,4 @@
 enchant:
   maxLevel: 10
+roll:
+  maxWeightMultiplier: 3.0

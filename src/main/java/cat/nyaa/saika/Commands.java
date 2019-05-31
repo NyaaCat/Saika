@@ -3,19 +3,25 @@ package cat.nyaa.saika;
 import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.Message;
+import cat.nyaa.nyaacore.Pair;
+import cat.nyaa.nyaacore.utils.LocaleUtils;
 import cat.nyaa.saika.forge.EnchantSource.EnchantmentType;
 import cat.nyaa.saika.forge.*;
 import cat.nyaa.saika.forge.ForgeManager.NbtExistException;
 import cat.nyaa.saika.forge.ui.EnchantUi;
 import cat.nyaa.saika.forge.ui.ForgeUi;
-import org.bukkit.Bukkit;
+import cat.nyaa.saika.forge.ui.RecycleUi;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.FurnaceInventory;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 public class Commands extends CommandReceiver {
@@ -220,7 +226,7 @@ public class Commands extends CommandReceiver {
             YamlConfiguration sec = new YamlConfiguration();
             forgeableItem.serialize(sec);
             String s = sec.saveToString();
-            new Message(I18n.format("inspect.info", id, s))
+            new Message(I18n.format("inspect.info", id, s)) //&r{itemName}&r * {amount}
                     .send(sender);
         } else {
             new Message(I18n.format("inspect.error.no_item"))
@@ -302,14 +308,8 @@ public class Commands extends CommandReceiver {
         int weight = arguments.nextInt();
 
         ForgeManager forgeManager = ForgeManager.getForgeManager();
-        try {
-            ForgeableItem item = forgeManager.addItem(itemInMainHand, level, element, cost, weight);
-            ((Player) sender).getInventory().setItemInMainHand(item.getItemStack());
-        } catch (NbtExistException e) {
-            new Message(I18n.format("add.error.nbt_exists"))
-                    .send(sender);
-        }
-
+        ForgeableItem item = forgeManager.addItem(itemInMainHand, level, element, cost, weight);
+        ((Player) sender).getInventory().setItemInMainHand(item.getItemStack());
     }
 
     @SubCommand("remove")
@@ -330,18 +330,21 @@ public class Commands extends CommandReceiver {
     }
 
     @SubCommand("open")
-    public void onOpen(CommandSender sender, Arguments arguments){
+    public boolean onOpen(CommandSender sender, Arguments arguments){
         String action = arguments.nextString();
-        if (!action.equals("forge") && !action.equals("enchant")){
-            throw new IllegalArgumentException();
+        if (!action.equals("forge") && !action.equals("enchant") && !action.equals("repulse") && !action.equals("recycle")){
+            return false;
         }
         if(dontHavePermission(sender, PERMISSION_OPEN, action)){
-            return;
+            return false;
         }
         if (!(sender instanceof Player)){
             new Message(I18n.format("error.not_player"))
                     .send(sender);
-            return;
+            return false;
+        }
+        if (!checkRequiredBlock((Player) sender, action)){
+            return true;
         }
         switch (action){
             case "forge":
@@ -350,11 +353,72 @@ public class Commands extends CommandReceiver {
                 break;
             case "enchant":
                 EnchantUi enchantUi = new EnchantUi();
-                ((Player) sender).openInventory(enchantUi.getInventory());
+                enchantUi.openInventory((Player) sender);
+                break;
+            case "repulse":
+                EnchantUi repulseUi = new EnchantUi();
+                repulseUi.openInventory((Player) sender);
+                break;
+            case "recycle":
+                RecycleUi recycleUi = new RecycleUi();
+                recycleUi.openInventory((Player) sender);
                 break;
             default:
                 break;
         }
+        return true;
+    }
+
+    private boolean checkRequiredBlock(Player sender, String action) {
+        Material forgeBlock;
+        int forgeUiDistance;
+        switch (action){
+            case "forge":
+                forgeBlock = plugin.getConfigure().getForgeBlock();
+                forgeUiDistance = plugin.getConfigure().getForgeUiDistance();
+                break;
+            case "enchant":
+                forgeBlock = plugin.getConfigure().getEnchantBlock();
+                forgeUiDistance = plugin.getConfigure().getEnchantUiDistance();
+                break;
+            case "repulse":
+                forgeBlock = plugin.getConfigure().getEnchantBlock();
+                forgeUiDistance = plugin.getConfigure().getEnchantUiDistance();
+                break;
+            case "recycle":
+                forgeBlock = plugin.getConfigure().getForgeBlock();
+                forgeUiDistance = plugin.getConfigure().getEnchantUiDistance();
+                break;
+            default:
+                throw new RuntimeException();
+        }
+        boolean match = true;
+        if (forgeBlock != Material.AIR) {
+            Location location = sender.getLocation();
+            List<Location> nearbyBlock = IntStream.rangeClosed(-forgeUiDistance, forgeUiDistance)
+                    .parallel()
+                    .boxed()
+                    .flatMap(x ->
+                            IntStream.rangeClosed(-forgeUiDistance, forgeUiDistance)
+                                    .parallel()
+                                    .boxed()
+                                    .map(y -> Pair.of(x, y))
+                    )
+                    .flatMap(p ->
+                            IntStream.rangeClosed(-forgeUiDistance, forgeUiDistance)
+                                    .parallel()
+                                    .boxed()
+                                    .map(z -> location.clone().add(p.getKey(), p.getValue(), z))
+                    ).collect(Collectors.toList());
+            if (nearbyBlock.parallelStream().anyMatch(loc -> loc.getBlock().getType() == forgeBlock)) match = true;
+            else match = false;
+            if (!match) {
+                new Message("")
+                        .append(I18n.format("open.error.no_required_block", forgeUiDistance), Collections.singletonMap("{block}", LocaleUtils.getNameComponent(new ItemStack(forgeBlock))))
+                        .send(sender);
+            }
+        }
+        return match;
     }
 
     private boolean dontHavePermission(CommandSender sender, String mainPermission, String subPermission) {

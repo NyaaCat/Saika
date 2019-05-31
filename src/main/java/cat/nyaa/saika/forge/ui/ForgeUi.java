@@ -13,7 +13,6 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -40,9 +39,9 @@ public class ForgeUi implements InventoryHolder {
         valid = new ItemStack(Material.GREEN_STAINED_GLASS, 1);
         invalid = new ItemStack(Material.RED_STAINED_GLASS, 1);
         noItem = new ItemStack(Material.YELLOW_STAINED_GLASS, 1);
-        addMeta(valid, "ui.status.valid.title", "ui.status.valid.lore");
-        addMeta(invalid, "ui.status.invalid.title", "ui.status.invalid.lore");
-        addMeta(noItem, "ui.status.no_item.title", "ui.status.no_item.lore");
+        addMeta(valid, "ui.forge.valid.title", "ui.forge.valid.lore");
+        addMeta(invalid, "ui.forge.invalid.title", "ui.forge.invalid.lore");
+        addMeta(noItem, "ui.forge.no_item.title", "ui.forge.no_item.lore");
     }
 
     private void addMeta(ItemStack item, String title, String lore) {
@@ -134,5 +133,15 @@ public class ForgeUi implements InventoryHolder {
                 updateValidation();
             }
         }.runTaskLater(Saika.plugin,1);
+    }
+
+    public void cost(ForgeIron iron) {
+        int elementCost = iron.getCost();
+        this.inventory.setItem(0, new ItemStack(Material.AIR));
+        ItemStack elementItem = this.inventory.getItem(1);
+        if (elementItem != null){
+            elementItem.setAmount(Math.max(0,elementItem.getAmount()-elementCost));
+        }
+        this.inventory.setItem(1,elementItem);
     }
 }

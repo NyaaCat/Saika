@@ -2,29 +2,32 @@ package cat.nyaa.saika.forge.ui;
 
 import cat.nyaa.nyaacore.BasicItemMatcher;
 import cat.nyaa.nyaacore.utils.InventoryUtils;
+import cat.nyaa.saika.Configure;
 import cat.nyaa.saika.Saika;
 import cat.nyaa.saika.forge.ForgeIron;
 import cat.nyaa.saika.forge.ForgeManager;
 import cat.nyaa.saika.forge.ForgeableItem;
 import org.bukkit.*;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.tags.ItemTagType;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.logging.Level;
 
 public class ForgeUiEvents implements Listener {
     public static final NamespacedKey INDICATOR = new NamespacedKey(Saika.plugin, "indicator");
     private Saika plugin;
     static Map<Inventory, ForgeUi> forgeUiList = new LinkedHashMap<>();
-    static Map<Inventory, ForgeUi> enchantUiList = new LinkedHashMap<>();
+    static Map<Inventory, EnchantUi> enchantUiList = new LinkedHashMap<>();
+    static Map<Inventory, RecycleUi> recycleUiList = new LinkedHashMap<>();
 
     public ForgeUiEvents(Saika plugin) {
         this.plugin = plugin;
@@ -34,10 +37,12 @@ public class ForgeUiEvents implements Listener {
         forgeUiList.put(inventory, ui);
     }
 
-    @EventHandler
-    public void onInventoryOpen(InventoryOpenEvent ev) {
-        InventoryView view = ev.getView();
+    public static void registerRecycle(Inventory inventory, RecycleUi recycleUi) {
+        recycleUiList.put(inventory, recycleUi);
+    }
 
+    public static void registerEnchant(Inventory inventory, EnchantUi enchantUi) {
+        enchantUiList.put(inventory, enchantUi);
     }
 
     @EventHandler
@@ -45,16 +50,17 @@ public class ForgeUiEvents implements Listener {
         Inventory inventory = ev.getInventory();
         giveItemBack(ev, inventory, forgeUiList);
         giveItemBack(ev, inventory, enchantUiList);
+        giveItemBack(ev, inventory, recycleUiList);
     }
 
-    private void giveItemBack(InventoryCloseEvent ev, Inventory inventory, Map<Inventory, ForgeUi> enchantUiList) {
+    private void giveItemBack(InventoryCloseEvent ev, Inventory inventory, Map<Inventory, ? extends InventoryHolder> enchantUiList) {
         if (enchantUiList.remove(inventory) != null) {
             for (int i = 0; i < 3; i++) {
                 ItemStack item = inventory.getItem(i);
                 if (item != null) {
                     ItemMeta itemMeta = item.getItemMeta();
                     if (itemMeta == null || !itemMeta.getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
-                        if (!InventoryUtils.addItem(ev.getPlayer().getInventory(), item)){
+                        if (!InventoryUtils.addItem(ev.getPlayer().getInventory(), item)) {
                             Location location = ev.getPlayer().getLocation();
                             World world = ev.getPlayer().getWorld();
                             world.dropItem(location, item);
@@ -73,82 +79,193 @@ public class ForgeUiEvents implements Listener {
         }
 
         if (forgeUiList.containsKey(clickedInventory)) {
-            ItemStack cursor = ev.getCursor();
-            ItemStack currentItem = ev.getCurrentItem();
-            ForgeUi forgeUi = forgeUiList.get(clickedInventory);
-            if (ev.getSlot() == 2) {
-                if (cursor == null || !cursor.getType().equals(Material.AIR)) {
-                    ev.setCancelled(true);
-                    return;
-                }
-                if (!ev.getClick().equals(ClickType.SHIFT_LEFT) && !ev.getClick().equals(ClickType.LEFT)) {
-                    ev.setCancelled(true);
-                    return;
-                }
-                if (currentItem != null && currentItem.getItemMeta() != null) {
-                    if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
-                        forgeUi.updateValidation();
-                        ForgeableItem item = forgeUi.onForge();
-                        if (item != null) {
-                            playSound(ev);
+            forgeUiClicked(ev, clickedInventory);
+            return;
+        }
+
+        if (enchantUiList.containsKey(clickedInventory)){
+            enchantUiClicked(ev, clickedInventory);
+            return;
+        }
+
+        if (recycleUiList.containsKey(clickedInventory)){
+            recycleUiClicked(ev, clickedInventory);
+            return;
+        }
+    }
+
+    private void recycleUiClicked(InventoryClickEvent ev, Inventory clickedInventory) {
+        ItemStack cursor = ev.getCursor();
+        ItemStack currentItem = ev.getCurrentItem();
+        RecycleUi recycleUi = recycleUiList.get(clickedInventory);
+        if (ev.getSlot() == 2) {
+            if (cursor == null || !cursor.getType().equals(Material.AIR)) {
+                ev.setCancelled(true);
+                return;
+            }
+            if (!ev.getClick().equals(ClickType.SHIFT_LEFT) && !ev.getClick().equals(ClickType.LEFT)) {
+                ev.setCancelled(true);
+                return;
+            }
+            if (currentItem != null && currentItem.getItemMeta() != null) {
+                if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
+                    recycleUi.updateValidation();
+                    ItemStack itemStack = recycleUi.onRecycle();
+                    if (itemStack != null){
+                        if (ev.getClick().equals(ClickType.LEFT)){
+                            ev.getWhoClicked().setItemOnCursor(itemStack);
+                        }else {
+                            if (InventoryUtils.addItem(ev.getWhoClicked().getInventory(), itemStack)){
+                                World world = ev.getWhoClicked().getWorld();
+                                Location location = ev.getWhoClicked().getLocation();
+                                world.dropItem(location, itemStack);
+                            }
                         }
+                    }
+                    ev.setCancelled(true);
+                    recycleUi.updateValidationLater();
+                    return;
+                }
+            }
+        }
+        onGeneralClick(ev, cursor, currentItem);
+        recycleUi.updateValidationLater();
+    }
+
+    private void enchantUiClicked(InventoryClickEvent ev, Inventory clickedInventory) {
+        ItemStack cursor = ev.getCursor();
+        ItemStack currentItem = ev.getCurrentItem();
+        EnchantUi enchantUi = enchantUiList.get(clickedInventory);
+        if (ev.getSlot() == 2) {
+            if (cursor == null || !cursor.getType().equals(Material.AIR)) {
+                ev.setCancelled(true);
+                return;
+            }
+            if (!ev.getClick().equals(ClickType.SHIFT_LEFT) && !ev.getClick().equals(ClickType.LEFT)) {
+                ev.setCancelled(true);
+                return;
+            }
+            if (currentItem != null && currentItem.getItemMeta() != null) {
+                if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
+                    enchantUi.updateValidation();
+                    enchantUi.onEnchant();
+                    ev.setCancelled(true);
+                    enchantUi.updateValidationLater();
+                    return;
+                }
+            }
+        }
+        onGeneralClick(ev, cursor, currentItem);
+        enchantUi.updateValidationLater();
+    }
+
+    private void forgeUiClicked(InventoryClickEvent ev, Inventory clickedInventory) {
+        ItemStack cursor = ev.getCursor();
+        ItemStack currentItem = ev.getCurrentItem();
+        ForgeUi forgeUi = forgeUiList.get(clickedInventory);
+        if (ev.getSlot() == 2) {
+            if (cursor == null || !cursor.getType().equals(Material.AIR)) {
+                ev.setCancelled(true);
+                return;
+            }
+            if (!ev.getClick().equals(ClickType.SHIFT_LEFT) && !ev.getClick().equals(ClickType.LEFT)) {
+                ev.setCancelled(true);
+                return;
+            }
+            if (currentItem != null && currentItem.getItemMeta() != null) {
+                if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
+                    forgeUi.updateValidation();
+                    ForgeableItem item = forgeUi.onForge();
+                    if (item != null) {
+                        showEffect(ev);
                         ItemStack itemStack = item.getItemStack();
                         if (ev.getClick().equals(ClickType.SHIFT_LEFT)) {
                             PlayerInventory target = ev.getWhoClicked().getInventory();
                             if (InventoryUtils.hasEnoughSpace(target, itemStack)) {
                                 InventoryUtils.addItem(target, itemStack);
-                            }else {
+                            } else {
                                 ev.getWhoClicked().setItemOnCursor(itemStack);
                             }
-                        }else {
+                        } else {
                             ev.getWhoClicked().setItemOnCursor(itemStack);
                         }
                         String level = item.getLevel();
                         ForgeIron iron = ForgeManager.getForgeManager().getIron(level);
-                        int cost = iron.getCost();
-                        ev.setCancelled(true);
-                        forgeUi.updateValidationLater();
-                        return;
+                        forgeUi.cost(iron);
                     }
+
+                    ev.setCancelled(true);
+                    forgeUi.updateValidationLater();
+                    return;
                 }
             }
-            if (cursor != null) {
-                ClickType click = ev.getClick();
-                switch (click) {
-                    case LEFT:
-                        onLeftClick(ev, currentItem, cursor);
-                        break;
-                    case SHIFT_LEFT:
-                    case SHIFT_RIGHT:
-                        moveCurrentItemDown(ev, currentItem);
-                        break;
-                    case RIGHT:
-                        onRightClick(ev, currentItem, cursor);
-                        break;
-                    case MIDDLE:
-                        break;
-                    case NUMBER_KEY:
-                        break;
-                    case DOUBLE_CLICK:
-                        break;
-                    case DROP:
-                        break;
-                    case CONTROL_DROP:
-                        break;
-                    case CREATIVE:
-                        break;
-                    case UNKNOWN:
-                        break;
-                }
-                forgeUi.updateValidationLater();
+        }
+        onGeneralClick(ev, cursor, currentItem);
+        forgeUi.updateValidationLater();
+    }
+
+    private void onGeneralClick(InventoryClickEvent ev, ItemStack cursor, ItemStack currentItem) {
+        if (cursor != null) {
+            ClickType click = ev.getClick();
+            switch (click) {
+                case LEFT:
+                    onLeftClick(ev, currentItem, cursor);
+                    break;
+                case SHIFT_LEFT:
+                case SHIFT_RIGHT:
+                    moveCurrentItemDown(ev, currentItem);
+                    break;
+                case RIGHT:
+                    onRightClick(ev, currentItem, cursor);
+                    break;
+                case MIDDLE:
+                    break;
+                case NUMBER_KEY:
+                    break;
+                case DOUBLE_CLICK:
+                    break;
+                case DROP:
+                    break;
+                case CONTROL_DROP:
+                    break;
+                case CREATIVE:
+                    break;
+                case UNKNOWN:
+                    break;
             }
         }
     }
 
-    private void playSound(InventoryClickEvent ev) {
-        Server server = ev.getWhoClicked().getServer();
-        server.getPlayer(ev.getWhoClicked().getUniqueId());
+    private void showEffect(InventoryClickEvent ev) {
+        HumanEntity playerEntity = ev.getWhoClicked();
+        Server server = playerEntity.getServer();
+        try {
+            Player player = server.getPlayer(ev.getWhoClicked().getUniqueId());
+            Configure.ForgeConfigure forgeEffect = plugin.getConfigure().getForgeEffect();
+            Configure.ForgeConfigure.EffectConfigure forge = forgeEffect.effect.get("forge");
+            Location location = playerEntity.getLocation();
+            Object extraData = getExtraData(forge.extra);
+            playerEntity.getWorld().spawnParticle(forge.particle, location, forge.amount, forge.offsetX, forge.offsetY, forge.offsetZ, forge.speed, extraData);
+            Configure.ForgeConfigure.SoundConfigure sound = forgeEffect.sound.get("forge");
+            player.playSound(location, sound.name, 1f, (float) sound.pitch);
+        } catch (Exception e) {
+            server.getLogger().log(Level.WARNING, "wrong config", e);
+        }
     }
+
+    private Object getExtraData(String value) {
+        try {
+            String[] split = value.split(",", 4);
+            int r = Integer.parseInt(split[0]);
+            int g = Integer.parseInt(split[1]);
+            int b = Integer.parseInt(split[2]);
+            float size = Float.parseFloat(split[3]);
+            return Optional.of(new Particle.DustOptions(Color.fromRGB(r, g, b), size));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 
     private void onRightClick(InventoryClickEvent ev, ItemStack currentItem, ItemStack cursor) {
         BasicItemMatcher itemMatcher = new BasicItemMatcher();

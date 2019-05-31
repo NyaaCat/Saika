@@ -4,7 +4,6 @@ import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.saika.Saika;
 import cat.nyaa.saika.forge.roll.ForgeRecipe;
 import cat.nyaa.saika.forge.roll.Roller;
-import com.sun.nio.file.ExtendedOpenOption;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -14,10 +13,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -56,7 +52,7 @@ public class ForgeManager {
         load();
     }
 
-    public boolean hasItemOfRecipe(ForgeRecipe recipe){
+    public boolean hasItemOfRecipe(ForgeRecipe recipe) {
         return roller.hasForgeableItem(recipe);
     }
 
@@ -130,18 +126,6 @@ public class ForgeManager {
         runnable.runTaskLaterAsynchronously(Saika.plugin, 1);
     }
 
-    public ForgeableItem forge(ForgeIron iron, ForgeElement element) {
-        ForgeableItem forgeResult = null;
-
-        return forgeResult;
-    }
-
-    public boolean forgeable(ForgeIron iron, ForgeElement element) {
-        boolean forgeable = false;
-
-        return forgeable;
-    }
-
     public boolean hasItem(String id) {
         return forgeableItemManager.itemMap.containsKey(id);
     }
@@ -157,13 +141,17 @@ public class ForgeManager {
             idConf = null;
         }
         List<BaseManager<? extends ForgeItem>> managers = Arrays.asList(
-                forgeableItemManager,
                 enchantBookManager,
                 elementManager,
                 recycleManager,
                 ironManager
         );
         YamlConfiguration finalIdConf = idConf;
+        forgeableItemManager.load();
+        if (finalIdConf != null) {
+            ConfigurationSection section = finalIdConf.getConfigurationSection(forgeableItemManager.getClass().getName());
+            forgeableItemManager.loadId(section);
+        }
         managers.forEach(baseManager -> {
             baseManager.load();
             if (finalIdConf != null) {
@@ -284,12 +272,10 @@ public class ForgeManager {
         return item.id;
     }
 
-    public ForgeableItem addItem(ItemStack itemInMainHand, String level, String element, int cost, int weight) throws NbtExistException {
-        checkNbt(itemInMainHand);
+    public ForgeableItem addItem(ItemStack itemInMainHand, String level, String element, int cost, int weight) {
         ForgeableItem item = new ForgeableItem(itemInMainHand, level, element, cost, weight);
         String id = forgeableItemManager.addItem(item);
         item.setId(id);
-        addItemNbt(item);
         saveManager(forgeableItemManager);
         return item;
     }
@@ -359,6 +345,24 @@ public class ForgeManager {
     public void reload() {
         nbtMap.clear();
         this.load();
+    }
+
+    public ForgeEnchantBook getEnchantBook(ItemStack item) {
+        String nbt = ItemStackUtils.itemToBase64(item);
+        if (nbtMap.containsKey(nbt)){
+            ForgeItem forgeItem = nbtMap.get(item);
+            if (forgeItem instanceof ForgeEnchantBook){
+                return (ForgeEnchantBook) forgeItem;
+            } else return null;
+        } else return null;
+    }
+
+    public ForgeRecycler getRecycle(ItemStack item) {
+        ForgeItem forgeItem = nbtMap.get(ItemStackUtils.itemToBase64(item));
+        if (forgeItem != null && forgeItem instanceof ForgeRecycler){
+            return (ForgeRecycler) forgeItem;
+        }
+        return null;
     }
 
     class ForgeableItemManager extends BaseManager<ForgeableItem> {

@@ -77,6 +77,10 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
         forge.minCost = minCost;
     }
 
+    public RecycleInfo getRecycle() {
+        return recycle;
+    }
+
     @Override
     public void deserialize(ConfigurationSection config) {
         ISerializable.deserialize(config, this);
@@ -117,15 +121,14 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
     }
 
     public static class RecycleInfo implements ISerializable {
-
         @Serializable
-        int min = 10;
+        public int min = 10;
         @Serializable
-        int max = 30;
+        public int max = 30;
         @Serializable
-        int hard = 1;
+        public int hard = 1;
         @Serializable
-        Bonus bonus = new Bonus();
+        public Bonus bonus = new Bonus();
     }
 
     public static class Bonus implements ISerializable {

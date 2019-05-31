@@ -51,3 +51,6 @@ remove:
   success: "成功删除物品 %s"
   error:
     no_item: "没有id为 %s 的物品"
+open:
+  error:
+    no_required_block: "There are no {block} in %d blocks"

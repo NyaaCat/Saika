@@ -1,5 +1,6 @@
 package cat.nyaa.saika.forge.roll;
 
+import cat.nyaa.saika.Saika;
 import cat.nyaa.saika.forge.ForgeManager;
 import cat.nyaa.saika.forge.ForgeableItem;
 
@@ -25,13 +26,18 @@ public class Roller {
         //计算列表内所有weight的和
         forgeableItems.sort(Comparator.comparingInt(ForgeableItem::getWeight).reversed());
         ForgeableItem maxCostItem = forgeableItems.stream().max(Comparator.comparingInt(ForgeableItem::getMinCost)).orElse(null);
+        double maxWeightMultiplier = Saika.plugin.getConfigure().maxWeightMultiplier;
         int[] balancedWeight = forgeableItems.stream()
                 .mapToInt(forgeableItem -> {
                     if (forgeableItem.getMinCost() == maxCostItem.getMinCost()) {
                         return Math.toIntExact(
-                                Math.round(((double) maxCostItem.getWeight()) * (((double) recipe.getIronAmount()) / ((double) forgeableItem.getMinCost())))
+                                Math.round(((double) maxCostItem.getWeight()) *
+                                        Math.min(maxWeightMultiplier,
+                                                ((double) recipe.getIronAmount()) / ((double) forgeableItem.getMinCost())
+                                        )
+                                )
                         );
-                    }else {
+                    } else {
                         return forgeableItem.getWeight();
                     }
                 }).toArray();
