@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ForgeUi implements InventoryHolder {
-    private FurnaceInventory inventory;
+    private Inventory inventory;
     ItemStack valid;
     ItemStack invalid;
     ItemStack noItem;
@@ -59,8 +59,8 @@ public class ForgeUi implements InventoryHolder {
     private RecipieValidation validation = RecipieValidation.INVALID_BOTH;
 
     private ForgeRecipe getRecipe() {
-        ItemStack fuel = inventory.getFuel();
-        ItemStack smelting = inventory.getSmelting();
+        ItemStack fuel = inventory.getItem(1);
+        ItemStack smelting = inventory.getItem(0);
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         ForgeElement element = forgeManager.getElement(fuel);
         ForgeIron iron = forgeManager.getIron(smelting);
@@ -97,26 +97,26 @@ public class ForgeUi implements InventoryHolder {
     }
 
     public void onCancel() {
-        inventory.setResult(new ItemStack(Material.AIR));
+        inventory.setItem(2,new ItemStack(Material.AIR));
     }
 
     private void onNoItem() {
-        inventory.setResult(noItem);
+        inventory.setItem(2,noItem);
         validation = RecipieValidation.NO_ITEM;
     }
 
     private void onValid() {
-        inventory.setResult(valid);
+        inventory.setItem(2,valid);
         validation = RecipieValidation.VALID;
     }
 
     private void onInvalid() {
-        inventory.setResult(invalid);
+        inventory.setItem(2,invalid);
     }
 
     public void openInventory(Player player) {
         String title = I18n.format("ui.title.forge");
-        inventory = (FurnaceInventory) Bukkit.createInventory(this, InventoryType.FURNACE, title);
+        inventory = Bukkit.createInventory(this, InventoryType.FURNACE, title);
         initStatusIndicator();
         ForgeUiEvents.registerForge(inventory, this);
         player.openInventory(inventory);
