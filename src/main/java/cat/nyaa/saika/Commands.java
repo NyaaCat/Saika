@@ -244,7 +244,7 @@ public class Commands extends CommandReceiver {
             new Message(I18n.format("list.error.no_result"))
                     .send(sender);
         } else {
-            new Message(I18n.format("list.success"))
+            new Message(I18n.format("list.success",str))
                     .send(sender);
         }
     }
