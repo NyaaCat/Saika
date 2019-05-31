@@ -25,16 +25,20 @@ public class Roller {
         //计算列表内所有weight的和
         forgeableItems.sort(Comparator.comparingInt(ForgeableItem::getWeight).reversed());
         ForgeableItem maxCostItem = forgeableItems.stream().max(Comparator.comparingInt(ForgeableItem::getMinCost)).orElse(null);
-        int[] ints = forgeableItems.stream().mapToInt(ForgeableItem::getWeight).toArray();
-        int newWeight = Math.toIntExact(
-                Math.round(((double) maxCostItem.getWeight()) * (((double) recipe.getIronAmount()) / ((double) forgeableItems.get(0).getMinCost())))
-        );
-        int i = forgeableItems.indexOf(maxCostItem);
-        ints[i] = newWeight;
-        int totalWeight = Arrays.stream(ints).sum();
+        int[] balancedWeight = forgeableItems.stream()
+                .mapToInt(forgeableItem -> {
+                    if (forgeableItem.getMinCost() == maxCostItem.getMinCost()) {
+                        return Math.toIntExact(
+                                Math.round(((double) maxCostItem.getWeight()) * (((double) recipe.getIronAmount()) / ((double) forgeableItem.getMinCost())))
+                        );
+                    }else {
+                        return forgeableItem.getWeight();
+                    }
+                }).toArray();
+        int totalWeight = Arrays.stream(balancedWeight).sum();
         //生成随机数，范围[0-totalWeight) int
         int randomResult = random.nextInt(totalWeight);
-        PrimitiveIterator.OfInt iterator = Arrays.stream(ints).iterator();
+        PrimitiveIterator.OfInt iterator = Arrays.stream(balancedWeight).iterator();
         int count = 0;
         int selectedItem = 0;
         //顺序遍历列表

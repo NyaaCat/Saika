@@ -75,6 +75,7 @@ public class ForgeManager {
         checkNbt(itemStack);
         ForgeElement item = new ForgeElement(itemStack, element);
         elementManager.addItem(element, item);
+        item.id = element;
         addItemNbt(item);
         saveManager(elementManager);
         return item;
@@ -106,7 +107,8 @@ public class ForgeManager {
             throw new InvalidEnchantSourceException();
         }
         ForgeEnchantBook forgeEnchantBook = new ForgeEnchantBook(itemStack, type);
-        enchantBookManager.addItem(forgeEnchantBook);
+        String id = enchantBookManager.addItem(forgeEnchantBook);
+        forgeEnchantBook.id = id;
         addItemNbt(forgeEnchantBook);
         saveManager(enchantBookManager);
         return forgeEnchantBook;
