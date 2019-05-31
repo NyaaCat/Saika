@@ -29,8 +29,6 @@ import static cat.nyaa.saika.forge.BaseManager.NbtedISerializable;
 import static cat.nyaa.saika.forge.EnchantSource.EnchantmentType;
 
 public class ForgeManager {
-    private static boolean extendedLock = true;
-    private static final String DATA_DIR = "datas";
     private static ForgeManager forgeManager;
     private Saika plugin;
     private ForgeableItemManager forgeableItemManager;
@@ -46,7 +44,7 @@ public class ForgeManager {
 
     private ForgeManager() {
         plugin = Saika.plugin;
-        dataDir = new File(plugin.getDataFolder(), DATA_DIR);
+        dataDir = plugin.getDataFolder();
         forgeableItemManager = new ForgeableItemManager();
         enchantBookManager = new EnchantBookManager();
         bonusManager = new BonusItemManager();
@@ -144,28 +142,6 @@ public class ForgeManager {
 
     public boolean hasItem(String id) {
         return forgeableItemManager.itemMap.containsKey(id);
-    }
-
-    private boolean testDir(File dataDir) {
-        try {
-            File testFile = new File(plugin.getDataFolder(), "lock_test" + System.currentTimeMillis() + ".tmp");
-            if (!testFile.createNewFile()) {
-                throw new IllegalStateException("Not writable data folder!");
-            }
-            try (FileChannel channel = FileChannel.open(testFile.toPath(), StandardOpenOption.WRITE, StandardOpenOption.READ, ExtendedOpenOption.NOSHARE_WRITE, ExtendedOpenOption.NOSHARE_DELETE)) {
-                FileLock fileLock = channel.tryLock(0L, Long.MAX_VALUE, true);
-                fileLock.release();
-            } catch (Exception e) {
-                plugin.getLogger().log(Level.FINER, "Disabling extended lock", e);
-                extendedLock = false;
-            }
-            Files.delete(testFile.toPath());
-            return true;
-        } catch (IOException e) {
-            extendedLock = false;
-            plugin.getLogger().log(Level.WARNING, "Not writable data folder!", e);
-            return false;
-        }
     }
 
     private void load() {
