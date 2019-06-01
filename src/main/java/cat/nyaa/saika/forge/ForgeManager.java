@@ -1,5 +1,6 @@
 package cat.nyaa.saika.forge;
 
+import cat.nyaa.nyaacore.BasicItemMatcher;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.saika.Saika;
 import cat.nyaa.saika.forge.roll.ForgeRecipe;
@@ -14,10 +15,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -69,7 +67,9 @@ public class ForgeManager {
 
     public ForgeElement defineElement(String element, ItemStack itemStack) throws NbtExistException {
         checkNbt(itemStack);
-        ForgeElement item = new ForgeElement(itemStack, element);
+        ItemStack clone = itemStack.clone();
+        clone.setAmount(1);
+        ForgeElement item = new ForgeElement(clone, element);
         elementManager.addItem(element, item);
         item.id = element;
         addItemNbt(item);
@@ -79,7 +79,9 @@ public class ForgeManager {
 
     public ForgeRecycler defineRecycler(ItemStack itemStack) throws NbtExistException {
         checkNbt(itemStack);
-        ForgeRecycler recycler = new ForgeRecycler(itemStack);
+        ItemStack clone = itemStack.clone();
+        clone.setAmount(1);
+        ForgeRecycler recycler = new ForgeRecycler(clone);
         String s = recycleManager.addItem(recycler);
         recycler.id = s;
         addItemNbt(recycler);
@@ -89,7 +91,9 @@ public class ForgeManager {
 
     public ForgeIron defineForgeIron(ItemStack itemStack, String level, int elementCost) throws NbtExistException {
         checkNbt(itemStack);
-        ForgeIron forgeIron = new ForgeIron(itemStack, level, elementCost);
+        ItemStack clone = itemStack.clone();
+        clone.setAmount(1);
+        ForgeIron forgeIron = new ForgeIron(clone, level, elementCost);
         String s = ironManager.addItem(forgeIron);
         forgeIron.id = s;
         addItemNbt(forgeIron);
@@ -105,13 +109,32 @@ public class ForgeManager {
         ForgeEnchantBook forgeEnchantBook = new ForgeEnchantBook(itemStack, type);
         String id = enchantBookManager.addItem(forgeEnchantBook);
         forgeEnchantBook.id = id;
+        forgeEnchantBook.itemMatcher = new BasicItemMatcher();
+        forgeEnchantBook.itemMatcher.itemTemplate = itemStack;
         addItemNbt(forgeEnchantBook);
         saveManager(enchantBookManager);
         return forgeEnchantBook;
     }
 
+    public ForgeRepulse defineRepulse(ItemStack is) throws NbtExistException {
+        Objects.requireNonNull(is);
+        checkNbt(is);
+        ItemStack clone = is.clone();
+        clone.setAmount(1);
+        String nbt = ItemStackUtils.itemToBase64(clone);
+        ForgeRepulse forgeRepulse = new ForgeRepulse(nbt);
+        String id = enchantBookManager.repulses.addItem(forgeRepulse);
+        forgeRepulse.setItem(clone);
+        forgeRepulse.setId(id);
+        nbtMap.put(nbt, forgeRepulse);
+        saveManager(enchantBookManager);
+        return forgeRepulse;
+    }
+
     private void checkNbt(ItemStack nbt) throws NbtExistException {
-        if (nbtMap.containsKey(ItemStackUtils.itemToBase64(nbt))) {
+        ItemStack clone = nbt.clone();
+        clone.setAmount(1);
+        if (nbtMap.containsKey(ItemStackUtils.itemToBase64(clone))) {
             throw new NbtExistException();
         }
     }
@@ -134,14 +157,17 @@ public class ForgeManager {
         File ids = new File(dataDir, "ids.yml");
         YamlConfiguration idConf;
         try {
-            idConf = new YamlConfiguration();
-            idConf.load(ids);
+            if (ids.exists()) {
+                idConf = new YamlConfiguration();
+                idConf.load(ids);
+            } else {
+                idConf = null;
+            }
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
             idConf = null;
         }
         List<BaseManager<? extends ForgeItem>> managers = Arrays.asList(
-                enchantBookManager,
                 elementManager,
                 recycleManager,
                 ironManager
@@ -152,6 +178,9 @@ public class ForgeManager {
             ConfigurationSection section = finalIdConf.getConfigurationSection(forgeableItemManager.getClass().getName());
             forgeableItemManager.loadId(section);
         }
+        enchantBookManager.load();
+        enchantBookManager.enchants.loadId(finalIdConf.getConfigurationSection(enchantBookManager.enchants.getClass().getName()));
+        enchantBookManager.repulses.loadId(finalIdConf.getConfigurationSection(enchantBookManager.repulses.getClass().getName()));
         managers.forEach(baseManager -> {
             baseManager.load();
             if (finalIdConf != null) {
@@ -181,12 +210,14 @@ public class ForgeManager {
         YamlConfiguration idConf = new YamlConfiguration();
         List<BaseManager<? extends ForgeItem>> managers = Arrays.asList(
                 forgeableItemManager,
-                enchantBookManager,
+                enchantBookManager.enchants,
+                enchantBookManager.repulses,
                 elementManager,
                 recycleManager,
                 ironManager
         );
         bonusManager.save();
+        enchantBookManager.save();
         managers.forEach(baseManager -> {
             baseManager.save();
             ConfigurationSection section = idConf.createSection(baseManager.getClass().getName());
@@ -307,29 +338,29 @@ public class ForgeManager {
                 .collect(Collectors.toList());
     }
 
-    public ForgeableItem forgeItem(ForgeRecipe recipe){
+    public ForgeableItem forgeItem(ForgeRecipe recipe) {
         return roller.rollItem(recipe);
     }
 
     public ForgeElement getElement(ItemStack element) {
-        if (element == null)return null;
+        if (element == null) return null;
         ItemStack is = element.clone();
         is.setAmount(1);
         String nbt = ItemStackUtils.itemToBase64(is);
         ForgeItem forgeItem = nbtMap.get(nbt);
-        if (forgeItem instanceof ForgeElement){
+        if (forgeItem instanceof ForgeElement) {
             return (ForgeElement) forgeItem;
         }
         return null;
     }
 
     public ForgeIron getIron(ItemStack element) {
-        if (element == null)return null;
+        if (element == null) return null;
         ItemStack is = element.clone();
         is.setAmount(1);
         String nbt = ItemStackUtils.itemToBase64(is);
         ForgeItem forgeItem = nbtMap.get(nbt);
-        if (forgeItem instanceof ForgeIron){
+        if (forgeItem instanceof ForgeIron) {
             return (ForgeIron) forgeItem;
         }
         return null;
@@ -348,10 +379,13 @@ public class ForgeManager {
     }
 
     public ForgeEnchantBook getEnchantBook(ItemStack item) {
+        if (item == null) {
+            return null;
+        }
         String nbt = ItemStackUtils.itemToBase64(item);
-        if (nbtMap.containsKey(nbt)){
-            ForgeItem forgeItem = nbtMap.get(item);
-            if (forgeItem instanceof ForgeEnchantBook){
+        if (nbtMap.containsKey(nbt)) {
+            ForgeItem forgeItem = nbtMap.get(nbt);
+            if (forgeItem instanceof ForgeEnchantBook) {
                 return (ForgeEnchantBook) forgeItem;
             } else return null;
         } else return null;
@@ -359,10 +393,22 @@ public class ForgeManager {
 
     public ForgeRecycler getRecycle(ItemStack item) {
         ForgeItem forgeItem = nbtMap.get(ItemStackUtils.itemToBase64(item));
-        if (forgeItem != null && forgeItem instanceof ForgeRecycler){
+        if (forgeItem != null && forgeItem instanceof ForgeRecycler) {
             return (ForgeRecycler) forgeItem;
         }
         return null;
+    }
+
+    public ForgeRepulse getRepulse(ItemStack itemStack) {
+        if (itemStack == null) {
+            return null;
+        }
+        ItemStack clone = itemStack.clone();
+        clone.setAmount(1);
+        ForgeItem forgeItem = nbtMap.get(ItemStackUtils.itemToBase64(clone));
+        if (forgeItem != null && forgeItem instanceof ForgeRepulse) {
+            return (ForgeRepulse) forgeItem;
+        } else return null;
     }
 
     class ForgeableItemManager extends BaseManager<ForgeableItem> {
@@ -375,7 +421,7 @@ public class ForgeManager {
             }
             if (!itemMap.isEmpty()) {
                 itemMap.forEach((s, forgeableItem) -> {
-                    File ymlFile = new File(parentDir, s+".yml");
+                    File ymlFile = new File(parentDir, s + ".yml");
                     try {
                         YamlConfiguration conf = new YamlConfiguration();
                         forgeableItem.serialize(conf);
@@ -451,8 +497,6 @@ public class ForgeManager {
             switch (item.getEnchantmentType()) {
                 case ENCHANT:
                     return enchants.addItem(item);
-                case REPULSE:
-                    return repulses.addItem(item);
                 default:
                     break;
             }
@@ -465,46 +509,50 @@ public class ForgeManager {
                 case ENCHANT:
                     enchants.addItem(key, item);
                     break;
-                case REPULSE:
-                    repulses.addItem(key, item);
-                    break;
                 default:
                     break;
             }
         }
 
-        File ymlFile = new File(dataDir, "enchant.yml");
+        File enchantYml = new File(dataDir, "enchant.yml");
+        File repulseYml = new File(dataDir, "repulse.yml");
 
         @Override
         void save() {
             try {
                 YamlConfiguration cfg = new YamlConfiguration();
                 ConfigurationSection enchantSection = cfg.createSection("enchant");
-                ConfigurationSection repulseSection = cfg.createSection("repulse");
                 enchants.save(enchantSection);
+                cfg.save(enchantYml);
+                YamlConfiguration repulseCfg = new YamlConfiguration();
+                ConfigurationSection repulseSection = repulseCfg.createSection("repulse");
                 repulses.save(repulseSection);
-                cfg.save(ymlFile);
+                repulseCfg.save(repulseYml);
             } catch (IOException e) {
-                plugin.getServer().getLogger().log(Level.SEVERE, "error saving " + ymlFile.getName(), e);
+                plugin.getServer().getLogger().log(Level.SEVERE, "error saving " + enchantYml.getName(), e);
             }
         }
 
         @Override
         void load() {
-            if (!ymlFile.exists()) {
+            if (!enchantYml.exists()) {
                 return;
             }
             try {
-                YamlConfiguration cfg = new YamlConfiguration();
-                cfg.load(ymlFile);
-                ConfigurationSection enchantSection = cfg.getConfigurationSection("enchant");
-                ConfigurationSection repulseSection = cfg.getConfigurationSection("repulse");
-                enchants.deserialize(enchantSection);
-                enchants.load();
-                repulses.deserialize(repulseSection);
-                repulses.load();
+                if (enchantYml.exists()) {
+                    YamlConfiguration cfg = new YamlConfiguration();
+                    cfg.load(enchantYml);
+                    ConfigurationSection enchantSection = cfg.getConfigurationSection("enchant");
+                    enchants.load(enchantSection);
+                }
+                if (repulseYml.exists()) {
+                    YamlConfiguration repulseCfg = new YamlConfiguration();
+                    repulseCfg.load(repulseYml);
+                    ConfigurationSection enchantSection = repulseCfg.getConfigurationSection("repulse");
+                    repulses.load(enchantSection);
+                }
             } catch (IOException | InvalidConfigurationException e) {
-                plugin.getServer().getLogger().log(Level.SEVERE, "error loading " + ymlFile.getName(), e);
+                plugin.getServer().getLogger().log(Level.SEVERE, "error loading " + enchantYml.getName(), e);
             }
         }
 
@@ -517,12 +565,6 @@ public class ForgeManager {
 
             @Override
             void load() {
-                if (!itemMap.isEmpty()) {
-                    itemMap.forEach((s, enchants) -> {
-                        enchants.id = s;
-                        enchants.itemStack = enchants.itemMatcher.itemTemplate;
-                    });
-                }
             }
 
             public void save(ConfigurationSection enchantSection) {
@@ -533,9 +575,24 @@ public class ForgeManager {
                     });
                 }
             }
+
+            public void load(ConfigurationSection enchantSection) {
+                if (enchantSection == null){
+                    return;
+                }
+                Set<String> keys = enchantSection.getKeys(false);
+                keys.forEach(s -> {
+                    ForgeEnchantBook forgeEnchantBook = new ForgeEnchantBook();
+                    forgeEnchantBook.deserialize(enchantSection.getConfigurationSection(s));
+                    this.addItem(s, forgeEnchantBook);
+                    forgeEnchantBook.id = s;
+                    forgeEnchantBook.itemStack = forgeEnchantBook.itemMatcher.itemTemplate;
+                    addItemNbt(forgeEnchantBook);
+                });
+            }
         }
 
-        class RepulseManager extends BaseManager<ForgeEnchantBook> {
+        class RepulseManager extends BaseManager<ForgeRepulse> {
 
             @Override
             void save() {
@@ -546,20 +603,32 @@ public class ForgeManager {
             void load() {
                 if (!itemMap.isEmpty()) {
                     itemMap.forEach((s, enchants) -> {
-                        enchants.id = s;
-                        enchants.itemStack = enchants.itemMatcher.itemTemplate;
                     });
                 }
             }
 
             public void save(ConfigurationSection repulseSection) {
                 if (!itemMap.isEmpty()) {
-
                     itemMap.forEach((s, forgeEnchantBook) -> {
                         ConfigurationSection section = repulseSection.createSection(s);
                         forgeEnchantBook.serialize(section);
                     });
                 }
+            }
+
+            public void load(ConfigurationSection repulseSection) {
+                if (repulseSection == null){
+                    return;
+                }
+                Set<String> keys = repulseSection.getKeys(false);
+                keys.forEach(s -> {
+                    ForgeRepulse forgeRepulse = new ForgeRepulse();
+                    forgeRepulse.deserialize(repulseSection.getConfigurationSection(s));
+                    this.addItem(s, forgeRepulse);
+                    forgeRepulse.setId(s);
+                    forgeRepulse.setItem(ItemStackUtils.itemFromBase64(forgeRepulse.nbt));
+                    addItemNbt(forgeRepulse);
+                });
             }
         }
     }

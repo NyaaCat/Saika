@@ -11,6 +11,7 @@ import cat.nyaa.saika.forge.ForgeManager.NbtExistException;
 import cat.nyaa.saika.forge.ui.EnchantUi;
 import cat.nyaa.saika.forge.ui.ForgeUi;
 import cat.nyaa.saika.forge.ui.RecycleUi;
+import cat.nyaa.saika.forge.ui.RepulseUi;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -87,7 +88,7 @@ public class Commands extends CommandReceiver {
                             .send(sender);
                     break;
                 case "repulse":
-                    ForgeEnchantBook repulse = forgeManager.defineEnchant(is, EnchantmentType.REPULSE);
+                    ForgeRepulse repulse = forgeManager.defineRepulse(is);
                     new Message(I18n.format("define.success.repulse", repulse.getId()))
                             .send(sender);
                     break;
@@ -356,7 +357,7 @@ public class Commands extends CommandReceiver {
                 enchantUi.openInventory((Player) sender);
                 break;
             case "repulse":
-                EnchantUi repulseUi = new EnchantUi();
+                RepulseUi repulseUi = new RepulseUi();
                 repulseUi.openInventory((Player) sender);
                 break;
             case "recycle":

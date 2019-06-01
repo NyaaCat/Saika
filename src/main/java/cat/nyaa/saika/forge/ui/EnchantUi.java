@@ -33,6 +33,7 @@ public class EnchantUi implements InventoryHolder {
 
     public EnchantUi() {
         invalid = new ItemStack(Material.RED_STAINED_GLASS, 1);
+        valid = new ItemStack(Material.GREEN_STAINED_GLASS, 1);
         addMeta(invalid, "ui.enchant.invalid.title", "ui.enchant.invalid.lore");
         addMeta(valid, "ui.enchant.valid.title", "ui.enchant.valid.lore");
     }
@@ -55,7 +56,7 @@ public class EnchantUi implements InventoryHolder {
     public void updateValidation() {
         ItemStack itemStack = inventory.getItem(0);
         ItemStack item = inventory.getItem(1);
-        if (itemStack == null || itemStack.getType().equals(Material.AIR)){
+        if (itemStack == null || item == null || itemStack.getType().equals(Material.AIR) || item.getType().equals(Material.AIR)) {
             onInvalid();
             return;
         }
@@ -64,7 +65,36 @@ public class EnchantUi implements InventoryHolder {
             onInvalid();
             return;
         } else {
-            onValid();
+            ItemMeta itemMeta = itemStack.getItemMeta();
+            if (itemMeta != null) {
+                Map<Enchantment, Integer> enchants = itemMeta.getEnchants();
+                Map<Enchantment, Integer> bookEnchants = enchantBook.getEnchantmentList();
+                AtomicBoolean isValid = new AtomicBoolean(false);
+                if (!bookEnchants.isEmpty()) {
+                    for (Map.Entry<Enchantment, Integer> entry : bookEnchants.entrySet()) {
+                        Enchantment enchantment = entry.getKey();
+                        Integer level = entry.getValue();
+                        if (enchants.containsKey(enchantment)) {
+                            Integer originLevel = enchants.get(enchantment);
+                            int enchantMaxLevel = Saika.plugin.getConfigure().enchantMaxLevel;
+                            if (originLevel < enchantMaxLevel) {
+                                isValid.set(true);
+                                break;
+                            }
+                        } else {
+                            isValid.set(true);
+                            break;
+                        }
+                    }
+                }
+                if (isValid.get()) {
+                    onValid();
+                } else {
+                    onInvalid();
+                }
+            }else{
+                onInvalid();
+            }
         }
     }
 
@@ -115,8 +145,12 @@ public class EnchantUi implements InventoryHolder {
                 Configure configure = Saika.plugin.getConfigure();
                 int enchantMaxLevel = configure.enchantMaxLevel;
                 AtomicBoolean destroy = new AtomicBoolean(false);
+                Map<Enchantment, Integer> finalItemEnchants = itemEnchants;
                 bookEnchants.forEach((enchantment, level) -> {
-                    Integer originalLevel = itemEnchants.computeIfAbsent(enchantment, e -> 0);
+                    Integer originalLevel = finalItemEnchants.get(enchantment);
+                    if (originalLevel == null) {
+                        originalLevel = 0;
+                    }
                     int nextLevel = originalLevel;
                     EnchantChance enchantChance = configure.getEnchantChance();
                     EnchantResult result;
@@ -125,7 +159,7 @@ public class EnchantUi implements InventoryHolder {
                         case ENCHANT:
                             result = getResult(enchantChance);
                             int resultLevel = level;
-                            switch (result){
+                            switch (result) {
                                 case SUCCESS:
                                     break;
                                 case HALF:
@@ -151,9 +185,9 @@ public class EnchantUi implements InventoryHolder {
                             break;
                     }
                 });
-                if (destroy.get()){
+                if (destroy.get()) {
                     clone = new ItemStack(Material.AIR);
-                }else {
+                } else {
                     clone.setItemMeta(itemMeta);
                 }
                 resultItem = clone;

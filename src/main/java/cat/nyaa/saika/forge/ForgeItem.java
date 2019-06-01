@@ -55,7 +55,9 @@ abstract class ForgeItem implements BaseManager.NbtedISerializable {
 
     @Override
     public String toNbt() {
-        return ItemStackUtils.itemToBase64(itemStack);
+        ItemStack clone = itemStack.clone();
+        clone.setAmount(1);
+        return ItemStackUtils.itemToBase64(clone);
     }
 
     private CustomItemTagContainer createItemTag(CustomItemTagContainer customTagContainer) {

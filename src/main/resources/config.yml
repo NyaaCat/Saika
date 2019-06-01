@@ -1,4 +1,77 @@
+language: en_US
+forge:
+  roll:
+    maxWeightMultiplier: 3.0
 enchant:
+  exp: 100
   maxLevel: 10
-roll:
-  maxWeightMultiplier: 3.0
+  probability:
+    success: 40
+    moderate: 50
+    fail: 9
+    destroy: 1
+repulse:
+  exp: 100
+  blacklist:
+    - VANISHING_CURSE
+sound:
+  forge:
+    __class__: cat.nyaa.saika.Configure$SoundConf
+    name: BLOCK_ANVIL_USE
+    pitch: 1.0
+  recycle:
+    __class__: cat.nyaa.saika.Configure$SoundConf
+    name: BLOCK_ANVIL_USE
+    pitch: 1.0
+  success:
+    __class__: cat.nyaa.saika.Configure$SoundConf
+    name: BLOCK_ANVIL_USE
+    pitch: 1.0
+  fail:
+    __class__: cat.nyaa.saika.Configure$SoundConf
+    name: BLOCK_ANVIL_USE
+    pitch: 1.0
+effect:
+  forge:
+    __class__: cat.nyaa.saika.Configure$EffectConf
+    particle: PORTAL
+    offsetX: 0.0
+    offsetY: 1.0
+    offsetZ: 0.0
+    speed: 0.0
+    amount: 100
+    extra: ''
+  recycle:
+    __class__: cat.nyaa.saika.Configure$EffectConf
+    particle: PORTAL
+    offsetX: 0.0
+    offsetY: 1.0
+    offsetZ: 0.0
+    speed: 0.0
+    amount: 100
+    extra: ''
+  success:
+    __class__: cat.nyaa.saika.Configure$EffectConf
+    particle: PORTAL
+    offsetX: 0.0
+    offsetY: 1.0
+    offsetZ: 0.0
+    speed: 0.0
+    amount: 100
+    extra: ''
+  fail:
+    __class__: cat.nyaa.saika.Configure$EffectConf
+    particle: PORTAL
+    offsetX: 0.0
+    offsetY: 1.0
+    offsetZ: 0.0
+    speed: 0.0
+    amount: 100
+    extra: ''
+position:
+  forge:
+    block: CRAFTING_TABLE
+    distance: 3
+  enchant:
+    block: ENCHANTING_TABLE
+    distance: 3

@@ -1,8 +1,10 @@
 package cat.nyaa.saika.forge.ui;
 
 import cat.nyaa.nyaacore.BasicItemMatcher;
+import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.utils.InventoryUtils;
 import cat.nyaa.saika.Configure;
+import cat.nyaa.saika.I18n;
 import cat.nyaa.saika.Saika;
 import cat.nyaa.saika.forge.ForgeIron;
 import cat.nyaa.saika.forge.ForgeManager;
@@ -12,14 +14,21 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.*;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryPickupItemEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.tags.ItemTagType;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public class ForgeUiEvents implements Listener {
@@ -28,6 +37,7 @@ public class ForgeUiEvents implements Listener {
     static Map<Inventory, ForgeUi> forgeUiList = new LinkedHashMap<>();
     static Map<Inventory, EnchantUi> enchantUiList = new LinkedHashMap<>();
     static Map<Inventory, RecycleUi> recycleUiList = new LinkedHashMap<>();
+    static Map<Inventory, RepulseUi> repulseUiList = new LinkedHashMap<>();
 
     public ForgeUiEvents(Saika plugin) {
         this.plugin = plugin;
@@ -45,12 +55,17 @@ public class ForgeUiEvents implements Listener {
         enchantUiList.put(inventory, enchantUi);
     }
 
+    public static void registerRepulse(Inventory inventory, RepulseUi repulseUi) {
+        repulseUiList.put(inventory, repulseUi);
+    }
+
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent ev) {
         Inventory inventory = ev.getInventory();
         giveItemBack(ev, inventory, forgeUiList);
         giveItemBack(ev, inventory, enchantUiList);
         giveItemBack(ev, inventory, recycleUiList);
+        giveItemBack(ev, inventory, repulseUiList);
     }
 
     private void giveItemBack(InventoryCloseEvent ev, Inventory inventory, Map<Inventory, ? extends InventoryHolder> enchantUiList) {
@@ -83,15 +98,58 @@ public class ForgeUiEvents implements Listener {
             return;
         }
 
-        if (enchantUiList.containsKey(clickedInventory)){
+        if (enchantUiList.containsKey(clickedInventory)) {
             enchantUiClicked(ev, clickedInventory);
             return;
         }
 
-        if (recycleUiList.containsKey(clickedInventory)){
+        if (recycleUiList.containsKey(clickedInventory)) {
             recycleUiClicked(ev, clickedInventory);
             return;
         }
+
+        if (repulseUiList.containsKey(clickedInventory)) {
+            repulseClicked(ev, clickedInventory);
+            return;
+        }
+    }
+
+    private void repulseClicked(InventoryClickEvent ev, Inventory clickedInventory) {
+        ItemStack cursor = ev.getCursor();
+        ItemStack currentItem = ev.getCurrentItem();
+        RepulseUi recycleUi = repulseUiList.get(clickedInventory);
+        if (ev.getSlot() == 2) {
+            if (cursor == null || !cursor.getType().equals(Material.AIR)) {
+                ev.setCancelled(true);
+                return;
+            }
+            if (!ev.getClick().equals(ClickType.SHIFT_LEFT) && !ev.getClick().equals(ClickType.LEFT)) {
+                ev.setCancelled(true);
+                return;
+            }
+            if (currentItem != null && currentItem.getItemMeta() != null) {
+                if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
+                    recycleUi.updateValidation();
+                    ItemStack itemStack = recycleUi.onRepulse();
+                    if (itemStack != null) {
+                        if (ev.getClick().equals(ClickType.LEFT)) {
+                            ev.getWhoClicked().setItemOnCursor(itemStack);
+                        } else {
+                            if (InventoryUtils.addItem(ev.getWhoClicked().getInventory(), itemStack)) {
+                                World world = ev.getWhoClicked().getWorld();
+                                Location location = ev.getWhoClicked().getLocation();
+                                world.dropItem(location, itemStack);
+                            }
+                        }
+                    }
+                    ev.setCancelled(true);
+                    recycleUi.updateValidationLater();
+                    return;
+                }
+            }
+        }
+        onGeneralClick(ev, cursor, currentItem);
+        recycleUi.updateValidationLater();
     }
 
     private void recycleUiClicked(InventoryClickEvent ev, Inventory clickedInventory) {
@@ -111,11 +169,11 @@ public class ForgeUiEvents implements Listener {
                 if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
                     recycleUi.updateValidation();
                     ItemStack itemStack = recycleUi.onRecycle();
-                    if (itemStack != null){
-                        if (ev.getClick().equals(ClickType.LEFT)){
+                    if (itemStack != null) {
+                        if (ev.getClick().equals(ClickType.LEFT)) {
                             ev.getWhoClicked().setItemOnCursor(itemStack);
-                        }else {
-                            if (InventoryUtils.addItem(ev.getWhoClicked().getInventory(), itemStack)){
+                        } else {
+                            if (InventoryUtils.addItem(ev.getWhoClicked().getInventory(), itemStack)) {
                                 World world = ev.getWhoClicked().getWorld();
                                 Location location = ev.getWhoClicked().getLocation();
                                 world.dropItem(location, itemStack);
@@ -148,7 +206,33 @@ public class ForgeUiEvents implements Listener {
             if (currentItem != null && currentItem.getItemMeta() != null) {
                 if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
                     enchantUi.updateValidation();
-                    enchantUi.onEnchant();
+                    UUID uniqueId = ev.getWhoClicked().getUniqueId();
+                    Player player = ev.getWhoClicked().getServer().getPlayer(uniqueId);
+                    int expCost = plugin.getConfigure().enchanExp;
+                    int exp = player.getTotalExperience();
+                    if (exp >= expCost) {
+                        ItemStack itemStack = enchantUi.onEnchant();
+                        if (itemStack != null) {
+                            switch (ev.getClick()) {
+                                case LEFT:
+                                    ev.getWhoClicked().setItemOnCursor(itemStack);
+                                    break;
+                                default:
+                                case SHIFT_LEFT:
+                                    if (!InventoryUtils.addItem(ev.getWhoClicked().getInventory(), itemStack)) {
+                                        World world = ev.getWhoClicked().getWorld();
+                                        Location location = ev.getWhoClicked().getLocation();
+                                        world.dropItem(location, itemStack);
+                                    }
+                                    break;
+                            }
+                            showEffect(ev);
+                            player.setTotalExperience(exp - expCost);
+                        }
+                    }else {
+                        new Message(I18n.format("enchant.error.insufficient_exp"))
+                                .send(player);
+                    }
                     ev.setCancelled(true);
                     enchantUi.updateValidationLater();
                     return;
@@ -241,12 +325,11 @@ public class ForgeUiEvents implements Listener {
         Server server = playerEntity.getServer();
         try {
             Player player = server.getPlayer(ev.getWhoClicked().getUniqueId());
-            Configure.ForgeConfigure forgeEffect = plugin.getConfigure().getForgeEffect();
-            Configure.ForgeConfigure.EffectConfigure forge = forgeEffect.effect.get("forge");
+            Configure.EffectConf forgeEffect = plugin.getConfigure().getForgeEffect();
             Location location = playerEntity.getLocation();
-            Object extraData = getExtraData(forge.extra);
-            playerEntity.getWorld().spawnParticle(forge.particle, location, forge.amount, forge.offsetX, forge.offsetY, forge.offsetZ, forge.speed, extraData);
-            Configure.ForgeConfigure.SoundConfigure sound = forgeEffect.sound.get("forge");
+            Object extraData = getExtraData(forgeEffect.extra);
+            playerEntity.getWorld().spawnParticle(forgeEffect.particle, location, forgeEffect.amount, forgeEffect.offsetX, forgeEffect.offsetY, forgeEffect.offsetZ, forgeEffect.speed, extraData);
+            Configure.SoundConf sound = plugin.getConfigure().forgeSound;
             player.playSound(location, sound.name, 1f, (float) sound.pitch);
         } catch (Exception e) {
             server.getLogger().log(Level.WARNING, "wrong config", e);

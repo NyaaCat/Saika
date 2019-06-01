@@ -26,7 +26,7 @@ public class Roller {
         //计算列表内所有weight的和
         forgeableItems.sort(Comparator.comparingInt(ForgeableItem::getWeight).reversed());
         ForgeableItem maxCostItem = forgeableItems.stream().max(Comparator.comparingInt(ForgeableItem::getMinCost)).orElse(null);
-        double maxWeightMultiplier = Saika.plugin.getConfigure().maxWeightMultiplier;
+        double maxWeightMultiplier = Saika.plugin.getConfigure().rollMaxWeightMultiplier;
         int[] balancedWeight = forgeableItems.stream()
                 .mapToInt(forgeableItem -> {
                     if (forgeableItem.getMinCost() == maxCostItem.getMinCost()) {

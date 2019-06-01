@@ -31,6 +31,8 @@ public class RecycleUi implements InventoryHolder {
     private ItemStack invalid;
 
     public RecycleUi() {
+        invalid = new ItemStack(Material.RED_STAINED_GLASS, 1);
+        valid = new ItemStack(Material.GREEN_STAINED_GLASS, 1);
         addMeta(valid, "ui.recycle.valid.title", "ui.recycle.valid.lore");
         addMeta(invalid, "ui.recycle.invalid.title", "ui.recycle.invalid.lore");
     }
