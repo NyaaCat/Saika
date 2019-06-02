@@ -39,7 +39,11 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
         forge.weight = weight;
     }
 
-    public void setBonus(Bonus bonus) {
+    public void setForgeBonus(Bonus bonus) {
+        forge.bonus = bonus;
+    }
+
+    public void setRecycleBonus(Bonus bonus) {
         forge.bonus = bonus;
     }
 
@@ -94,6 +98,12 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
     }
 
     @Override
+    protected void addItemTag() {
+        super.addItemTag();
+        nbt = ItemStackUtils.itemToBase64(itemStack);
+    }
+
+    @Override
     public ForgeItemType getType() {
         return ForgeItemType.ITEM;
     }
@@ -122,9 +132,9 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
 
     public static class RecycleInfo implements ISerializable {
         @Serializable
-        public int min = 10;
+        public int min = 30;
         @Serializable
-        public int max = 30;
+        public int max = 70;
         @Serializable
         public int hard = 1;
         @Serializable
@@ -133,9 +143,9 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
 
     public static class Bonus implements ISerializable {
         @Serializable
-        String item = "";
+        public String item = "";
         @Serializable
-        double chance = 0;
+        public double chance = 0;
     }
 
     @Override

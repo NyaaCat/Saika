@@ -36,6 +36,7 @@ abstract class ForgeItem implements BaseManager.NbtedISerializable {
                 forgeItemTags = this.createItemTag(customTagContainer);
             }
             forgeItemTags.setCustomTag(ITEM_UUID, ItemTagType.STRING, id);
+            customTagContainer.setCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER, forgeItemTags);
             itemStack.setItemMeta(itemMeta);
         }
     }

@@ -29,6 +29,7 @@ public class RecycleUi implements InventoryHolder {
     private Inventory inventory;
     private ItemStack valid;
     private ItemStack invalid;
+    private int itemCost = 1;
 
     public RecycleUi() {
         invalid = new ItemStack(Material.RED_STAINED_GLASS, 1);
@@ -55,20 +56,37 @@ public class RecycleUi implements InventoryHolder {
     public void updateValidation() {
         ItemStack itemStack = inventory.getItem(0);
         ItemStack item = inventory.getItem(1);
-        if (itemStack == null || itemStack.getItemMeta() == null) {
+        if (itemStack == null || itemStack.getItemMeta() == null || item == null) {
             onInvalid();
             return;
         } else {
             ForgeManager forgeManager = ForgeManager.getForgeManager();
             ForgeRecycler recycler = forgeManager.getRecycle(item);
-            if (recycler == null){
+            if (recycler == null) {
                 onInvalid();
                 return;
             }
             ItemMeta itemMeta = itemStack.getItemMeta();
-            String id = itemMeta.getCustomTagContainer().getCustomTag(ForgeableItem.ITEM_TAG, ItemTagType.STRING);
+            CustomItemTagContainer customTag = itemMeta.getCustomTagContainer().getCustomTag(ForgeableItem.ITEM_TAG, ItemTagType.TAG_CONTAINER);
+            if (customTag == null){
+                onInvalid();
+                return;
+            }
+            String id = customTag.getCustomTag(ForgeableItem.ITEM_UUID, ItemTagType.STRING);
             ForgeableItem forgeableItem = forgeManager.getForgeableItem(id);
             if (forgeableItem != null) {
+                ForgeableItem.RecycleInfo recycle = forgeableItem.getRecycle();
+                ItemStack is = forgeableItem.getItemStack();
+                if (is.getAmount() > 1) {
+                    if (itemStack.getAmount() < is.getAmount()) {
+                        onInvalid();
+                        return;
+                    }
+                }
+                if (recycle == null || recycle.max - recycle.min <= 0 || recycle.min < 0 || recycle.max <= 0) {
+                    onInvalid();
+                    return;
+                }
                 onValid();
             } else {
                 onInvalid();
@@ -77,12 +95,12 @@ public class RecycleUi implements InventoryHolder {
     }
 
     private void onValid() {
-        inventory.setItem(3, valid);
+        inventory.setItem(2, valid);
         validation = RecipieValidation.VALID;
     }
 
     private void onInvalid() {
-        inventory.setItem(3, invalid);
+        inventory.setItem(2, invalid);
         validation = RecipieValidation.INVALID_BOTH;
     }
 
@@ -95,28 +113,50 @@ public class RecycleUi implements InventoryHolder {
         }.runTaskLater(Saika.plugin, 1);
     }
 
-    public ItemStack onRecycle(){
+    public ItemStack onRecycle() {
         ItemStack itemStack = inventory.getItem(0);
         ItemStack item = inventory.getItem(1);
-        if (itemStack == null || itemStack.getItemMeta() == null) {
+        if (itemStack == null || itemStack.getItemMeta() == null || item == null) {
             onInvalid();
             return null;
         } else {
             ForgeManager forgeManager = ForgeManager.getForgeManager();
             ForgeRecycler recycler = forgeManager.getRecycle(item);
-            if (recycler == null){
+            if (recycler == null) {
                 onInvalid();
                 return null;
             }
             ItemMeta itemMeta = itemStack.getItemMeta();
-            String id = itemMeta.getCustomTagContainer().getCustomTag(ForgeableItem.ITEM_TAG, ItemTagType.STRING);
+            CustomItemTagContainer customTag = itemMeta.getCustomTagContainer().getCustomTag(ForgeableItem.ITEM_TAG, ItemTagType.TAG_CONTAINER);
+            if (customTag == null){
+                onInvalid();
+                return null;
+            }
+            String id = customTag.getCustomTag(ForgeableItem.ITEM_UUID, ItemTagType.STRING);
             ForgeableItem forgeableItem = forgeManager.getForgeableItem(id);
+
+            if (forgeableItem == null) {
+                return null;
+            }
             ForgeableItem.RecycleInfo recycle = forgeableItem.getRecycle();
+            if (recycle.max - recycle.min <= 0 || recycle.min < 0 || recycle.max <= 0) {
+                onInvalid();
+                return null;
+            }
+            ItemStack is = forgeableItem.getItemStack();
+            if (is.getAmount() > 1) {
+                if (itemStack.getAmount() < is.getAmount()) {
+                    onInvalid();
+                    return null;
+                }
+            }
+            itemCost = is.getAmount();
             int recycleResult = random.nextInt(recycle.max - recycle.min) + recycle.min;
+            int amount = (int) Math.round(forgeableItem.getMinCost() * (((double) recycleResult)/100d));
             ForgeIron iron = forgeManager.getIron(forgeableItem.getLevel());
-            ItemStack is = iron.getItemStack().clone();
-            is.setAmount(recycleResult);
-            return is;
+            ItemStack ista = iron.getItemStack().clone();
+            ista.setAmount(Math.max(recycle.hard, amount));
+            return ista;
         }
     }
 

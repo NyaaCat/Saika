@@ -4,6 +4,7 @@ import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
+import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.LocaleUtils;
 import cat.nyaa.saika.forge.EnchantSource.EnchantmentType;
 import cat.nyaa.saika.forge.*;
@@ -21,6 +22,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -256,6 +258,8 @@ public class Commands extends CommandReceiver {
         }
     }
 
+    Random random = new Random();
+
     @SubCommand("bonus")
     public void onBonus(CommandSender sender, Arguments arguments){
         if (dontHavePermission(sender, PERMISSION_ADMIN, "bonus")){
@@ -280,6 +284,38 @@ public class Commands extends CommandReceiver {
                         .send(sender);
                 break;
             case "set":
+                String type = arguments.nextString();
+                String id = arguments.nextString();
+                String bonusId = arguments.nextString();
+                int probability = arguments.nextInt();
+                ForgeManager manager = ForgeManager.getForgeManager();
+                if (!(sender instanceof Player)){
+                    new Message(I18n.format("error.not_player"))
+                            .send(sender);
+                    return;
+                }
+                ItemStack itemStack = ((Player) sender).getInventory().getItemInMainHand();
+                if (itemStack.equals(Material.AIR)){
+                    new Message(I18n.format("bonus.error.no_item"))
+                            .send(sender);
+                    return;
+                }
+                ForgeableItem.Bonus bonus = new ForgeableItem.Bonus();
+                bonus.item = ItemStackUtils.itemToBase64(itemStack);
+                bonus.chance = probability;
+                ForgeableItem forgeableItem = manager.getForgeableItem(id);
+                switch (type){
+                    case "forge":
+                        forgeableItem.setForgeBonus(bonus);
+                        manager.saveItem(id);
+                        break;
+                    case "recycle":
+                        forgeableItem.setRecycleBonus(bonus);
+                        manager.saveItem(id);
+                        break;
+                    default:
+                        throw new RuntimeException();
+                }
                 break;
             default:
                 new Message(I18n.format("bonus.error.unknown_action"))

@@ -174,9 +174,11 @@ public class ForgeUiEvents implements Listener {
                 if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
                     recycleUi.updateValidation();
                     ItemStack itemStack = recycleUi.onRecycle();
-                    giveItem(ev, itemStack);
-                    recycleUi.cost();
-                    showRecycleEffect(ev);
+                    if (itemStack != null){
+                        giveItem(ev, itemStack);
+                        recycleUi.cost();
+                        showRecycleEffect(ev);
+                    }
                 }
                 ev.setCancelled(true);
                 recycleUi.updateValidationLater();
