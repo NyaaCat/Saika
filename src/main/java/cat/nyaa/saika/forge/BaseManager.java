@@ -238,11 +238,17 @@ public abstract class BaseManager<T extends BaseManager.NbtedISerializable> impl
     }
 
     void loadId(ConfigurationSection section){
-        id = section.getInt("id");
+        if(section != null) {
+            id = section.getInt("id");
+        }
     }
 
     public T getItem(String id) {
         return itemMap.get(id);
+    }
+
+    public void reset() {
+        itemMap.clear();
     }
 
     interface NbtedISerializable extends ISerializable{

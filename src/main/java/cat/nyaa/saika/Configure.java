@@ -20,7 +20,7 @@ public class Configure extends PluginConfigure {
     @Serializable(name = "forge.roll.maxWeightMultiplier")
     public double rollMaxWeightMultiplier = 3;
 
-    @Serializable(name = "enchant.exp")
+    @Serializable(name = "enchant.repulseExp")
     public int enchanExp = 100;
 
     @Serializable(name = "enchant.maxLevel")
@@ -38,8 +38,8 @@ public class Configure extends PluginConfigure {
     @Serializable(name = "enchant.probability.destroy")
     public int enchantProbabilityDestroy = 1;
 
-    @Serializable(name = "repulse.exp")
-    public int exp = 100;
+    @Serializable(name = "repulse.repulseExp")
+    public int repulseExp = 100;
 
     @Serializable(name = "repulse.blacklist")
     public List<String> blacklist = new ArrayList<>(Arrays.asList("VANISHING_CURSE"));

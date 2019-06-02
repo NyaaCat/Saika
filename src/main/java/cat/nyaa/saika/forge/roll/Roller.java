@@ -31,7 +31,7 @@ public class Roller {
                 .mapToInt(forgeableItem -> {
                     if (forgeableItem.getMinCost() == maxCostItem.getMinCost()) {
                         return Math.toIntExact(
-                                Math.round(((double) maxCostItem.getWeight()) *
+                                Math.round(((double) forgeableItem.getWeight()) *
                                         Math.min(maxWeightMultiplier,
                                                 ((double) recipe.getIronAmount()) / ((double) forgeableItem.getMinCost())
                                         )

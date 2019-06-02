@@ -1,9 +1,7 @@
 package cat.nyaa.saika.forge.ui;
 
-import cat.nyaa.saika.Configure;
 import cat.nyaa.saika.I18n;
 import cat.nyaa.saika.Saika;
-import cat.nyaa.saika.forge.ForgeEnchantBook;
 import cat.nyaa.saika.forge.ForgeManager;
 import cat.nyaa.saika.forge.ForgeRepulse;
 import cat.nyaa.saika.forge.roll.RecipieValidation;
@@ -24,7 +22,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class RepulseUi implements InventoryHolder {
     private Inventory inventory;
@@ -76,9 +73,9 @@ public class RepulseUi implements InventoryHolder {
                 List<Enchantment> validEnchants = enchants.keySet().stream()
                         .filter(enchantment -> !blacklist.contains(enchantment))
                         .collect(Collectors.toList());
-                if (enchants.isEmpty()) {
+                if (validEnchants.isEmpty()) {
                     onInvalid();
-                }else {
+                } else {
                     onValid();
                 }
             } else {
@@ -105,12 +102,14 @@ public class RepulseUi implements InventoryHolder {
                 List<Enchantment> validList = itemEnchants.keySet().stream()
                         .filter(enchantment -> !blacklist.contains(enchantment))
                         .collect(Collectors.toList());
+                if (validList.isEmpty()) {
+                    return null;
+                }
                 int size = validList.size();
                 int itemToRemove = random.nextInt(size);
                 itemMeta.removeEnchant(validList.get(itemToRemove));
                 resultItem.setItemMeta(itemMeta);
             }
-            this.cost();
             return resultItem;
         }
         return null;
@@ -153,6 +152,11 @@ public class RepulseUi implements InventoryHolder {
 
     public void cost() {
         this.inventory.setItem(0, new ItemStack(Material.AIR));
-        this.inventory.setItem(1, new ItemStack(Material.AIR));
+        ItemStack item = this.inventory.getItem(1);
+        if (item == null) {
+            return;
+        }
+        item.setAmount(item.getAmount() - 1);
+        inventory.setItem(1, item);
     }
 }

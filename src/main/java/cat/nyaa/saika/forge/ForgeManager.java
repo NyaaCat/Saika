@@ -177,10 +177,10 @@ public class ForgeManager {
         if (finalIdConf != null) {
             ConfigurationSection section = finalIdConf.getConfigurationSection(forgeableItemManager.getClass().getName());
             forgeableItemManager.loadId(section);
+            enchantBookManager.load();
+            enchantBookManager.enchants.loadId(finalIdConf.getConfigurationSection(enchantBookManager.enchants.getClass().getName()));
+            enchantBookManager.repulses.loadId(finalIdConf.getConfigurationSection(enchantBookManager.repulses.getClass().getName()));
         }
-        enchantBookManager.load();
-        enchantBookManager.enchants.loadId(finalIdConf.getConfigurationSection(enchantBookManager.enchants.getClass().getName()));
-        enchantBookManager.repulses.loadId(finalIdConf.getConfigurationSection(enchantBookManager.repulses.getClass().getName()));
         managers.forEach(baseManager -> {
             baseManager.load();
             if (finalIdConf != null) {
@@ -375,6 +375,12 @@ public class ForgeManager {
 
     public void reload() {
         nbtMap.clear();
+        forgeableItemManager.reset();
+        enchantBookManager.reset();
+        bonusManager.reset();
+        elementManager.reset();
+        recycleManager.reset();
+        ironManager.reset();
         this.load();
     }
 
@@ -512,6 +518,12 @@ public class ForgeManager {
                 default:
                     break;
             }
+        }
+
+        @Override
+        public void reset() {
+            enchants.reset();
+            repulses.reset();
         }
 
         File enchantYml = new File(dataDir, "enchant.yml");

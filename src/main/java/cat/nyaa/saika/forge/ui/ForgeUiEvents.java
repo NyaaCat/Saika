@@ -10,6 +10,7 @@ import cat.nyaa.saika.forge.ForgeIron;
 import cat.nyaa.saika.forge.ForgeManager;
 import cat.nyaa.saika.forge.ForgeableItem;
 import org.bukkit.*;
+import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,11 +25,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.tags.ItemTagType;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 public class ForgeUiEvents implements Listener {
@@ -93,63 +93,56 @@ public class ForgeUiEvents implements Listener {
             return;
         }
 
+
         if (forgeUiList.containsKey(clickedInventory)) {
             forgeUiClicked(ev, clickedInventory);
-            return;
-        }
-
-        if (enchantUiList.containsKey(clickedInventory)) {
+        }else if (enchantUiList.containsKey(clickedInventory)) {
             enchantUiClicked(ev, clickedInventory);
-            return;
-        }
-
-        if (recycleUiList.containsKey(clickedInventory)) {
+        }else if (recycleUiList.containsKey(clickedInventory)) {
             recycleUiClicked(ev, clickedInventory);
-            return;
+        }else if (repulseUiList.containsKey(clickedInventory)) {
+            repulseClicked(ev, clickedInventory);
         }
 
-        if (repulseUiList.containsKey(clickedInventory)) {
-            repulseClicked(ev, clickedInventory);
-            return;
-        }
+
     }
 
     private void repulseClicked(InventoryClickEvent ev, Inventory clickedInventory) {
         ItemStack cursor = ev.getCursor();
         ItemStack currentItem = ev.getCurrentItem();
-        RepulseUi recycleUi = repulseUiList.get(clickedInventory);
+        RepulseUi repulseUi = repulseUiList.get(clickedInventory);
+
         if (ev.getSlot() == 2) {
-            if (cursor == null || !cursor.getType().equals(Material.AIR)) {
-                ev.setCancelled(true);
-                return;
-            }
-            if (!ev.getClick().equals(ClickType.SHIFT_LEFT) && !ev.getClick().equals(ClickType.LEFT)) {
-                ev.setCancelled(true);
-                return;
-            }
+            if (notValidResultAction(ev, cursor)) return;
             if (currentItem != null && currentItem.getItemMeta() != null) {
                 if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
-                    recycleUi.updateValidation();
-                    ItemStack itemStack = recycleUi.onRepulse();
-                    if (itemStack != null) {
-                        if (ev.getClick().equals(ClickType.LEFT)) {
-                            ev.getWhoClicked().setItemOnCursor(itemStack);
-                        } else {
-                            if (InventoryUtils.addItem(ev.getWhoClicked().getInventory(), itemStack)) {
-                                World world = ev.getWhoClicked().getWorld();
-                                Location location = ev.getWhoClicked().getLocation();
-                                world.dropItem(location, itemStack);
-                            }
-                        }
-                    }
-                    ev.setCancelled(true);
-                    recycleUi.updateValidationLater();
-                    return;
+                    repulseUi.updateValidation();
+                    ItemStack itemStack = repulseUi.onRepulse();
+                    giveItem(ev, itemStack);
+                    spawnExp(ev);
+                    repulseUi.cost();
                 }
+                ev.setCancelled(true);
+                repulseUi.updateValidationLater();
+                return;
             }
         }
         onGeneralClick(ev, cursor, currentItem);
-        recycleUi.updateValidationLater();
+        repulseUi.updateValidationLater();
+    }
+
+    private void giveItem(InventoryClickEvent ev, ItemStack itemStack) {
+        if (itemStack != null) {
+            if (ev.getClick().equals(ClickType.LEFT)) {
+                ev.getWhoClicked().setItemOnCursor(itemStack);
+            } else {
+                if (InventoryUtils.addItem(ev.getWhoClicked().getInventory(), itemStack)) {
+                    World world = ev.getWhoClicked().getWorld();
+                    Location location = ev.getWhoClicked().getLocation();
+                    world.dropItem(location, itemStack);
+                }
+            }
+        }
     }
 
     private void recycleUiClicked(InventoryClickEvent ev, Inventory clickedInventory) {
@@ -157,33 +150,18 @@ public class ForgeUiEvents implements Listener {
         ItemStack currentItem = ev.getCurrentItem();
         RecycleUi recycleUi = recycleUiList.get(clickedInventory);
         if (ev.getSlot() == 2) {
-            if (cursor == null || !cursor.getType().equals(Material.AIR)) {
-                ev.setCancelled(true);
-                return;
-            }
-            if (!ev.getClick().equals(ClickType.SHIFT_LEFT) && !ev.getClick().equals(ClickType.LEFT)) {
-                ev.setCancelled(true);
-                return;
-            }
+            if (notValidResultAction(ev, cursor)) return;
             if (currentItem != null && currentItem.getItemMeta() != null) {
                 if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
                     recycleUi.updateValidation();
                     ItemStack itemStack = recycleUi.onRecycle();
-                    if (itemStack != null) {
-                        if (ev.getClick().equals(ClickType.LEFT)) {
-                            ev.getWhoClicked().setItemOnCursor(itemStack);
-                        } else {
-                            if (InventoryUtils.addItem(ev.getWhoClicked().getInventory(), itemStack)) {
-                                World world = ev.getWhoClicked().getWorld();
-                                Location location = ev.getWhoClicked().getLocation();
-                                world.dropItem(location, itemStack);
-                            }
-                        }
-                    }
-                    ev.setCancelled(true);
-                    recycleUi.updateValidationLater();
-                    return;
+                    giveItem(ev, itemStack);
+                    recycleUi.cost();
+                    showRecycleEffect(ev);
                 }
+                ev.setCancelled(true);
+                recycleUi.updateValidationLater();
+                return;
             }
         }
         onGeneralClick(ev, cursor, currentItem);
@@ -195,14 +173,7 @@ public class ForgeUiEvents implements Listener {
         ItemStack currentItem = ev.getCurrentItem();
         EnchantUi enchantUi = enchantUiList.get(clickedInventory);
         if (ev.getSlot() == 2) {
-            if (cursor == null || !cursor.getType().equals(Material.AIR)) {
-                ev.setCancelled(true);
-                return;
-            }
-            if (!ev.getClick().equals(ClickType.SHIFT_LEFT) && !ev.getClick().equals(ClickType.LEFT)) {
-                ev.setCancelled(true);
-                return;
-            }
+            if (notValidResultAction(ev, cursor)) return;
             if (currentItem != null && currentItem.getItemMeta() != null) {
                 if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
                     enchantUi.updateValidation();
@@ -213,23 +184,12 @@ public class ForgeUiEvents implements Listener {
                     if (exp >= expCost) {
                         ItemStack itemStack = enchantUi.onEnchant();
                         if (itemStack != null) {
-                            switch (ev.getClick()) {
-                                case LEFT:
-                                    ev.getWhoClicked().setItemOnCursor(itemStack);
-                                    break;
-                                default:
-                                case SHIFT_LEFT:
-                                    if (!InventoryUtils.addItem(ev.getWhoClicked().getInventory(), itemStack)) {
-                                        World world = ev.getWhoClicked().getWorld();
-                                        Location location = ev.getWhoClicked().getLocation();
-                                        world.dropItem(location, itemStack);
-                                    }
-                                    break;
-                            }
-                            showEffect(ev);
+                            giveItem(ev,itemStack);
                             player.setTotalExperience(exp - expCost);
+                            enchantUi.cost();
+                            showForgeEffect(ev);
                         }
-                    }else {
+                    } else {
                         new Message(I18n.format("enchant.error.insufficient_exp"))
                                 .send(player);
                     }
@@ -248,36 +208,19 @@ public class ForgeUiEvents implements Listener {
         ItemStack currentItem = ev.getCurrentItem();
         ForgeUi forgeUi = forgeUiList.get(clickedInventory);
         if (ev.getSlot() == 2) {
-            if (cursor == null || !cursor.getType().equals(Material.AIR)) {
-                ev.setCancelled(true);
-                return;
-            }
-            if (!ev.getClick().equals(ClickType.SHIFT_LEFT) && !ev.getClick().equals(ClickType.LEFT)) {
-                ev.setCancelled(true);
-                return;
-            }
+            if (notValidResultAction(ev, cursor)) return;
             if (currentItem != null && currentItem.getItemMeta() != null) {
                 if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
                     forgeUi.updateValidation();
                     ForgeableItem item = forgeUi.onForge();
                     if (item != null) {
-                        showEffect(ev);
                         ItemStack itemStack = item.getItemStack();
-                        if (ev.getClick().equals(ClickType.SHIFT_LEFT)) {
-                            PlayerInventory target = ev.getWhoClicked().getInventory();
-                            if (InventoryUtils.hasEnoughSpace(target, itemStack)) {
-                                InventoryUtils.addItem(target, itemStack);
-                            } else {
-                                ev.getWhoClicked().setItemOnCursor(itemStack);
-                            }
-                        } else {
-                            ev.getWhoClicked().setItemOnCursor(itemStack);
-                        }
+                        giveItem(ev,itemStack);
                         String level = item.getLevel();
                         ForgeIron iron = ForgeManager.getForgeManager().getIron(level);
                         forgeUi.cost(iron);
+                        showForgeEffect(ev);
                     }
-
                     ev.setCancelled(true);
                     forgeUi.updateValidationLater();
                     return;
@@ -286,6 +229,18 @@ public class ForgeUiEvents implements Listener {
         }
         onGeneralClick(ev, cursor, currentItem);
         forgeUi.updateValidationLater();
+    }
+
+    private boolean notValidResultAction(InventoryClickEvent ev, ItemStack cursor) {
+        if (cursor == null || !cursor.getType().equals(Material.AIR)) {
+            ev.setCancelled(true);
+            return true;
+        }
+        if (!ev.getClick().equals(ClickType.SHIFT_LEFT) && !ev.getClick().equals(ClickType.LEFT)) {
+            ev.setCancelled(true);
+            return true;
+        }
+        return false;
     }
 
     private void onGeneralClick(InventoryClickEvent ev, ItemStack cursor, ItemStack currentItem) {
@@ -320,7 +275,7 @@ public class ForgeUiEvents implements Listener {
         }
     }
 
-    private void showEffect(InventoryClickEvent ev) {
+    private void showForgeEffect(InventoryClickEvent ev) {
         HumanEntity playerEntity = ev.getWhoClicked();
         Server server = playerEntity.getServer();
         try {
@@ -328,11 +283,116 @@ public class ForgeUiEvents implements Listener {
             Configure.EffectConf forgeEffect = plugin.getConfigure().getForgeEffect();
             Location location = playerEntity.getLocation();
             Object extraData = getExtraData(forgeEffect.extra);
-            playerEntity.getWorld().spawnParticle(forgeEffect.particle, location, forgeEffect.amount, forgeEffect.offsetX, forgeEffect.offsetY, forgeEffect.offsetZ, forgeEffect.speed, extraData);
-            Configure.SoundConf sound = plugin.getConfigure().forgeSound;
-            player.playSound(location, sound.name, 1f, (float) sound.pitch);
+
+            showEffect(player, forgeEffect, location, extraData);
         } catch (Exception e) {
             server.getLogger().log(Level.WARNING, "wrong config", e);
+        }
+    }
+
+    private void showEnchantEffect(InventoryClickEvent ev, EnchantResult result) {
+        HumanEntity playerEntity = ev.getWhoClicked();
+        Server server = playerEntity.getServer();
+        try {
+            Player player = server.getPlayer(ev.getWhoClicked().getUniqueId());
+            Configure.EffectConf effect;
+            switch (result){
+                case SUCCESS:
+                case HALF:
+                    effect = Saika.plugin.getConfigure().getEnchantSuccessEffect();
+                    break;
+                case FAIL:
+                case EPIC_FAIL:
+                    effect = Saika.plugin.getConfigure().getEnchantFailEffect();
+                    break;
+                default:
+                    return;
+            }
+            Location location = playerEntity.getLocation();
+            Object extraData = getExtraData(effect.extra);
+
+            showEffect(player, effect, location, extraData);
+        } catch (Exception e) {
+            server.getLogger().log(Level.WARNING, "wrong config", e);
+        }
+    }
+
+    private void showRepulseEffect(InventoryClickEvent ev) {
+        HumanEntity playerEntity = ev.getWhoClicked();
+        Server server = playerEntity.getServer();
+        try {
+            Player player = server.getPlayer(ev.getWhoClicked().getUniqueId());
+            Configure.EffectConf effect = plugin.getConfigure().getEnchantSuccessEffect();
+            Location location = playerEntity.getLocation();
+            Object extraData = getExtraData(effect.extra);
+
+            showEffect(player, effect, location, extraData);
+        } catch (Exception e) {
+            server.getLogger().log(Level.WARNING, "wrong config", e);
+        }
+    }
+
+    private void showRecycleEffect(InventoryClickEvent ev) {
+        HumanEntity playerEntity = ev.getWhoClicked();
+        Server server = playerEntity.getServer();
+        try {
+            Player player = server.getPlayer(ev.getWhoClicked().getUniqueId());
+            Configure.EffectConf effect = plugin.getConfigure().recycleEffect;
+            Location location = playerEntity.getLocation();
+            Object extraData = getExtraData(effect.extra);
+
+            showEffect(player, effect, location, extraData);
+        } catch (Exception e) {
+            server.getLogger().log(Level.WARNING, "wrong config", e);
+        }
+    }
+
+    private void showEffect(Player player, Configure.EffectConf forgeEffect, Location location, Object extraData) {
+        Objects.requireNonNull(player);
+        Objects.requireNonNull(forgeEffect);
+        Objects.requireNonNull(location);
+        player.getWorld().spawnParticle(forgeEffect.particle, location, forgeEffect.amount, forgeEffect.offsetX, forgeEffect.offsetY, forgeEffect.offsetZ, forgeEffect.speed, extraData);
+        Configure.SoundConf sound = plugin.getConfigure().forgeSound;
+        player.playSound(location, sound.name, 1f, (float) sound.pitch);
+    }
+
+    private void spawnExp(InventoryClickEvent ev) {
+        int repulseExp = plugin.getConfigure().repulseExp;
+        int orbAmount = Math.min(20, repulseExp);
+        int expPerOrb = repulseExp / orbAmount;
+        int remains = repulseExp - (expPerOrb * orbAmount);
+
+        HumanEntity whoClicked = ev.getWhoClicked();
+        World world = whoClicked.getWorld();
+        Location location = whoClicked.getLocation();
+        world.spawn(location, ExperienceOrb.class, experienceOrb -> {
+            experienceOrb.setExperience(remains);
+        });
+        Random random = new Random();
+        int delay = 0;
+        int step = 2;
+        for (int i = 0; i < orbAmount; i++) {
+            delay += step;
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    Location add = null;
+                    for (int j = 0; j < 5; j++) {
+                        Location clone = location.clone();
+                        double dx = random.nextDouble() * 6;
+                        double dy = random.nextDouble() * 3;
+                        double dz = random.nextDouble() * 6;
+                        dx -= 3;
+                        dz -= 3;
+                        add = clone.add(new Vector(dx, dy, dz));
+                        if (!world.getBlockAt(location).getType().isSolid()) break;
+                    }
+                    if (!world.getBlockAt(location).getType().isSolid()) add = location;
+                    world.spawn(add, ExperienceOrb.class, experienceOrb -> {
+                        experienceOrb.setExperience(expPerOrb);
+                    });
+                }
+            }.runTaskLater(plugin, delay);
         }
     }
 
@@ -348,7 +408,6 @@ public class ForgeUiEvents implements Listener {
             return null;
         }
     }
-
 
     private void onRightClick(InventoryClickEvent ev, ItemStack currentItem, ItemStack cursor) {
         BasicItemMatcher itemMatcher = new BasicItemMatcher();

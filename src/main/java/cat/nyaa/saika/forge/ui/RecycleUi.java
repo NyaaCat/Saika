@@ -136,12 +136,11 @@ public class RecycleUi implements InventoryHolder {
         return Bukkit.createInventory(null, InventoryType.FURNACE);
     }
 
-    public void cost(ForgeIron iron) {
-        int elementCost = iron.getCost();
+    public void cost() {
         this.inventory.setItem(0, new ItemStack(Material.AIR));
         ItemStack elementItem = this.inventory.getItem(1);
         if (elementItem != null) {
-            elementItem.setAmount(Math.max(0, elementItem.getAmount() - elementCost));
+            elementItem.setAmount(Math.max(0, elementItem.getAmount() - 1));
         }
         this.inventory.setItem(1, elementItem);
     }

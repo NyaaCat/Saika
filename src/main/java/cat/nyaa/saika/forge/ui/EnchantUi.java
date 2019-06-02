@@ -60,6 +60,10 @@ public class EnchantUi implements InventoryHolder {
             onInvalid();
             return;
         }
+        if (itemStack.getAmount() != 1 || !(itemStack.getType().getMaxDurability() > 0)) {
+            onInvalid();
+            return;
+        }
         ForgeEnchantBook enchantBook = ForgeManager.getForgeManager().getEnchantBook(item);
         if (enchantBook == null) {
             onInvalid();
@@ -135,67 +139,69 @@ public class EnchantUi implements InventoryHolder {
         resultItem = itemStack;
         ForgeEnchantBook enchantBook = ForgeManager.getForgeManager().getEnchantBook(item);
         if (validation == RecipieValidation.VALID) {
+            if (itemStack == null){
+                return null;
+            }
             ItemStack clone = itemStack.clone();
             Map<Enchantment, Integer> bookEnchants = enchantBook.getEnchantmentList();
             ItemMeta itemMeta = clone.getItemMeta();
+            if (itemStack.getAmount() != 1 || !(itemStack.getType().getMaxDurability() > 0)) {
+                onInvalid();
+                return null;
+            }
             if (itemMeta == null || bookEnchants.isEmpty()) {
                 onInvalid();
-            } else {
-                Map<Enchantment, Integer> itemEnchants = itemMeta.getEnchants();
-                Configure configure = Saika.plugin.getConfigure();
-                int enchantMaxLevel = configure.enchantMaxLevel;
-                AtomicBoolean destroy = new AtomicBoolean(false);
-                Map<Enchantment, Integer> finalItemEnchants = itemEnchants;
-                bookEnchants.forEach((enchantment, level) -> {
-                    Integer originalLevel = finalItemEnchants.get(enchantment);
-                    if (originalLevel == null) {
-                        originalLevel = 0;
-                    }
-                    int nextLevel = originalLevel;
-                    EnchantChance enchantChance = configure.getEnchantChance();
-                    EnchantResult result;
-                    switch (enchantBook.getEnchantmentType()) {
-                        default:
-                        case ENCHANT:
-                            result = getResult(enchantChance);
-                            int resultLevel = level;
-                            switch (result) {
-                                case SUCCESS:
-                                    break;
-                                case HALF:
-                                    resultLevel /= 2;
-                                    break;
-                                case FAIL:
-                                    resultLevel = 0;
-                                    break;
-                                case EPIC_FAIL:
-                                    destroy.set(true);
-                                    break;
-                            }
-                            nextLevel = Math.min(nextLevel + resultLevel, enchantMaxLevel);
-                            itemMeta.removeEnchant(enchantment);
-                            itemMeta.addEnchant(enchantment, nextLevel, true);
-                            break;
-                        case REPULSE:
-                            nextLevel = Math.max(level - nextLevel, 0);
-                            itemMeta.removeEnchant(enchantment);
-                            if (nextLevel > 0) {
-                                itemMeta.addEnchant(enchantment, nextLevel, true);
-                            }
-                            break;
-                    }
-                });
-                if (destroy.get()) {
-                    clone = new ItemStack(Material.AIR);
-                } else {
-                    clone.setItemMeta(itemMeta);
-                }
-                resultItem = clone;
+                return null;
             }
-            this.cost();
-            return resultItem;
+            //if item is valid and will enchant
+            return enchantItem(enchantBook, clone, bookEnchants, itemMeta);
         }
         return null;
+    }
+
+    private ItemStack enchantItem(ForgeEnchantBook enchantBook, ItemStack clone, Map<Enchantment, Integer> bookEnchants, ItemMeta itemMeta) {
+        Map<Enchantment, Integer> itemEnchants = itemMeta.getEnchants();
+        Configure configure = Saika.plugin.getConfigure();
+        int enchantMaxLevel = configure.enchantMaxLevel;
+        AtomicBoolean destroy = new AtomicBoolean(false);
+        Map<Enchantment, Integer> finalItemEnchants = itemEnchants;
+        bookEnchants.forEach((enchantment, level) -> {
+            Integer originalLevel = finalItemEnchants.get(enchantment);
+            if (originalLevel == null) {
+                originalLevel = 0;
+            }
+            int nextLevel = originalLevel;
+            EnchantChance enchantChance = configure.getEnchantChance();
+            EnchantResult result;
+            switch (enchantBook.getEnchantmentType()) {
+                default: case ENCHANT:
+                    result = getResult(enchantChance);
+                    int resultLevel = level;
+                    switch (result) {
+                        case SUCCESS:
+                            break;case HALF: resultLevel /= 2;
+                            break;case FAIL: resultLevel = 0;
+                            break;case EPIC_FAIL: destroy.set(true);
+                            break;
+                    }
+                    nextLevel = Math.min(nextLevel + resultLevel, enchantMaxLevel);
+                    itemMeta.removeEnchant(enchantment);
+                    itemMeta.addEnchant(enchantment, nextLevel, true);
+                    break;case REPULSE: nextLevel = Math.max(level - nextLevel, 0);
+                    itemMeta.removeEnchant(enchantment);
+                    if (nextLevel > 0) {
+                        itemMeta.addEnchant(enchantment, nextLevel, true);
+                    }
+                    break;
+            }
+        });
+        if (destroy.get()) {
+            clone = new ItemStack(Material.AIR);
+        } else {
+            clone.setItemMeta(itemMeta);
+        }
+        resultItem = clone;
+        return resultItem;
     }
 
     public void onCancel() {
