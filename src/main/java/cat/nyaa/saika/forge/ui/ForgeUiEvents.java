@@ -2,6 +2,7 @@ package cat.nyaa.saika.forge.ui;
 
 import cat.nyaa.nyaacore.BasicItemMatcher;
 import cat.nyaa.nyaacore.Message;
+import cat.nyaa.nyaacore.utils.ExperienceUtils;
 import cat.nyaa.nyaacore.utils.InventoryUtils;
 import cat.nyaa.saika.Configure;
 import cat.nyaa.saika.I18n;
@@ -9,16 +10,14 @@ import cat.nyaa.saika.Saika;
 import cat.nyaa.saika.forge.ForgeIron;
 import cat.nyaa.saika.forge.ForgeManager;
 import cat.nyaa.saika.forge.ForgeableItem;
+import com.google.common.collect.Streams;
 import org.bukkit.*;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryPickupItemEvent;
+import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -30,6 +29,7 @@ import org.bukkit.util.Vector;
 
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Stream;
 
 public class ForgeUiEvents implements Listener {
     public static final NamespacedKey INDICATOR = new NamespacedKey(Saika.plugin, "indicator");
@@ -87,12 +87,33 @@ public class ForgeUiEvents implements Listener {
     }
 
     @EventHandler
+    public void onInventoryDrag(InventoryDragEvent ev){
+        Inventory clickedInventory = ev.getView().getTopInventory();
+        if (forgeUiList.containsKey(clickedInventory)) {
+            if (ev.getRawSlots().stream().anyMatch(integer -> integer < 3)) {
+                forgeUiList.get(clickedInventory).updateValidationLater();
+            }
+        }else if (enchantUiList.containsKey(clickedInventory)) {
+            if (ev.getRawSlots().stream().anyMatch(integer -> integer < 3)) {
+                enchantUiList.get(clickedInventory).updateValidationLater();
+            }
+        }else if (recycleUiList.containsKey(clickedInventory)) {
+            if (ev.getRawSlots().stream().anyMatch(integer -> integer < 3)) {
+                recycleUiList.get(clickedInventory).updateValidationLater();
+            }
+        }else if (repulseUiList.containsKey(clickedInventory)) {
+            if (ev.getRawSlots().stream().anyMatch(integer -> integer < 3)) {
+                repulseUiList.get(clickedInventory).updateValidationLater();
+            }
+        }
+    }
+
+    @EventHandler
     public void onInventoryClick(InventoryClickEvent ev) {
         Inventory clickedInventory = ev.getClickedInventory();
         if (clickedInventory == null) {
             return;
         }
-
 
         if (forgeUiList.containsKey(clickedInventory)) {
             forgeUiClicked(ev, clickedInventory);
@@ -103,8 +124,6 @@ public class ForgeUiEvents implements Listener {
         }else if (repulseUiList.containsKey(clickedInventory)) {
             repulseClicked(ev, clickedInventory);
         }
-
-
     }
 
     private void repulseClicked(InventoryClickEvent ev, Inventory clickedInventory) {
@@ -180,12 +199,12 @@ public class ForgeUiEvents implements Listener {
                     UUID uniqueId = ev.getWhoClicked().getUniqueId();
                     Player player = ev.getWhoClicked().getServer().getPlayer(uniqueId);
                     int expCost = plugin.getConfigure().enchanExp;
-                    int exp = player.getTotalExperience();
+                    int exp = ExperienceUtils.getExpPoints(player);
                     if (exp >= expCost) {
                         ItemStack itemStack = enchantUi.onEnchant();
                         if (itemStack != null) {
                             giveItem(ev,itemStack);
-                            player.setTotalExperience(exp - expCost);
+                            ExperienceUtils.subtractExpPoints(player, expCost);
                             enchantUi.cost();
                             showForgeEffect(ev);
                         }

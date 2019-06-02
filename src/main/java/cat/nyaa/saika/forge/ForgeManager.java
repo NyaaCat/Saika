@@ -264,9 +264,23 @@ public class ForgeManager {
     public boolean deleteEnchant(String id, EnchantmentType enchant) {
         switch (enchant) {
             case ENCHANT:
-                return removeItemFrom(enchantBookManager.enchants, id);
+                ForgeEnchantBook remove = enchantBookManager.enchants.itemMap.remove(id);
+                if (remove!=null) {
+                    ItemStack clone = remove.itemStack.clone();
+                    removeStoredEnchants(clone);
+                    nbtMap.remove(ItemStackUtils.itemToBase64(clone));
+                    saveManager(enchantBookManager);
+                    return true;
+                } else return false;
             case REPULSE:
-                return removeItemFrom(enchantBookManager.repulses, id);
+                ForgeEnchantBook remove1 = enchantBookManager.enchants.itemMap.remove(id);
+                if (remove1!=null) {
+                    ItemStack clone = remove1.itemStack.clone();
+                    removeStoredEnchants(clone);
+                    nbtMap.remove(ItemStackUtils.itemToBase64(clone));
+                    saveManager(enchantBookManager);
+                    return true;
+                } else return false;
             default:
                 throw new RuntimeException();
         }

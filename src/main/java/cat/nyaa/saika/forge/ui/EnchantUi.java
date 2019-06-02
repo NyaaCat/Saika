@@ -15,6 +15,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.inventory.meta.tags.ItemTagType;
@@ -55,8 +56,8 @@ public class EnchantUi implements InventoryHolder {
 
     public void updateValidation() {
         ItemStack itemStack = inventory.getItem(0);
-        ItemStack item = inventory.getItem(1);
-        if (itemStack == null || item == null || itemStack.getType().equals(Material.AIR) || item.getType().equals(Material.AIR)) {
+        ItemStack enchantSource = inventory.getItem(1);
+        if (itemStack == null || enchantSource == null || itemStack.getType().equals(Material.AIR) || enchantSource.getType().equals(Material.AIR)) {
             onInvalid();
             return;
         }
@@ -64,7 +65,7 @@ public class EnchantUi implements InventoryHolder {
             onInvalid();
             return;
         }
-        ForgeEnchantBook enchantBook = ForgeManager.getForgeManager().getEnchantBook(item);
+        ForgeEnchantBook enchantBook = ForgeManager.getForgeManager().getEnchantBook(enchantSource);
         if (enchantBook == null) {
             onInvalid();
             return;
@@ -72,7 +73,12 @@ public class EnchantUi implements InventoryHolder {
             ItemMeta itemMeta = itemStack.getItemMeta();
             if (itemMeta != null) {
                 Map<Enchantment, Integer> enchants = itemMeta.getEnchants();
-                Map<Enchantment, Integer> bookEnchants = enchantBook.getEnchantmentList();
+                ItemMeta enchantSourceMeta = enchantSource.getItemMeta();
+                if (!(enchantSourceMeta instanceof EnchantmentStorageMeta)){
+                    onInvalid();
+                    return;
+                }
+                Map<Enchantment, Integer> bookEnchants = ((EnchantmentStorageMeta) enchantSourceMeta).getStoredEnchants();
                 AtomicBoolean isValid = new AtomicBoolean(false);
                 if (!bookEnchants.isEmpty()) {
                     for (Map.Entry<Enchantment, Integer> entry : bookEnchants.entrySet()) {
@@ -135,15 +141,24 @@ public class EnchantUi implements InventoryHolder {
 
     public ItemStack onEnchant() {
         ItemStack itemStack = inventory.getItem(0);
-        ItemStack item = inventory.getItem(1);
+        ItemStack enchantSource = inventory.getItem(1);
         resultItem = itemStack;
-        ForgeEnchantBook enchantBook = ForgeManager.getForgeManager().getEnchantBook(item);
+        if (itemStack == null || enchantSource == null || itemStack.getType().equals(Material.AIR) || enchantSource.getType().equals(Material.AIR)) {
+            onInvalid();
+            return null;
+        }
+        ForgeEnchantBook enchantBook = ForgeManager.getForgeManager().getEnchantBook(enchantSource);
         if (validation == RecipieValidation.VALID) {
             if (itemStack == null){
                 return null;
             }
             ItemStack clone = itemStack.clone();
-            Map<Enchantment, Integer> bookEnchants = enchantBook.getEnchantmentList();
+            ItemMeta enchantSourceMeta = enchantSource.getItemMeta();
+            if (!(enchantSourceMeta instanceof EnchantmentStorageMeta)){
+                onInvalid();
+                return null;
+            }
+            Map<Enchantment, Integer> bookEnchants = ((EnchantmentStorageMeta) enchantSourceMeta).getStoredEnchants();
             ItemMeta itemMeta = clone.getItemMeta();
             if (itemStack.getAmount() != 1 || !(itemStack.getType().getMaxDurability() > 0)) {
                 onInvalid();
