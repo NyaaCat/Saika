@@ -9,7 +9,10 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
@@ -19,6 +22,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
+import static cat.nyaa.nyaacore.BasicItemMatcher.MatchingMode.ARBITRARY;
 import static cat.nyaa.saika.forge.BaseManager.NbtedISerializable;
 import static cat.nyaa.saika.forge.EnchantSource.EnchantmentType;
 
@@ -102,18 +106,37 @@ public class ForgeManager {
     }
 
     public ForgeEnchantBook defineEnchant(ItemStack itemStack, EnchantmentType type) throws NbtExistException, InvalidEnchantSourceException {
-        checkNbt(itemStack);
         if (!itemStack.getType().equals(Material.ENCHANTED_BOOK)) {
             throw new InvalidEnchantSourceException();
         }
-        ForgeEnchantBook forgeEnchantBook = new ForgeEnchantBook(itemStack, type);
+        ItemStack clone = itemStack.clone();
+        removeStoredEnchants(clone);
+        Map<String, ForgeEnchantBook> itemMap = enchantBookManager.enchants.itemMap;
+        if (itemMap.values().stream().anyMatch(forgeEnchantBook -> forgeEnchantBook.itemMatcher.matches(clone))){
+            throw new NbtExistException();
+        }
+        ForgeEnchantBook forgeEnchantBook = new ForgeEnchantBook(clone, type);
         String id = enchantBookManager.addItem(forgeEnchantBook);
         forgeEnchantBook.id = id;
         forgeEnchantBook.itemMatcher = new BasicItemMatcher();
-        forgeEnchantBook.itemMatcher.itemTemplate = itemStack;
+        forgeEnchantBook.itemMatcher.enchantMatch = ARBITRARY;
+        forgeEnchantBook.itemMatcher.repairCostMatch = ARBITRARY;
+        forgeEnchantBook.itemMatcher.itemTemplate = clone;
         addItemNbt(forgeEnchantBook);
         saveManager(enchantBookManager);
         return forgeEnchantBook;
+    }
+
+    private void removeStoredEnchants(ItemStack clone) {
+        ItemMeta itemMeta = clone.getItemMeta();
+        Objects.requireNonNull(itemMeta);
+        if (itemMeta instanceof EnchantmentStorageMeta) {
+            Map<Enchantment, Integer> storedEnchants = ((EnchantmentStorageMeta) itemMeta).getStoredEnchants();
+            if (!storedEnchants.isEmpty()) {
+                storedEnchants.forEach((enchantment, level) -> ((EnchantmentStorageMeta) itemMeta).removeStoredEnchant(enchantment));
+            }
+            clone.setItemMeta(itemMeta);
+        }
     }
 
     public ForgeRepulse defineRepulse(ItemStack is) throws NbtExistException {
@@ -388,13 +411,10 @@ public class ForgeManager {
         if (item == null) {
             return null;
         }
-        String nbt = ItemStackUtils.itemToBase64(item);
-        if (nbtMap.containsKey(nbt)) {
-            ForgeItem forgeItem = nbtMap.get(nbt);
-            if (forgeItem instanceof ForgeEnchantBook) {
-                return (ForgeEnchantBook) forgeItem;
-            } else return null;
-        } else return null;
+        Map<String, ForgeEnchantBook> itemMap = enchantBookManager.enchants.itemMap;
+        return itemMap.values().stream()
+                .filter(forgeEnchantBook -> forgeEnchantBook.itemMatcher.matches(item))
+                .findAny().orElse(null);
     }
 
     public ForgeRecycler getRecycle(ItemStack item) {
@@ -589,7 +609,7 @@ public class ForgeManager {
             }
 
             public void load(ConfigurationSection enchantSection) {
-                if (enchantSection == null){
+                if (enchantSection == null) {
                     return;
                 }
                 Set<String> keys = enchantSection.getKeys(false);
@@ -629,7 +649,7 @@ public class ForgeManager {
             }
 
             public void load(ConfigurationSection repulseSection) {
-                if (repulseSection == null){
+                if (repulseSection == null) {
                     return;
                 }
                 Set<String> keys = repulseSection.getKeys(false);
