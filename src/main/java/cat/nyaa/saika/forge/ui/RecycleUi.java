@@ -168,7 +168,7 @@ public class RecycleUi implements InventoryHolder {
     }
 
     public void openInventory(Player player) {
-        String title = I18n.format("ui.title.forge");
+        String title = I18n.format("ui.title.recycle");
         inventory = Bukkit.createInventory(this, InventoryType.FURNACE, title);
         ForgeUiEvents.registerRecycle(inventory, this);
         player.openInventory(inventory);

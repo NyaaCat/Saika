@@ -35,16 +35,23 @@ public class EnchantUi implements InventoryHolder {
     public EnchantUi() {
         invalid = new ItemStack(Material.RED_STAINED_GLASS, 1);
         valid = new ItemStack(Material.GREEN_STAINED_GLASS, 1);
-        addMeta(invalid, "ui.enchant.invalid.title", "ui.enchant.invalid.lore");
-        addMeta(valid, "ui.enchant.valid.title", "ui.enchant.valid.lore");
+        addMeta(invalid, "ui.enchant.invalid.title", "ui.enchant.invalid.lore", null);
+        EnchantChance enchantChance = Saika.plugin.getConfigure().getEnchantChance();
+        addMeta(valid, "ui.enchant.valid.title", "ui.enchant.valid.lore", enchantChance);
     }
 
-    private void addMeta(ItemStack item, String title, String lore) {
+    private void addMeta(ItemStack item, String title, String lore, EnchantChance enchantChance) {
         ItemMeta itemMeta = item.getItemMeta();
         CustomItemTagContainer customTagContainer = itemMeta.getCustomTagContainer();
         customTagContainer.setCustomTag(new NamespacedKey(Saika.plugin, "indicator"), ItemTagType.STRING, "indicatior");
         itemMeta.setDisplayName(I18n.format(title));
         String formattedLore = I18n.format(lore);
+        if (enchantChance != null){
+            formattedLore = formattedLore.replace("{chance_great}", String.valueOf(enchantChance.getSuccess()))
+                    .replace("{chance_normal}", String.valueOf(enchantChance.getHalf()))
+                    .replace("{chance_fail}", String.valueOf(enchantChance.getFail()))
+                    .replace("{chance_destroy}", String.valueOf(enchantChance.getEpicFail()));
+        }
         List<String> split = new ArrayList<>(Arrays.asList(formattedLore.split("\n")));
         itemMeta.setLore(split);
         item.setItemMeta(itemMeta);

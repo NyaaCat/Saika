@@ -71,26 +71,44 @@ remove:
     no_item: "没有id为 %s 的物品"
 open:
   error:
-    no_required_block: "There are no {block} in %d blocks"
-
+    no_required_block: "在附近 %d 范围内未找到 {block}"
+enchant:
+  error:
+    insufficient_exp: "&c附魔所需要的经验值不足"
 ui:
   enchant:
     invalid:
-      title: "&c附魔无效"
-      lore: "&r请在上方格子放入可附魔的武器/工具\n在下方放入附魔源"
+      title: "&c无效物品"
+      lore: "&r请在上方格子放入可附魔的物品，下方格子放入附魔书"
     valid:
-      title: "&a附魔有效"
-      lore: "&r点击进行附魔\n将消耗100点经验"
+      title: "&a点击进行附魔"
+      lore: "&r附魔书将被消耗，结果和概率如下：\n&e大成功 {chance_great} ：添加全部附魔等级\n&e成功 {chance_normal} ：添加一半附魔等级\n&e失败 {chance_fail} ：不添加附魔等级\n&e大失败 {chance_destroy} ：不添加附魔等级并损毁物品\n&7附魔需要消耗100点经验"
+  repulse:
+    invalid:
+      title: "无效物品"
+      lore: "&r请在上方格子放入带有非诅咒附魔的物品，下方格子放入消魔石"
+    valid:
+      title: "&a点击进行消魔"
+      lore: "&r将消耗一个消魔石，随机消除物品的一种非诅咒附魔的全部等级"
   forge:
     valid:
-      title: "&a配方有效"
-      lore: "&r点击进行铸造\n将消耗所有铸造材料及相应个数的晶石"
+      title: "&a点击进行铸造"
+      lore: "&r将消耗所有铸造金属，消耗晶石数量如下：\n&e1 - 2 级铸造：消耗 1 个晶石\n&e3 - 4 级铸造：消耗 2 个晶石\n&e5 级铸造：消耗 3 个晶石"
     invalid:
-      title: "&c配方无效"
-      lore: "&r请在上方格子放入铸造材料\n在下方放入晶石"
+      title: "&c无效物品"
+      lore: "&r请在上方格子放入铸造金属，下方格子放入晶石"
     no_item:
       title: "&e无可用铸造方案"
-      lore: "&r请尝试多放几个铸造材料"
+      lore: "&r需要更多的铸造金属"
+  recycle:
+    invalid:
+      title: "无效物品"
+      lore: "&r请在上方格子放入带有铸造得到的物品，下方格子放入分解石"
+    valid:
+      title: "&a点击进行分解"
+      lore: "&r将消耗一个分解石，将物品分解为少量铸造金属，并获得一个晶石碎块"
   title:
     enchant: "物品附魔"
+    repulse: "物品消魔"
     forge: "物品铸造"
+    recycle: "物品分解"

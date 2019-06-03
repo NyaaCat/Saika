@@ -1,74 +1,75 @@
 reload:
-  success: "重新加载配置成功"
+  success: "&asuccessfully reloaded condig"
 
 define:
   success:
-    iron: "成功创建铸造材料 %s"
-    element: "成功创建元素 %s"
-    recycler: "成功创建回收石 %s"
-    repulse: "成功创建消魔源 %s"
-    enchant: "成功创建附魔源 %s"
+    iron: "successfully created forge level %s"
+    element: "successfully created forge element %s"
+    recycler: "successfully created recycler %s"
+    repulse: "successfully created repulse %s"
+    enchant: "successfully created enchant source %s"
   error:
-    no_item: "主手没有物品"
-    unknown: "未知创建目标"
-    nbt_exists: "已有一个相同NBT的物品，创建失败"
-    invalid_enchant_source: "这不是一个有效的附魔源"
+    no_item: "&cthere's no item in your hand"
+    unknown: "unknown target"
+    nbt_exists: "&cthere's an item with same NBT record, create failed"
+    invalid_enchant_source: "&cIt's not a valid enchant source"
 delete:
   success:
-    level: "成功删除铸造材料 %s"
-    element: "成功删除元素 %s"
-    enchant: "成功删除附魔源 %s"
-    repulse: "成功删除消魔源 %s"
-    recycle: "成功删除回收石 %s"
+    level: "successfully deleted forge level %s"
+    element: "successfully deleted forge element %s"
+    enchant: "successfully deleted enchant source %s"
+    repulse: "successfully deleted repulse %s"
+    recycle: "successfully deleted recycler %s"
   error:
-    level: "没有id为 %s 的铸造材料"
-    element: "没有id为 %s 的元素"
-    enchant: "没有id为 %s 的附魔源"
-    repulse: "没有id为 %s 的元素"
-    recycle: "没有id为 %s 的回收石"
-    unknown: "未知删除目标"
-
+    level: "there's no forge level with id %s"
+    element: "there's no forge element with id %s"
+    enchant: "there's no enchant source with id %s"
+    repulse: "there's no repulse with id %s"
+    recycle: "there's no recycler with id %s"
+    unknown: "unknown target"
 modify:
   success:
-    level: "成功修改 {itemName} 的等级为 %s"
-    element: "成功修改 {itemName} 的元素为 %s"
-    cost: "成功修改 {itemName} 的最低铸造消耗为 %d"
-    weight: "成功修改 {itemName} 的权重为 %d"
-    recycle: "成功修改 {itemName} 的重铸信息为\n最低返还%d%, 最高返还%d%, 最少返还个数%d, 额外奖励id %d, 额外奖励几率%d%%s"
+    level: "modified {itemName} 's level to %s"
+    element: "modified {itemName} 's element to %s"
+    cost: "modified {itemName} 's minimal cost to %d"
+    weight: "modified {itemName} 's weight to %d"
+    recycle: "modified {itemName} 's recycling infomation to\nmin percentage:%d%, max %d%, 最少返还个数%d, 额外奖励id %d, 额外奖励几率%d%%s"
   error:
-    recycle: "没有id为 %s 的额外奖励配置"
-    no_item: "没有找到id为 %s 的可铸造物品"
-    unknown: "未知修改目标"
+    recycle: "no bonus config for id %s "
+    no_item: "no forgeable item for id %s"
+    unknown: "unknown target"
 inspect:
-  info: "物品 id: %d {itemName}"
+  info: "id: %d {itemName}"
   error:
-    no_item: "没有id为 %s 的可铸造物品"
+    no_item: "no forgeable item for id %s"
 list:
-  info: "物品 id: %d {itemName}"
+  info: "id: %d {itemName}"
   error:
-    no_result: "没有满足条件的合成方案"
-  success: "查询成功"
-
+    no_result: "no suitable forge item"
+  success: "query successful"
+enchant:
+  error:
+    insufficient_exp: "you don't have that much exp"
 bonus:
   set:
-    forge: "成功设置额外奖励 %s 至合成配方 %s"
-    recycle: "成功设置额外奖励 %s 至分解配方 %s"
-    failed: "参数错误"
-    no_item: "没有id为 %s 的额外奖励"
+    forge: "successfully set bonus id %s to forgeable item %s"
+    recycle: "successfully set bonus id %s to recycle item %s"
+    failed: "wrong argument"
+    no_item: "no bonus for id %s"
   error:
-    no_item: "主手没有物品"
-    unknown_action: "未知命令 %s"
-  success: "成功创建额外奖励 %s"
+    no_item: "there's no item in your main hand"
+    unknown_action: "unknown action %s"
+  success: "successfully created bonus %s"
 error:
-  not_player: "只有玩家才能执行此命令"
-  permission: "你没有 %s 权限"
+  not_player: "only players can use this command"
+  permission: "you don't have permission %s"
 add:
   error:
-    no_item: "主手没有物品"
+    no_item: "there's no item in your main hand"
 remove:
-  success: "成功删除物品 %s {itemName}"
+  success: "successfully deleted item of id %s {itemName}"
   error:
-    no_item: "没有id为 %s 的物品"
+    no_item: "no item for id %s"
 open:
   error:
     no_required_block: "There are no {block} in %d blocks"
@@ -76,21 +77,37 @@ open:
 ui:
   enchant:
     invalid:
-      title: "&c附魔无效"
-      lore: "&r请在上方格子放入可附魔的武器/工具\n在下方放入附魔源"
+      title: "&cinvalid item"
+      lore: "&rplease put the item to be enchant in the upper slot, and enchant source in the lower slot"
     valid:
-      title: "&a附魔有效"
-      lore: "&r点击进行附魔\n将消耗100点经验"
+      title: "&aclick to enchant"
+      lore: "&renchant source will be consumed. Results may be\n&eSuccess {chance_great} :add the stored enchant to the item.\n&Normal {chance_normal} :add the half-leveled enchant to the item\n&Failed {chance_fail} don't do anything to your item\n&eEpic_Fail {chance_destroy}:destroy your item\n&7100 exps are required for enchanting."
+  repulse:
+    invalid:
+      title: "&cinvalid item"
+      lore: "&rplease put the item (with non-curse enchants) in the upper slot, and the repulse source in the lower slot"
+    valid:
+      title: "&aclick to repulse"
+      lore: "&rconsumes one repulse source and wipe out an non-curse enchant of the item."
   forge:
     valid:
-      title: "&a配方有效"
-      lore: "&r点击进行铸造\n将消耗所有铸造材料及相应个数的晶石"
+      title: "&aclick to forge"
+      lore: "&rconsumes all forge material and some element\n&eForge Level 1 - 2 : consumes 1 element\n&eForge Level 3 - 4 : consumes 2 elements\n&eForge Level 5 : consumes 3 elements"
     invalid:
-      title: "&c配方无效"
-      lore: "&r请在上方格子放入铸造材料\n在下方放入晶石"
+      title: "&cinvalid item"
+      lore: "&rplease put forge material on the upper slot ,and the element in the lower slot."
     no_item:
-      title: "&e无可用铸造方案"
-      lore: "&r请尝试多放几个铸造材料"
+      title: "&eno items can be forged"
+      lore: "&rneeds more materials"
+  recycle:
+    invalid:
+      title: "&cinvalid item"
+      lore: "&rplease put item to be recycled on the upper slot ,and the recycler in the lower slot."
+    valid:
+      title: "&aclick to recycle"
+      lore: "&rconsumes 1 recycler and recycle your item, gives you some forge material and a piece of element"
   title:
-    enchant: "物品附魔"
-    forge: "物品铸造"
+    enchant: "Enchanting"
+    repulse: "Repulsing"
+    forge: "Forging"
+    recycle: "Recycling"

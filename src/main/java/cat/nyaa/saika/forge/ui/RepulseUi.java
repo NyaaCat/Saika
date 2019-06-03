@@ -130,7 +130,7 @@ public class RepulseUi implements InventoryHolder {
     }
 
     public void openInventory(Player player) {
-        String title = I18n.format("ui.title.forge");
+        String title = I18n.format("ui.title.repulse");
         inventory = Bukkit.createInventory(this, InventoryType.FURNACE, title);
         ForgeUiEvents.registerRepulse(inventory, this);
         player.openInventory(inventory);
