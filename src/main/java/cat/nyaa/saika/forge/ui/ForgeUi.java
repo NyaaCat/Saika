@@ -1,5 +1,6 @@
 package cat.nyaa.saika.forge.ui;
 
+import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.saika.I18n;
 import cat.nyaa.saika.Saika;
 import cat.nyaa.saika.forge.ForgeElement;
@@ -24,6 +25,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 public class ForgeUi implements InventoryHolder {
     private Inventory inventory;
@@ -143,5 +145,23 @@ public class ForgeUi implements InventoryHolder {
             elementItem.setAmount(Math.max(0,elementItem.getAmount()-elementCost));
         }
         this.inventory.setItem(1,elementItem);
+    }
+
+    Random random = new Random();
+
+    public ItemStack onBonus(ForgeableItem item) {
+        ForgeableItem.Bonus forgeBonus = item.getForgeBonus();
+        if (forgeBonus == null) {
+            return null;
+        }
+        double chance = forgeBonus.chance;
+        if (chance <= 0){
+            return null;
+        }
+        int result = random.nextInt(100);
+        if (result < chance){
+            return ItemStackUtils.itemFromBase64(forgeBonus.item);
+        }
+        else return null;
     }
 }

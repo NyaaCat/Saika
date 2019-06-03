@@ -44,7 +44,7 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
     }
 
     public void setRecycleBonus(Bonus bonus) {
-        forge.bonus = bonus;
+        recycle.bonus = bonus;
     }
 
     @Override
@@ -114,6 +114,14 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
         recycle.hard = value;
         recycle.bonus.item = bonus;
         recycle.bonus.chance = chance;
+    }
+
+    public Bonus getForgeBonus() {
+        return forge.bonus;
+    }
+
+    public Bonus getRecycleBonus() {
+        return recycle.bonus;
     }
 
     public static class ForgeInfo implements ISerializable {

@@ -1,5 +1,6 @@
 package cat.nyaa.saika.forge.ui;
 
+import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.saika.I18n;
 import cat.nyaa.saika.Saika;
 import cat.nyaa.saika.forge.ForgeIron;
@@ -30,6 +31,7 @@ public class RecycleUi implements InventoryHolder {
     private ItemStack valid;
     private ItemStack invalid;
     private int itemCost = 1;
+    private ForgeableItem lastSuccessRecycle;
 
     public RecycleUi() {
         invalid = new ItemStack(Material.RED_STAINED_GLASS, 1);
@@ -156,6 +158,7 @@ public class RecycleUi implements InventoryHolder {
             ForgeIron iron = forgeManager.getIron(forgeableItem.getLevel());
             ItemStack ista = iron.getItemStack().clone();
             ista.setAmount(Math.max(recycle.hard, amount));
+            this.lastSuccessRecycle = forgeableItem;
             return ista;
         }
     }
@@ -183,5 +186,24 @@ public class RecycleUi implements InventoryHolder {
             elementItem.setAmount(Math.max(0, elementItem.getAmount() - 1));
         }
         this.inventory.setItem(1, elementItem);
+    }
+
+    public ItemStack onBonus() {
+        if (lastSuccessRecycle == null){
+            return null;
+        }
+        ForgeableItem.Bonus forgeBonus = lastSuccessRecycle.getRecycleBonus();
+        if (forgeBonus == null){
+            return null;
+        }
+        double chance = forgeBonus.chance;
+        if (chance <= 0){
+            return null;
+        }
+        int result = random.nextInt(100);
+        if (result < chance){
+            return ItemStackUtils.itemFromBase64(forgeBonus.item);
+        }
+        else return null;
     }
 }

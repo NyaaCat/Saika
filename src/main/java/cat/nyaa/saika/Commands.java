@@ -4,10 +4,9 @@ import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
-import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.LocaleUtils;
-import cat.nyaa.saika.forge.EnchantSource.EnchantmentType;
 import cat.nyaa.saika.forge.*;
+import cat.nyaa.saika.forge.EnchantSource.EnchantmentType;
 import cat.nyaa.saika.forge.ForgeManager.NbtExistException;
 import cat.nyaa.saika.forge.ui.EnchantUi;
 import cat.nyaa.saika.forge.ui.ForgeUi;
@@ -15,8 +14,8 @@ import cat.nyaa.saika.forge.ui.RecycleUi;
 import cat.nyaa.saika.forge.ui.RepulseUi;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -34,6 +33,16 @@ public class Commands extends CommandReceiver {
 
     Saika plugin;
 
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        //todo
+        switch (args.length){
+            case 1:
+
+        }
+        return super.onTabComplete(sender, command, alias, args);
+    }
+
     public Commands(Saika plugin, ILocalizer _i18n) {
         super(plugin, _i18n);
         this.plugin = plugin;
@@ -46,7 +55,12 @@ public class Commands extends CommandReceiver {
 
     @SubCommand("reload")
     public void onReload(CommandSender sender, Arguments arguments) {
+        if (dontHavePermission(sender, PERMISSION_ADMIN, "")){
+            return;
+        }
         plugin.reload();
+        new Message(I18n.format("reload.success"))
+                .send(sender);
     }
 
     @SubCommand("define")
@@ -76,27 +90,32 @@ public class Commands extends CommandReceiver {
                     int elementCost = arguments.nextInt();
                     ForgeIron forgeIron = forgeManager.defineForgeIron(is, level, elementCost);
                     new Message(I18n.format("define.success.iron", forgeIron.getId()))
+                            .append(" {itemName}", forgeIron.getItemStack())
                             .send(sender);
                     break;
                 case "element":
                     String element = arguments.nextString();
                     ForgeElement forgeElement = forgeManager.defineElement(element, is);
                     new Message(I18n.format("define.success.element", forgeElement.getId()))
+                            .append(" {itemName}", forgeElement.getItemStack())
                             .send(sender);
                     break;
                 case "recycle":
                     ForgeRecycler recycler = forgeManager.defineRecycler(is);
                     new Message(I18n.format("define.success.recycler", recycler.getId()))
+                            .append(" {itemName}", recycler.getItemStack())
                             .send(sender);
                     break;
                 case "repulse":
                     ForgeRepulse repulse = forgeManager.defineRepulse(is);
                     new Message(I18n.format("define.success.repulse", repulse.getId()))
+                            .append(" {itemName}", repulse.getItemStack())
                             .send(sender);
                     break;
                 case "enchant":
                     ForgeEnchantBook enchant = forgeManager.defineEnchant(is, EnchantmentType.ENCHANT);
                     new Message(I18n.format("define.success.enchant", enchant.getId()))
+                            .append(" {itemName}", enchant.getItemStack())
                             .send(sender);
                     break;
                 default:
@@ -184,22 +203,30 @@ public class Commands extends CommandReceiver {
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         ForgeableItem forgeableItem = forgeManager.getForgeableItem(id);
         if (forgeableItem == null) {
-            new Message(I18n.format("modify.error.no_item"))
+            new Message(I18n.format("modify.error.no_item", id))
                     .send(sender);
             return;
         }
         switch (targetVal) {
             case "level":
                 forgeableItem.setLevel(value);
+                new Message("").append(I18n.format("modify.success.level", value), forgeableItem.getItemStack())
+                            .send(sender);
                 break;
             case "element":
                 forgeableItem.setElement(value);
+                new Message("").append(I18n.format("modify.success.element", value), forgeableItem.getItemStack())
+                        .send(sender);
                 break;
             case "cost":
                 forgeableItem.setMinCost(Integer.parseInt(value));
+                new Message("").append(I18n.format("modify.success.cost", value), forgeableItem.getItemStack())
+                        .send(sender);
                 break;
             case "weight":
                 forgeableItem.setWeight(Integer.parseInt(value));
+                new Message("").append(I18n.format("modify.success.weight", value), forgeableItem.getItemStack())
+                    .send(sender);
                 break;
             case "recycle":
                 int min = arguments.nextInt();
@@ -207,7 +234,14 @@ public class Commands extends CommandReceiver {
                 int hard = arguments.nextInt();
                 String bonus = arguments.nextString();
                 double chance = arguments.nextDouble();
+                BonusItem bonusItem = forgeManager.getBonus(bonus);
+                if (bonusItem  == null){
+                    new Message(I18n.format("modify.error.recycle", bonus))
+                            .send(sender);
+                }
                 forgeableItem.setRecycle(min, max, hard, bonus, chance);
+                new Message(I18n.format("modify.success.recycle", min, max, hard, bonus, chance)).append("", forgeableItem.getItemStack())
+                        .send(sender);
                 break;
             default:
                 new Message(I18n.format("modify.error.unknown"))
@@ -226,13 +260,10 @@ public class Commands extends CommandReceiver {
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         ForgeableItem forgeableItem = forgeManager.getForgeableItem(id);
         if (forgeableItem != null) {
-            YamlConfiguration sec = new YamlConfiguration();
-            forgeableItem.serialize(sec);
-            String s = sec.saveToString();
-            new Message(I18n.format("inspect.info", id, s)) //&r{itemName}&r * {amount}
+            new Message("").append(I18n.format("inspect.info", id), forgeableItem.getItemStack()) //&r{itemName}&r * {amount}
                     .send(sender);
         } else {
-            new Message(I18n.format("inspect.error.no_item"))
+            new Message(I18n.format("inspect.error.no_item", id))
                     .send(sender);
         }
     }
@@ -247,13 +278,16 @@ public class Commands extends CommandReceiver {
         String element = arguments.nextString();
 
         ForgeManager forgeManager = ForgeManager.getForgeManager();
-        YamlConfiguration s = forgeManager.listItem(level, element);
-        String str = s.saveToString();
-        if (str.equals("")) {
-            new Message(I18n.format("list.error.no_result"))
+        List<ForgeableItem> s = forgeManager.listItem(level, element);
+        if (!s.isEmpty()) {
+            new Message(I18n.format(I18n.format("list.success")))
                     .send(sender);
+            s.forEach(forgeableItem -> {
+                new Message("").append(I18n.format("list.info", forgeableItem.getId()), forgeableItem.getItemStack())
+                        .send(sender);
+            });
         } else {
-            new Message(I18n.format("list.success",str))
+            new Message(I18n.format("list.error.no_result"))
                     .send(sender);
         }
     }
@@ -261,26 +295,26 @@ public class Commands extends CommandReceiver {
     Random random = new Random();
 
     @SubCommand("bonus")
-    public void onBonus(CommandSender sender, Arguments arguments){
-        if (dontHavePermission(sender, PERMISSION_ADMIN, "bonus")){
+    public void onBonus(CommandSender sender, Arguments arguments) {
+        if (dontHavePermission(sender, PERMISSION_ADMIN, "bonus")) {
             return;
         }
         String action = arguments.nextString();
-        switch (action){
+        switch (action) {
             case "add":
-                if (!(sender instanceof Player)){
+                if (!(sender instanceof Player)) {
                     new Message(I18n.format("error.not_player"))
                             .send(sender);
                     return;
                 }
                 ItemStack itemInMainHand = ((Player) sender).getInventory().getItemInMainHand();
-                if (itemInMainHand.getType().equals(Material.AIR)){
+                if (itemInMainHand.getType().equals(Material.AIR)) {
                     new Message(I18n.format("bonus.error.no_item"))
                             .send(sender);
                     return;
                 }
                 String s = ForgeManager.getForgeManager().addBonus(itemInMainHand);
-                new Message(I18n.format("bonus.success",s))
+                new Message(I18n.format("bonus.success", s))
                         .send(sender);
                 break;
             case "set":
@@ -289,43 +323,49 @@ public class Commands extends CommandReceiver {
                 String bonusId = arguments.nextString();
                 int probability = arguments.nextInt();
                 ForgeManager manager = ForgeManager.getForgeManager();
-                if (!(sender instanceof Player)){
+                if (!(sender instanceof Player)) {
                     new Message(I18n.format("error.not_player"))
                             .send(sender);
                     return;
                 }
-                ItemStack itemStack = ((Player) sender).getInventory().getItemInMainHand();
-                if (itemStack.equals(Material.AIR)){
-                    new Message(I18n.format("bonus.error.no_item"))
+                BonusItem bonusItem = manager.getBonus(bonusId);
+                if (bonusItem == null) {
+                    new Message(I18n.format("bonus.set.no_item",bonusId))
                             .send(sender);
                     return;
                 }
                 ForgeableItem.Bonus bonus = new ForgeableItem.Bonus();
-                bonus.item = ItemStackUtils.itemToBase64(itemStack);
+                bonus.item = bonusItem.toNbt();
                 bonus.chance = probability;
                 ForgeableItem forgeableItem = manager.getForgeableItem(id);
-                switch (type){
+                switch (type) {
                     case "forge":
                         forgeableItem.setForgeBonus(bonus);
                         manager.saveItem(id);
+                        new Message(I18n.format("bonus.set.forge", bonus, id))
+                                .send(sender);
                         break;
                     case "recycle":
                         forgeableItem.setRecycleBonus(bonus);
                         manager.saveItem(id);
+                        new Message(I18n.format("bonus.set.recycle", bonus, id))
+                                .send(sender);
                         break;
                     default:
+                        new Message("bonus.set.failed")
+                                .send(sender);
                         throw new RuntimeException();
                 }
                 break;
             default:
-                new Message(I18n.format("bonus.error.unknown_action"))
+                new Message(I18n.format("bonus.error.unknown_action", action))
                         .send(sender);
         }
     }
 
     @SubCommand("add")
-    public void onAdd(CommandSender sender, Arguments arguments){
-        if (dontHavePermission(sender, PERMISSION_ADMIN, "add")){
+    public void onAdd(CommandSender sender, Arguments arguments) {
+        if (dontHavePermission(sender, PERMISSION_ADMIN, "add")) {
             return;
         }
         if (!(sender instanceof Player)) {
@@ -334,7 +374,7 @@ public class Commands extends CommandReceiver {
             return;
         }
         ItemStack itemInMainHand = ((Player) sender).getInventory().getItemInMainHand();
-        if (itemInMainHand.getType().equals(Material.AIR)){
+        if (itemInMainHand.getType().equals(Material.AIR)) {
             new Message(I18n.format("add.error.no_item"))
                     .send(sender);
             return;
@@ -350,40 +390,48 @@ public class Commands extends CommandReceiver {
     }
 
     @SubCommand("remove")
-    public void onRemove(CommandSender sender, Arguments arguments){
-        if (dontHavePermission(sender, PERMISSION_ADMIN, "remove")){
+    public void onRemove(CommandSender sender, Arguments arguments) {
+        if (dontHavePermission(sender, PERMISSION_ADMIN, "remove")) {
             return;
         }
         String id = arguments.nextString();
         ForgeManager forgeManager = ForgeManager.getForgeManager();
-        if (forgeManager.hasItem(id)){
-            forgeManager.removeForgeableItem(id);
-            new Message(I18n.format("remove.success",id))
+        if (forgeManager.hasItem(id)) {
+            ForgeableItem item = forgeManager.removeForgeableItem(id);
+            if (item == null){
+                new Message(I18n.format("remove.error.no_item", id))
+                        .send(sender);
+                return;
+            }
+            new Message(I18n.format("remove.success", id))
+                    .append("", item.getItemStack())
                     .send(sender);
-        }else {
-            new Message(I18n.format("remove.error.no_item"))
+        } else {
+            new Message(I18n.format("remove.error.no_item", id))
                     .send(sender);
         }
     }
 
     @SubCommand("open")
-    public boolean onOpen(CommandSender sender, Arguments arguments){
+    public boolean onOpen(CommandSender sender, Arguments arguments) {
         String action = arguments.nextString();
-        if (!action.equals("forge") && !action.equals("enchant") && !action.equals("repulse") && !action.equals("recycle")){
+        if (!action.equals("forge") && !action.equals("enchant") && !action.equals("repulse") && !action.equals("recycle")) {
             return false;
         }
-        if(dontHavePermission(sender, PERMISSION_OPEN, action)){
+        if (dontHavePermission(sender, PERMISSION_OPEN, action)) {
             return false;
         }
-        if (!(sender instanceof Player)){
+        if (!(sender instanceof Player)) {
             new Message(I18n.format("error.not_player"))
                     .send(sender);
             return false;
         }
-        if (!checkRequiredBlock((Player) sender, action)){
-            return true;
+        if (!checkRequiredBlock((Player) sender, action)) {
+            new Message("open.error.unknown_operation")
+                    .send(sender);
+            return false;
         }
-        switch (action){
+        switch (action) {
             case "forge":
                 ForgeUi forgeUi = new ForgeUi();
                 forgeUi.openInventory((Player) sender);
@@ -409,7 +457,7 @@ public class Commands extends CommandReceiver {
     private boolean checkRequiredBlock(Player sender, String action) {
         Material forgeBlock;
         int forgeUiDistance;
-        switch (action){
+        switch (action) {
             case "forge":
                 forgeBlock = plugin.getConfigure().getForgeBlock();
                 forgeUiDistance = plugin.getConfigure().getForgeUiDistance();
@@ -427,7 +475,7 @@ public class Commands extends CommandReceiver {
                 forgeUiDistance = plugin.getConfigure().getEnchantUiDistance();
                 break;
             default:
-                throw new RuntimeException();
+                return false;
         }
         boolean match = true;
         if (forgeBlock != Material.AIR) {

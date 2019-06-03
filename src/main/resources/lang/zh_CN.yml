@@ -1,3 +1,6 @@
+reload:
+  success: "重新加载配置成功"
+
 define:
   success:
     iron: "成功创建铸造材料 %s"
@@ -18,36 +21,76 @@ delete:
     repulse: "成功删除消魔源 %s"
     recycle: "成功删除回收石 %s"
   error:
-    enchant: "没有id为 %s 的附魔源"
     level: "没有id为 %s 的铸造材料"
+    element: "没有id为 %s 的元素"
+    enchant: "没有id为 %s 的附魔源"
     repulse: "没有id为 %s 的元素"
     recycle: "没有id为 %s 的回收石"
     unknown: "未知删除目标"
+
 modify:
+  success:
+    level: "成功修改 {itemName} 的等级为 %s"
+    element: "成功修改 {itemName} 的元素为 %s"
+    cost: "成功修改 {itemName} 的最低铸造消耗为 %d"
+    weight: "成功修改 {itemName} 的权重为 %d"
+    recycle: "成功修改 {itemName} 的重铸信息为\n最低返还%d%, 最高返还%d%, 最少返还个数%d, 额外奖励id %d, 额外奖励几率%d%%s"
   error:
-    no_item: "修改目标错误"
+    recycle: "没有id为 %s 的额外奖励配置"
+    no_item: "没有找到id为 %s 的可铸造物品"
     unknown: "未知修改目标"
 inspect:
-  info: "%s"
+  info: "物品 id: %d {itemName}"
   error:
-    no_item: "目标错误"
+    no_item: "没有id为 %s 的可铸造物品"
 list:
+  info: "物品 id: %d {itemName}"
   error:
     no_result: "没有满足条件的合成方案"
-  success: "%s"
+  success: "查询成功"
+
 bonus:
+  set:
+    forge: "成功设置额外奖励 %s 至合成配方 %s"
+    recycle: "成功设置额外奖励 %s 至分解配方 %s"
+    failed: "参数错误"
+    no_item: "没有id为 %s 的额外奖励"
   error:
     no_item: "主手没有物品"
-    unknown_action: "未知命令"
-  success: "成功创建额外产出 %s"
+    unknown_action: "未知命令 %s"
+  success: "成功创建额外奖励 %s"
 error:
   not_player: "只有玩家才能执行此命令"
   permission: "你没有 %s 权限"
 add:
   error:
     no_item: "主手没有物品"
-    nbt_exists: "已有相同NBT物品"
 remove:
-  success: "成功删除物品 %s"
+  success: "成功删除物品 %s {itemName}"
   error:
     no_item: "没有id为 %s 的物品"
+open:
+  error:
+    no_required_block: "There are no {block} in %d blocks"
+
+ui:
+  enchant:
+    invalid:
+      title: "&c附魔无效"
+      lore: "&r请在上方格子放入可附魔的武器/工具\n在下方放入附魔源"
+    valid:
+      title: "&a附魔有效"
+      lore: "&r点击进行附魔\n将消耗100点经验"
+  forge:
+    valid:
+      title: "&a配方有效"
+      lore: "&r点击进行铸造\n将消耗所有铸造材料及相应个数的晶石"
+    invalid:
+      title: "&c配方无效"
+      lore: "&r请在上方格子放入铸造材料\n在下方放入晶石"
+    no_item:
+      title: "&e无可用铸造方案"
+      lore: "&r请尝试多放几个铸造材料"
+  title:
+    enchant: "物品附魔"
+    forge: "物品铸造"

@@ -211,6 +211,9 @@ public class ForgeManager {
                 baseManager.loadId(section);
             }
         });
+        ConfigurationSection section = finalIdConf.getConfigurationSection(bonusManager.getClass().getName());
+        bonusManager.load();
+        bonusManager.loadId(section);
         loadNbtMap(managers);
     }
 
@@ -240,6 +243,8 @@ public class ForgeManager {
                 ironManager
         );
         bonusManager.save();
+        ConfigurationSection bonusId = idConf.createSection(bonusManager.getClass().getName());
+        bonusManager.saveId(bonusId);
         enchantBookManager.save();
         managers.forEach(baseManager -> {
             baseManager.save();
@@ -318,19 +323,15 @@ public class ForgeManager {
         }.runTaskAsynchronously(plugin);
     }
 
-    public YamlConfiguration listItem(String level, String element) {
-        YamlConfiguration yml = new YamlConfiguration();
+    public List<ForgeableItem> listItem(String level, String element) {
         Map<String, ForgeableItem> itemMap = forgeableItemManager.itemMap;
         if (!itemMap.isEmpty()) {
-            itemMap.values().stream()
+            return itemMap.values().stream()
                     .filter(forgeableItem -> level.equals(forgeableItem.getLevel()))
                     .filter(forgeableItem -> element.equals(forgeableItem.getElement()))
-                    .forEach(forgeableItem -> {
-                        ConfigurationSection section = yml.createSection(forgeableItem.id);
-                        forgeableItem.serialize(section);
-                    });
+                    .collect(Collectors.toList());
         }
-        return yml;
+        return null;
     }
 
     public String addBonus(ItemStack itemInMainHand) {
@@ -349,8 +350,11 @@ public class ForgeManager {
         return item;
     }
 
-    public void removeForgeableItem(String id) {
+    public ForgeableItem removeForgeableItem(String id) {
         ForgeableItem item = forgeableItemManager.getItem(id);
+        if (item == null) {
+            return null;
+        }
         nbtMap.remove(item.toNbt());
         forgeableItemManager.removeItem(id);
         new BukkitRunnable() {
@@ -363,6 +367,7 @@ public class ForgeManager {
                 }
             }
         }.runTaskAsynchronously(plugin);
+        return item;
     }
 
     public List<ForgeableItem> getItemsByRecipie(ForgeRecipe recipe) {
@@ -454,6 +459,11 @@ public class ForgeManager {
         } else return null;
     }
 
+    public BonusItem getBonus(String bonusId) {
+        BonusItem bonusItem = bonusManager.itemMap.get(bonusId);
+        return bonusItem;
+    }
+
     class ForgeableItemManager extends BaseManager<ForgeableItem> {
 
         @Override
@@ -519,7 +529,7 @@ public class ForgeManager {
             if (!parentDir.exists()) {
                 parentDir.mkdirs();
             }
-            File ymlFile = new File(dataDir, id);
+            File ymlFile = new File(parentDir, id+".yml");
             try {
                 ForgeableItem f = itemMap.get(id);
                 YamlConfiguration conf = new YamlConfiguration();
@@ -692,7 +702,7 @@ public class ForgeManager {
             }
             backupDirectory(ymlDir);
 
-            if (itemMap.isEmpty()) {
+            if (!itemMap.isEmpty()) {
                 itemMap.forEach((s, bonusItem) -> {
                     File ymlFile = new File(ymlDir, s + ".yml");
                     YamlConfiguration conf = new YamlConfiguration();
@@ -853,7 +863,9 @@ public class ForgeManager {
                         files) {
                     if (f.getName().endsWith(".yml")) {
                         File file = new File(backupDir, f.getName());
-                        Files.move(f.toPath(), file.toPath());
+                        if (file.exists()){
+                            Files.move(f.toPath(), file.toPath());
+                        }
                     }
                 }
             }

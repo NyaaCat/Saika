@@ -234,7 +234,7 @@ public class EnchantUi implements InventoryHolder {
     }
 
     public void openInventory(Player player) {
-        String title = I18n.format("ui.title.forge");
+        String title = I18n.format("ui.title.enchant");
         inventory = Bukkit.createInventory(this, InventoryType.FURNACE, title);
         ForgeUiEvents.registerEnchant(inventory, this);
         player.openInventory(inventory);

@@ -53,8 +53,12 @@ public class Configure extends PluginConfigure {
     @Serializable(name = "sound.success")
     public SoundConf successSound = new SoundConf();
 
+
     @Serializable(name = "sound.fail")
     public SoundConf failSound = new SoundConf();
+
+    @Serializable(name = "sound.bonus")
+    public SoundConf bonusSound = new SoundConf();
 
     @Serializable(name = "effect.forge")
     public EffectConf forgeEffect = new EffectConf();
@@ -68,6 +72,8 @@ public class Configure extends PluginConfigure {
     @Serializable(name = "effect.fail")
     public EffectConf failEffect = new EffectConf();
 
+
+
     @Serializable(name = "position.forge.block")
     public Material forgeBlock = Material.CRAFTING_TABLE;
 
@@ -79,6 +85,7 @@ public class Configure extends PluginConfigure {
 
     @Serializable(name = "position.enchant.distance")
     public int enchantDistance = 3;
+
 
     public static class SoundConf implements ISerializable {
         @Serializable

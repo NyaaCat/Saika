@@ -14,6 +14,7 @@ public class I18n extends LanguageRepository {
         this.plugin = plugin;
         language = plugin.getConfigure().language;
         INSTANCE = this;
+        load();
     }
 
     public static String format(String string, Object ... args) {
