@@ -34,21 +34,24 @@ modify:
     element: "成功修改 {itemName} 的元素为 %s"
     cost: "成功修改 {itemName} 的最低铸造消耗为 %d"
     weight: "成功修改 {itemName} 的权重为 %d"
-    recycle: "成功修改 {itemName} 的重铸信息为\n最低返还%d%, 最高返还%d%, 最少返还个数%d, 额外奖励id %d, 额外奖励几率%d%%s"
+    recycle: "成功修改 {itemName} 的重铸信息为\n最低返还%d%%, 最高返还%d%%, 最少返还个数%d, 额外奖励id %s, 额外奖励几率%.2f%%"
   error:
     recycle: "没有id为 %s 的额外奖励配置"
     no_item: "没有找到id为 %s 的可铸造物品"
     unknown: "未知修改目标"
 inspect:
-  info: "物品 id: %d {itemName}"
+  info: "物品 id: %s {itemName}"
   error:
     no_item: "没有id为 %s 的可铸造物品"
 list:
-  info: "物品 id: %d {itemName}"
+  info: "物品 id: %s {itemName}"
+  iron: "{itemName} &r*{amount}"
+  element: "{itemName} &r*{amount}"
+  forge_bonus: "铸造额外奖励: {itemName} &r*{amount} 几率: %.2f%%"
+  recycle_bonus: "回收额外奖励: {itemName} &r*{amount} 几率: %.2f%%"
   error:
     no_result: "没有满足条件的合成方案"
   success: "查询成功"
-
 bonus:
   set:
     forge: "成功设置额外奖励 %s 至合成配方 %s"
@@ -71,44 +74,45 @@ remove:
     no_item: "没有id为 %s 的物品"
 open:
   error:
-    no_required_block: "在附近 %d 范围内未找到 {block}"
+    no_required_block: "There are no {block} in %d blocks"
 enchant:
   error:
     insufficient_exp: "&c附魔所需要的经验值不足"
+
 ui:
   enchant:
     invalid:
-      title: "&c无效物品"
+      title: "&c&l无效物品"
       lore: "&r请在上方格子放入可附魔的物品，下方格子放入附魔书"
     valid:
-      title: "&a点击进行附魔"
-      lore: "&r附魔书将被消耗，结果和概率如下：\n&e大成功 {chance_great} ：添加全部附魔等级\n&e成功 {chance_normal} ：添加一半附魔等级\n&e失败 {chance_fail} ：不添加附魔等级\n&e大失败 {chance_destroy} ：不添加附魔等级并损毁物品\n&7附魔需要消耗100点经验"
+      title: "&a&l点击进行附魔"
+      lore: "&r附魔书将被消耗，结果和概率如下：\n&e大成功 {chance_great}%% ：添加全部附魔等级\n&e成功 {chance_normal}%% ：添加一半附魔等级\n&e失败 {chance_fail}%% ：不添加附魔等级\n&e大失败 {chance_destroy}%% ：损毁物品\n&7附魔需要消耗100点经验"
   repulse:
     invalid:
-      title: "无效物品"
-      lore: "&r请在上方格子放入带有非诅咒附魔的物品，下方格子放入消魔石"
+      title: "&c&l无效物品"
+      lore: "&r请在上方格子放入带有&e非诅咒附魔&r的物品，下方格子放入消魔石"
     valid:
-      title: "&a点击进行消魔"
-      lore: "&r将消耗一个消魔石，随机消除物品的一种非诅咒附魔的全部等级"
+      title: "&a&l点击进行消魔"
+      lore: "&r将消耗一个消魔石，随机消除物品的一种&e非诅咒附魔&r的全部等级"
   forge:
     valid:
-      title: "&a点击进行铸造"
-      lore: "&r将消耗所有铸造金属，消耗晶石数量如下：\n&e1 - 2 级铸造：消耗 1 个晶石\n&e3 - 4 级铸造：消耗 2 个晶石\n&e5 级铸造：消耗 3 个晶石"
+      title: "&a&l点击进行铸造"
+      lore: "&r将消耗&e所有&r铸造金属，消耗晶石数量如下：\n&e1 - 2 级铸造：消耗 1 个晶石\n&e3 - 4 级铸造：消耗 2 个晶石\n&e5 级铸造：消耗 3 个晶石"
     invalid:
-      title: "&c无效物品"
+      title: "&c&l无效物品"
       lore: "&r请在上方格子放入铸造金属，下方格子放入晶石"
     no_item:
-      title: "&e无可用铸造方案"
+      title: "&e&l无可用铸造方案"
       lore: "&r需要更多的铸造金属"
   recycle:
     invalid:
-      title: "无效物品"
-      lore: "&r请在上方格子放入带有铸造得到的物品，下方格子放入分解石"
+      title: "&c&l无效物品"
+      lore: "&r请在上方格子放入&e通过铸造得到&r的物品，下方格子放入分解石"
     valid:
-      title: "&a点击进行分解"
+      title: "&a&l点击进行分解"
       lore: "&r将消耗一个分解石，将物品分解为少量铸造金属，并获得一个晶石碎块"
   title:
-    enchant: "物品附魔"
-    repulse: "物品消魔"
-    forge: "物品铸造"
-    recycle: "物品分解"
+    enchant: "&5&l物品附魔"
+    repulse: "&9&l物品消魔"
+    forge: "&4&l物品铸造"
+    recycle: "&2&l物品分解"

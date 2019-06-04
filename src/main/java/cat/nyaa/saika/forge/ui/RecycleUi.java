@@ -156,6 +156,9 @@ public class RecycleUi implements InventoryHolder {
             int recycleResult = random.nextInt(recycle.max - recycle.min) + recycle.min;
             int amount = (int) Math.round(forgeableItem.getMinCost() * (((double) recycleResult)/100d));
             ForgeIron iron = forgeManager.getIron(forgeableItem.getLevel());
+            if (iron == null){
+                return null;
+            }
             ItemStack ista = iron.getItemStack().clone();
             ista.setAmount(Math.max(recycle.hard, amount));
             this.lastSuccessRecycle = forgeableItem;

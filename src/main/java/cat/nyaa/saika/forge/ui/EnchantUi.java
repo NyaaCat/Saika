@@ -31,6 +31,7 @@ public class EnchantUi implements InventoryHolder {
     ItemStack invalid;
     ItemStack valid;
     ItemStack resultItem = new ItemStack(Material.AIR);
+    int exp = 0;
 
     public EnchantUi() {
         invalid = new ItemStack(Material.RED_STAINED_GLASS, 1);
@@ -64,6 +65,7 @@ public class EnchantUi implements InventoryHolder {
     public void updateValidation() {
         ItemStack itemStack = inventory.getItem(0);
         ItemStack enchantSource = inventory.getItem(1);
+        exp = 0;
         if (itemStack == null || enchantSource == null || itemStack.getType().equals(Material.AIR) || enchantSource.getType().equals(Material.AIR)) {
             onInvalid();
             return;
@@ -91,6 +93,7 @@ public class EnchantUi implements InventoryHolder {
                     for (Map.Entry<Enchantment, Integer> entry : bookEnchants.entrySet()) {
                         Enchantment enchantment = entry.getKey();
                         Integer level = entry.getValue();
+                        exp += level;
                         if (enchants.containsKey(enchantment)) {
                             Integer originLevel = enchants.get(enchantment);
                             int enchantMaxLevel = Saika.plugin.getConfigure().enchantMaxLevel;
@@ -264,5 +267,9 @@ public class EnchantUi implements InventoryHolder {
     public void cost() {
         this.inventory.setItem(0, new ItemStack(Material.AIR));
         this.inventory.setItem(1, new ItemStack(Material.AIR));
+    }
+
+    public int getLevels() {
+        return exp;
     }
 }

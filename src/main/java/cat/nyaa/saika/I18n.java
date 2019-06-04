@@ -17,6 +17,12 @@ public class I18n extends LanguageRepository {
         load();
     }
 
+    @Override
+    public void load() {
+        language = plugin.getConfigure().language;
+        super.load();
+    }
+
     public static String format(String string, Object ... args) {
         return INSTANCE.getFormatted(string,args);
     }

@@ -1,5 +1,5 @@
 reload:
-  success: "&asuccessfully reloaded condig"
+  success: "&asuccessfully reloaded config"
 
 define:
   success:
@@ -39,11 +39,15 @@ modify:
     no_item: "no forgeable item for id %s"
     unknown: "unknown target"
 inspect:
-  info: "id: %d {itemName}"
+  info: "id: %s {itemName}"
   error:
     no_item: "no forgeable item for id %s"
 list:
-  info: "id: %d {itemName}"
+  info: "id: %s {itemName}"
+  iron: "{itemName} &r*{amount}"
+  element: "{itemName} &r*{amount}"
+  forge_bonus: "forge bonus: {itemName} &r*{amount} chance: %d"
+  recycle_bonus: "recycle bonus: {itemName} &r*{amount} chance: %d"
   error:
     no_result: "no suitable forge item"
   success: "query successful"

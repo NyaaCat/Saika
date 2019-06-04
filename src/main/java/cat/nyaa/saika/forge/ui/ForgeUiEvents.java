@@ -134,9 +134,11 @@ public class ForgeUiEvents implements Listener {
                 if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
                     repulseUi.updateValidation();
                     ItemStack itemStack = repulseUi.onRepulse();
-                    giveItem(ev, itemStack);
-                    spawnExp(ev);
-                    repulseUi.cost();
+                    if (itemStack != null) {
+                        giveItem(ev, itemStack);
+                        spawnExp(ev, repulseUi.getLevelRepulsed());
+                        repulseUi.cost();
+                    }
                 }
                 ev.setCancelled(true);
                 repulseUi.updateValidationLater();
@@ -214,7 +216,7 @@ public class ForgeUiEvents implements Listener {
                     enchantUi.updateValidation();
                     UUID uniqueId = ev.getWhoClicked().getUniqueId();
                     Player player = ev.getWhoClicked().getServer().getPlayer(uniqueId);
-                    int expCost = plugin.getConfigure().enchanExp;
+                    int expCost = plugin.getConfigure().enchantExp * enchantUi.getLevels();
                     int exp = ExperienceUtils.getExpPoints(player);
                     if (exp >= expCost) {
                         ItemStack itemStack = enchantUi.onEnchant();
@@ -255,7 +257,7 @@ public class ForgeUiEvents implements Listener {
                         ForgeIron iron = ForgeManager.getForgeManager().getIron(level);
                         forgeUi.cost(iron);
                         ItemStack bonus = forgeUi.onBonus(item);
-                        if(bonus!=null) {
+                        if (bonus != null) {
                             giveItemToBackpack(ev, bonus);
                         }
                         showForgeEffect(ev);
@@ -396,8 +398,8 @@ public class ForgeUiEvents implements Listener {
         world.playSound(location, sound.name, 1f, (float) sound.pitch);
     }
 
-    private void spawnExp(InventoryClickEvent ev) {
-        int repulseExp = plugin.getConfigure().repulseExp;
+    private void spawnExp(InventoryClickEvent ev, int levelRepulsed) {
+        int repulseExp = plugin.getConfigure().repulseExp * levelRepulsed;
         int orbAmount = Math.min(20, repulseExp);
         int expPerOrb = repulseExp / orbAmount;
         int remains = repulseExp - (expPerOrb * orbAmount);

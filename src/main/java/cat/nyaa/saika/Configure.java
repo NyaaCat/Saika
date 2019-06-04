@@ -20,8 +20,8 @@ public class Configure extends PluginConfigure {
     @Serializable(name = "forge.roll.maxWeightMultiplier")
     public double rollMaxWeightMultiplier = 3;
 
-    @Serializable(name = "enchant.repulseExp")
-    public int enchanExp = 100;
+    @Serializable(name = "enchant.enchantExp")
+    public int enchantExp = 100;
 
     @Serializable(name = "enchant.maxLevel")
     public int enchantMaxLevel = 10;

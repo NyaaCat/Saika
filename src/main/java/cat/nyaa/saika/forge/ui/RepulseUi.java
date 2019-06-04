@@ -28,12 +28,13 @@ public class RepulseUi implements InventoryHolder {
     ItemStack invalid;
     ItemStack valid;
     ItemStack resultItem = new ItemStack(Material.AIR);
+    int exp = 0;
 
     public RepulseUi() {
         invalid = new ItemStack(Material.RED_STAINED_GLASS, 1);
         valid = new ItemStack(Material.GREEN_STAINED_GLASS, 1);
-        addMeta(invalid, "ui.enchant.invalid.title", "ui.enchant.invalid.lore");
-        addMeta(valid, "ui.enchant.valid.title", "ui.enchant.valid.lore");
+        addMeta(invalid, "ui.repulse.invalid.title", "ui.repulse.invalid.lore");
+        addMeta(valid, "ui.repulse.valid.title", "ui.repulse.valid.lore");
     }
 
     private void addMeta(ItemStack item, String title, String lore) {
@@ -88,6 +89,7 @@ public class RepulseUi implements InventoryHolder {
         ItemStack itemStack = inventory.getItem(0);
         ItemStack item = inventory.getItem(1);
         resultItem = itemStack;
+        exp = 0;
         ForgeRepulse enchantBook = ForgeManager.getForgeManager().getRepulse(item);
         if (validation == RecipieValidation.VALID) {
             ItemStack clone = itemStack.clone();
@@ -107,7 +109,10 @@ public class RepulseUi implements InventoryHolder {
                 }
                 int size = validList.size();
                 int itemToRemove = random.nextInt(size);
-                itemMeta.removeEnchant(validList.get(itemToRemove));
+                Enchantment ench = validList.get(itemToRemove);
+                Integer level = itemEnchants.get(ench);
+                exp += level;
+                itemMeta.removeEnchant(ench);
                 resultItem.setItemMeta(itemMeta);
             }
             return resultItem;
@@ -158,5 +163,9 @@ public class RepulseUi implements InventoryHolder {
         }
         item.setAmount(item.getAmount() - 1);
         inventory.setItem(1, item);
+    }
+
+    int getLevelRepulsed(){
+        return exp;
     }
 }

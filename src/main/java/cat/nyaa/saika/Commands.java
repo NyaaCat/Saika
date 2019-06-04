@@ -4,6 +4,7 @@ import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
+import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.LocaleUtils;
 import cat.nyaa.saika.forge.*;
 import cat.nyaa.saika.forge.EnchantSource.EnchantmentType;
@@ -20,6 +21,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -229,7 +231,7 @@ public class Commands extends CommandReceiver {
                     .send(sender);
                 break;
             case "recycle":
-                int min = arguments.nextInt();
+                int min = Integer.parseInt(value);
                 int max = arguments.nextInt();
                 int hard = arguments.nextInt();
                 String bonus = arguments.nextString();
@@ -240,7 +242,7 @@ public class Commands extends CommandReceiver {
                             .send(sender);
                 }
                 forgeableItem.setRecycle(min, max, hard, bonus, chance);
-                new Message(I18n.format("modify.success.recycle", min, max, hard, bonus, chance)).append("", forgeableItem.getItemStack())
+                new Message("").append(I18n.format("modify.success.recycle", min, max, hard, bonus, chance), forgeableItem.getItemStack())
                         .send(sender);
                 break;
             default:
@@ -262,6 +264,7 @@ public class Commands extends CommandReceiver {
         if (forgeableItem != null) {
             new Message("").append(I18n.format("inspect.info", id), forgeableItem.getItemStack()) //&r{itemName}&r * {amount}
                     .send(sender);
+            sendItemInfo(sender, forgeManager, forgeableItem);
         } else {
             new Message(I18n.format("inspect.error.no_item", id))
                     .send(sender);
@@ -279,16 +282,54 @@ public class Commands extends CommandReceiver {
 
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         List<ForgeableItem> s = forgeManager.listItem(level, element);
+        s.sort(Comparator.comparingInt(ForgeableItem::getMinCost));
         if (!s.isEmpty()) {
             new Message(I18n.format(I18n.format("list.success")))
                     .send(sender);
             s.forEach(forgeableItem -> {
                 new Message("").append(I18n.format("list.info", forgeableItem.getId()), forgeableItem.getItemStack())
                         .send(sender);
+                sendItemInfo(sender, forgeManager, forgeableItem);
             });
         } else {
             new Message(I18n.format("list.error.no_result"))
                     .send(sender);
+        }
+    }
+
+    private void sendItemInfo(CommandSender sender, ForgeManager forgeManager, ForgeableItem forgeableItem) {
+        ForgeIron iron = forgeManager.getIron(forgeableItem.getLevel());
+        ItemStack ironItem;
+        if (iron == null){
+            ironItem = new ItemStack(Material.AIR);
+        }else {
+            ironItem = iron.getItemStack();
+            ironItem.setAmount(forgeableItem.getMinCost());
+        }
+        new Message("").append(I18n.format("list.iron"), ironItem)
+                .send(sender);
+        ForgeElement ele = forgeManager.getElement(forgeableItem.getElement());
+        ItemStack elementItem;
+        if (ele == null){
+            elementItem = new ItemStack(Material.AIR);
+        }else {
+            elementItem = ele.getItemStack();
+        }
+        new Message("").append(I18n.format("list.element"), elementItem)
+                .send(sender);
+        ForgeableItem.Bonus forgeBonus = forgeableItem.getForgeBonus();
+        if (!forgeBonus.item.equals("")) {
+            try{
+                ItemStack itemStack = ItemStackUtils.itemFromBase64(forgeBonus.item);
+                new Message("").append(I18n.format("list.forge_bonus", forgeBonus.chance), itemStack);
+            }catch (Exception e){}
+        }
+        ForgeableItem.Bonus recycleBonus = forgeableItem.getRecycleBonus();
+        if (!recycleBonus.item.equals("")){
+            try{
+                ItemStack itemStack = ItemStackUtils.itemFromBase64(recycleBonus.item);
+                new Message("").append(I18n.format("list.recycle_bonus", recycleBonus.chance), itemStack);
+            }catch (Exception e){}
         }
     }
 
@@ -342,19 +383,19 @@ public class Commands extends CommandReceiver {
                     case "forge":
                         forgeableItem.setForgeBonus(bonus);
                         manager.saveItem(id);
-                        new Message(I18n.format("bonus.set.forge", bonus, id))
+                        new Message(I18n.format("bonus.set.forge", bonusId, id))
                                 .send(sender);
                         break;
                     case "recycle":
                         forgeableItem.setRecycleBonus(bonus);
                         manager.saveItem(id);
-                        new Message(I18n.format("bonus.set.recycle", bonus, id))
+                        new Message(I18n.format("bonus.set.recycle", bonusId, id))
                                 .send(sender);
                         break;
                     default:
                         new Message("bonus.set.failed")
                                 .send(sender);
-                        throw new RuntimeException();
+                        return;
                 }
                 break;
             default:

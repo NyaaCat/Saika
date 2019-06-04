@@ -203,6 +203,10 @@ public class ForgeManager {
             enchantBookManager.load();
             enchantBookManager.enchants.loadId(finalIdConf.getConfigurationSection(enchantBookManager.enchants.getClass().getName()));
             enchantBookManager.repulses.loadId(finalIdConf.getConfigurationSection(enchantBookManager.repulses.getClass().getName()));
+
+            ConfigurationSection bonusSection = finalIdConf.getConfigurationSection(bonusManager.getClass().getName());
+            bonusManager.load();
+            bonusManager.loadId(bonusSection);
         }
         managers.forEach(baseManager -> {
             baseManager.load();
@@ -211,9 +215,6 @@ public class ForgeManager {
                 baseManager.loadId(section);
             }
         });
-        ConfigurationSection section = finalIdConf.getConfigurationSection(bonusManager.getClass().getName());
-        bonusManager.load();
-        bonusManager.loadId(section);
         loadNbtMap(managers);
     }
 
@@ -462,6 +463,13 @@ public class ForgeManager {
     public BonusItem getBonus(String bonusId) {
         BonusItem bonusItem = bonusManager.itemMap.get(bonusId);
         return bonusItem;
+    }
+
+    public ForgeElement getElement(String element) {
+        return elementManager.itemMap.values().stream()
+                .filter(element1 -> element1.element.equals(element))
+                .findAny()
+                .orElse(null);
     }
 
     class ForgeableItemManager extends BaseManager<ForgeableItem> {
