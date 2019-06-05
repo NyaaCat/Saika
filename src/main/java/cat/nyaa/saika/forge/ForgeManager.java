@@ -472,6 +472,14 @@ public class ForgeManager {
                 .orElse(null);
     }
 
+    public List<String> getLevelList() {
+        return ironManager.itemMap.values().stream().map(iron -> iron.id).collect(Collectors.toList());
+    }
+
+    public List<String> getElementList() {
+        return elementManager.itemMap.values().stream().map(element -> element.element).collect(Collectors.toList());
+    }
+
     class ForgeableItemManager extends BaseManager<ForgeableItem> {
 
         @Override

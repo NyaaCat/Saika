@@ -20,10 +20,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -34,20 +31,202 @@ public class Commands extends CommandReceiver {
     private static final String PERMISSION_LIST = "saika.list";
 
     Saika plugin;
+    SaikaCommandCompleter commandCompleter;
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        //todo
-        switch (args.length){
-            case 1:
-
+        if (args.length> 0) {
+            List<String> strings = commandCompleter.onSubCommand(args[0], args);
+            if (strings == null) {
+                return super.onTabComplete(sender, command, alias, args);
+            }
+            return strings;
+        } else {
+            return super.onTabComplete(sender, command, alias, args);
         }
-        return super.onTabComplete(sender, command, alias, args);
+    }
+
+    class SaikaCommandCompleter {
+        List<String> open = Arrays.asList("forge", "enchant", "repulse", "recycle");
+        List<String> add;
+        List<String> define = Arrays.asList("level", "element", "enchant", "repulse", "recycle");
+        List<String> list;
+
+        List<String> onSubCommand(String subCommand, String[] arguments) {
+            List<String> str = null;
+            switch (subCommand) {
+                case "open":
+                    str = completeOpen(subCommand, arguments);
+                    break;
+                case "add":
+                    str = completeAdd(subCommand, arguments);
+                    break;
+                case "define":
+                    str = completeDefine(subCommand, arguments);
+                    break;
+                case "delete":
+                    str = completeDelete(subCommand, arguments);
+                    break;
+                case "remove":
+                    str = completeRemove(subCommand, arguments);
+                    break;
+                case "modify":
+                    str = completeModify(subCommand, arguments);
+                    break;
+                case "bonus":
+                    str = completeBonus(subCommand, arguments);
+                    break;
+                case "inspect":
+                    str = completeInspect(subCommand, arguments);
+                    break;
+                case "list":
+                    str = completeList(subCommand, arguments);
+                    break;
+                default:
+                    break;
+            }
+            return str;
+        }
+
+        List<String> completeOpen(String subCommand, String[] arguments) {
+            if (arguments.length > 2) {
+                return new ArrayList<>();
+            }
+            return open;
+        }
+
+        List<String> completeAdd(String subCommand, String[] arguments) {
+            List<String> str = new ArrayList<>();
+            switch (arguments.length) {
+                case 1:
+                    str.add("level");
+                    break;
+                case 2:
+                    str.add("element");
+                    break;
+                case 3:
+                    str.add("consumption");
+                    break;
+                case 4:
+                    str.add("weight");
+                    break;
+            }
+            return str;
+        }
+
+        List<String> completeDefine(String subCommand, String[] arguments) {
+            List<String> str = new ArrayList<>();
+            String top = arguments[1];
+            if (top == null) {
+                return define;
+            }
+            switch (top) {
+                case "level":
+                    if (arguments[2] == null) {
+                        str.add("level");
+                    } else {
+                        str.add("element-consumption");
+                    }
+                    break;
+                case "element":
+                    str.add("element");
+                    break;
+                case "enchant":
+                    break;
+                case "repulse":
+                    break;
+                default:
+                    break;
+            }
+            return str;
+        }
+
+        List<String> completeDelete(String subCommand, String[] arguments) {
+            List<String> str = new ArrayList<>();
+            String top = arguments[1];
+            if (top == null) {
+                return define;
+            }
+            str.add("id");
+            return str;
+        }
+
+        List<String> completeRemove(String subCommand, String[] arguments) {
+            List<String> str = new ArrayList<>();
+            str.add("id");
+            return str;
+        }
+
+        List<String> completeModify(String subCommand, String[] arguments) {
+            List<String> str = new ArrayList<>();
+            switch (arguments.length) {
+                case 1:
+                    str.add("id");
+                    break;
+                case 2:
+                    str = define;
+                    break;
+                case 3:
+                    str.add("value");
+                    break;
+                default:
+                    break;
+            }
+            return str;
+        }
+
+        List<String> completeBonus(String subCommand, String[] arguments) {
+            List<String> str = new ArrayList<>();
+            switch (arguments.length) {
+                case 1:
+                    str.add("add");
+                    str.add("set");
+                    break;
+                case 2:
+                    str.add("forge");
+                    str.add("recycle");
+                    break;
+                case 3:
+                    str.add("forge id");
+                    break;
+                case 4:
+                    str.add("bonus id");
+                    break;
+                case 5:
+                    str.add("probability");
+                    break;
+                default:
+                    break;
+            }
+            return str;
+        }
+
+        List<String> completeInspect(String subCommand, String[] arguments) {
+            List<String> str = new ArrayList<>();
+            if (arguments.length == 1) {
+                str.add("id");
+            }
+            return str;
+        }
+
+        List<String> completeList(String subCommand, String[] arguments) {
+            List<String> str = new ArrayList<>();
+            switch (arguments.length){
+                case 1:
+                    str.add("level");
+                    break;
+                case 2:
+                    str.add("element");
+                    break;
+            }
+            return str;
+        }
     }
 
     public Commands(Saika plugin, ILocalizer _i18n) {
         super(plugin, _i18n);
         this.plugin = plugin;
+        commandCompleter = new SaikaCommandCompleter();
     }
 
     @Override
@@ -57,7 +236,7 @@ public class Commands extends CommandReceiver {
 
     @SubCommand("reload")
     public void onReload(CommandSender sender, Arguments arguments) {
-        if (dontHavePermission(sender, PERMISSION_ADMIN, "")){
+        if (dontHavePermission(sender, PERMISSION_ADMIN, "")) {
             return;
         }
         plugin.reload();
@@ -213,7 +392,7 @@ public class Commands extends CommandReceiver {
             case "level":
                 forgeableItem.setLevel(value);
                 new Message("").append(I18n.format("modify.success.level", value), forgeableItem.getItemStack())
-                            .send(sender);
+                        .send(sender);
                 break;
             case "element":
                 forgeableItem.setElement(value);
@@ -228,7 +407,7 @@ public class Commands extends CommandReceiver {
             case "weight":
                 forgeableItem.setWeight(Integer.parseInt(value));
                 new Message("").append(I18n.format("modify.success.weight", value), forgeableItem.getItemStack())
-                    .send(sender);
+                        .send(sender);
                 break;
             case "recycle":
                 int min = Integer.parseInt(value);
@@ -237,7 +416,7 @@ public class Commands extends CommandReceiver {
                 String bonus = arguments.nextString();
                 double chance = arguments.nextDouble();
                 BonusItem bonusItem = forgeManager.getBonus(bonus);
-                if (bonusItem  == null){
+                if (bonusItem == null) {
                     new Message(I18n.format("modify.error.recycle", bonus))
                             .send(sender);
                 }
@@ -262,9 +441,9 @@ public class Commands extends CommandReceiver {
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         ForgeableItem forgeableItem = forgeManager.getForgeableItem(id);
         if (forgeableItem != null) {
-            new Message("").append(I18n.format("inspect.info", id), forgeableItem.getItemStack()) //&r{itemName}&r * {amount}
-                    .send(sender);
-            sendItemInfo(sender, forgeManager, forgeableItem);
+            Message message = new Message("").append(I18n.format("inspect.info", id), forgeableItem.getItemStack());//&r{itemName}&r * {amount}
+            sendItemInfo(sender, message, forgeManager, forgeableItem);
+            message.send(sender);
         } else {
             new Message(I18n.format("inspect.error.no_item", id))
                     .send(sender);
@@ -284,12 +463,12 @@ public class Commands extends CommandReceiver {
         List<ForgeableItem> s = forgeManager.listItem(level, element);
         s.sort(Comparator.comparingInt(ForgeableItem::getMinCost));
         if (!s.isEmpty()) {
-            new Message(I18n.format(I18n.format("list.success")))
+            new Message(I18n.format("list.success"))
                     .send(sender);
             s.forEach(forgeableItem -> {
-                new Message("").append(I18n.format("list.info", forgeableItem.getId()), forgeableItem.getItemStack())
-                        .send(sender);
-                sendItemInfo(sender, forgeManager, forgeableItem);
+                Message message = new Message("").append(I18n.format("list.info", forgeableItem.getId()), forgeableItem.getItemStack());
+                sendItemInfo(sender, message, forgeManager, forgeableItem);
+                message.send(sender);
             });
         } else {
             new Message(I18n.format("list.error.no_result"))
@@ -297,39 +476,39 @@ public class Commands extends CommandReceiver {
         }
     }
 
-    private void sendItemInfo(CommandSender sender, ForgeManager forgeManager, ForgeableItem forgeableItem) {
+    private void sendItemInfo(CommandSender sender, Message message, ForgeManager forgeManager, ForgeableItem forgeableItem) {
         ForgeIron iron = forgeManager.getIron(forgeableItem.getLevel());
         ItemStack ironItem;
-        if (iron == null){
+        if (iron == null) {
             ironItem = new ItemStack(Material.AIR);
-        }else {
+        } else {
             ironItem = iron.getItemStack();
             ironItem.setAmount(forgeableItem.getMinCost());
         }
-        new Message("").append(I18n.format("list.iron"), ironItem)
-                .send(sender);
+        message.append(I18n.format("list.iron"), ironItem);
         ForgeElement ele = forgeManager.getElement(forgeableItem.getElement());
         ItemStack elementItem;
-        if (ele == null){
+        if (ele == null) {
             elementItem = new ItemStack(Material.AIR);
-        }else {
+        } else {
             elementItem = ele.getItemStack();
         }
-        new Message("").append(I18n.format("list.element"), elementItem)
-                .send(sender);
+        message.append(I18n.format("list.element"), elementItem);
         ForgeableItem.Bonus forgeBonus = forgeableItem.getForgeBonus();
         if (!forgeBonus.item.equals("")) {
-            try{
+            try {
                 ItemStack itemStack = ItemStackUtils.itemFromBase64(forgeBonus.item);
-                new Message("").append(I18n.format("list.forge_bonus", forgeBonus.chance), itemStack);
-            }catch (Exception e){}
+                message.append(I18n.format("list.forge_bonus", forgeBonus.chance), itemStack);
+            } catch (Exception e) {
+            }
         }
         ForgeableItem.Bonus recycleBonus = forgeableItem.getRecycleBonus();
-        if (!recycleBonus.item.equals("")){
-            try{
+        if (!recycleBonus.item.equals("")) {
+            try {
                 ItemStack itemStack = ItemStackUtils.itemFromBase64(recycleBonus.item);
-                new Message("").append(I18n.format("list.recycle_bonus", recycleBonus.chance), itemStack);
-            }catch (Exception e){}
+                message.append(I18n.format("list.recycle_bonus", recycleBonus.chance), itemStack);
+            } catch (Exception e) {
+            }
         }
     }
 
@@ -371,7 +550,7 @@ public class Commands extends CommandReceiver {
                 }
                 BonusItem bonusItem = manager.getBonus(bonusId);
                 if (bonusItem == null) {
-                    new Message(I18n.format("bonus.set.no_item",bonusId))
+                    new Message(I18n.format("bonus.set.no_item", bonusId))
                             .send(sender);
                     return;
                 }
@@ -439,7 +618,7 @@ public class Commands extends CommandReceiver {
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         if (forgeManager.hasItem(id)) {
             ForgeableItem item = forgeManager.removeForgeableItem(id);
-            if (item == null){
+            if (item == null) {
                 new Message(I18n.format("remove.error.no_item", id))
                         .send(sender);
                 return;
