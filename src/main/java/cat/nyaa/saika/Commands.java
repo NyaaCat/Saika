@@ -98,16 +98,16 @@ public class Commands extends CommandReceiver {
         List<String> completeAdd(String subCommand, String[] arguments) {
             List<String> str = new ArrayList<>();
             switch (arguments.length) {
-                case 1:
+                case 2:
                     str.add("level");
                     break;
-                case 2:
+                case 3:
                     str.add("element");
                     break;
-                case 3:
+                case 4:
                     str.add("consumption");
                     break;
-                case 4:
+                case 5:
                     str.add("weight");
                     break;
             }
@@ -160,13 +160,13 @@ public class Commands extends CommandReceiver {
         List<String> completeModify(String subCommand, String[] arguments) {
             List<String> str = new ArrayList<>();
             switch (arguments.length) {
-                case 1:
+                case 2:
                     str.add("id");
                     break;
-                case 2:
+                case 3:
                     str = define;
                     break;
-                case 3:
+                case 4:
                     str.add("value");
                     break;
                 default:
@@ -178,21 +178,21 @@ public class Commands extends CommandReceiver {
         List<String> completeBonus(String subCommand, String[] arguments) {
             List<String> str = new ArrayList<>();
             switch (arguments.length) {
-                case 1:
+                case 2:
                     str.add("add");
                     str.add("set");
                     break;
-                case 2:
+                case 3:
                     str.add("forge");
                     str.add("recycle");
                     break;
-                case 3:
+                case 4:
                     str.add("forge id");
                     break;
-                case 4:
+                case 5:
                     str.add("bonus id");
                     break;
-                case 5:
+                case 6:
                     str.add("probability");
                     break;
                 default:
@@ -203,8 +203,9 @@ public class Commands extends CommandReceiver {
 
         List<String> completeInspect(String subCommand, String[] arguments) {
             List<String> str = new ArrayList<>();
-            if (arguments.length == 1) {
-                str.add("id");
+            ForgeManager forgeManager = ForgeManager.getForgeManager();
+            if (arguments.length == 2) {
+                str = forgeManager.getItemList();
             }
             return str;
         }
@@ -212,10 +213,10 @@ public class Commands extends CommandReceiver {
         List<String> completeList(String subCommand, String[] arguments) {
             List<String> str = new ArrayList<>();
             switch (arguments.length){
-                case 1:
+                case 2:
                     str.add("level");
                     break;
-                case 2:
+                case 3:
                     str.add("element");
                     break;
             }
@@ -647,8 +648,6 @@ public class Commands extends CommandReceiver {
             return false;
         }
         if (!checkRequiredBlock((Player) sender, action)) {
-            new Message("open.error.unknown_operation")
-                    .send(sender);
             return false;
         }
         switch (action) {

@@ -480,6 +480,10 @@ public class ForgeManager {
         return elementManager.itemMap.values().stream().map(element -> element.element).collect(Collectors.toList());
     }
 
+    public List<String> getItemList() {
+        return forgeableItemManager.itemMap.values().stream().map(ForgeItem::getId).collect(Collectors.toList());
+    }
+
     class ForgeableItemManager extends BaseManager<ForgeableItem> {
 
         @Override
