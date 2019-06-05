@@ -74,7 +74,7 @@ remove:
     no_item: "没有id为 %s 的物品"
 open:
   error:
-    no_required_block: "There are no {block} in %d blocks"
+    no_required_block: "&c访问失败。&6请移动到 {block} 附近 %d 方块距离内"
 enchant:
   error:
     insufficient_exp: "&c附魔所需要的经验值不足"
@@ -82,37 +82,37 @@ enchant:
 ui:
   enchant:
     invalid:
-      title: "&c&l无效物品"
-      lore: "&r请在上方格子放入可附魔的物品，下方格子放入附魔书"
+      title: "&c&l无法附魔"
+      lore: "&r请在上方放入可附魔的物品\n&r下方放入有效的附魔书\n&r并保证经验值充足"
     valid:
-      title: "&a&l点击进行附魔"
-      lore: "&r附魔书将被消耗，结果和概率如下：\n&e大成功 {chance_great}%% ：添加全部附魔等级\n&e成功 {chance_normal}%% ：添加一半附魔等级\n&e失败 {chance_fail}%% ：不添加附魔等级\n&e大失败 {chance_destroy}%% ：损毁物品\n&7附魔需要消耗100点经验"
+      title: "&a&l点击附魔"
+      lore: "&r消耗附魔书并添加全部或部分附魔到物品\n\n&r附魔概率参考\n&e大成功 {chance_great}%% ：添加全部附魔等级\n&e成功 {chance_normal}%% ：添加一半附魔等级\n&e失败 {chance_fail}%% ：不添加附魔等级\n&e大失败 {chance_destroy}%% ：损毁物品\n&7m每级附魔需要消耗 100 点经验"
   repulse:
     invalid:
       title: "&c&l无效物品"
-      lore: "&r请在上方格子放入带有&e非诅咒附魔&r的物品，下方格子放入消魔石"
+      lore: "&r请在上方放入将要消魔的物品，下方放入消魔石\n&r&c消失诅咒&f不能被消除"
     valid:
-      title: "&a&l点击进行消魔"
-      lore: "&r将消耗一个消魔石，随机消除物品的一种&e非诅咒附魔&r的全部等级"
+      title: "&a&l点击消魔"
+      lore: "&r消耗一个消魔石，随机消除物品附魔其中一项的全部等级\n&r&c消失诅咒&f不能被消除"
   forge:
     valid:
-      title: "&a&l点击进行铸造"
-      lore: "&r将消耗&e所有&r铸造金属，消耗晶石数量如下：\n&e1 - 2 级铸造：消耗 1 个晶石\n&e3 - 4 级铸造：消耗 2 个晶石\n&e5 级铸造：消耗 3 个晶石"
+      title: "&a&l点击铸造"
+      lore: "&r消耗&e所有&r铸造金属\n&r并根据金属等级消耗晶石\n\n&r晶石消耗参考\n&e1 - 2 级铸造：消耗 1 个晶石\n&e3 - 4 级铸造：消耗 2 个晶石\n&e5 级铸造：消耗 3 个晶石"
     invalid:
       title: "&c&l无效物品"
-      lore: "&r请在上方格子放入铸造金属，下方格子放入晶石"
+      lore: "&r请在上方放入铸造金属，下方放入晶石"
     no_item:
       title: "&e&l无可用铸造方案"
-      lore: "&r需要更多的铸造金属"
+      lore: "&f可能的参考\n&b- 增加金属数量\n&b- 增加晶石数量\n&b- 更换金属等级或晶石属性"
   recycle:
     invalid:
       title: "&c&l无效物品"
-      lore: "&r请在上方格子放入&e通过铸造得到&r的物品，下方格子放入分解石"
+      lore: "&r请在上方放入&e通过铸造得到&r的物品\n&r下方放入分解石"
     valid:
-      title: "&a&l点击进行分解"
-      lore: "&r将消耗一个分解石，将物品分解为少量铸造金属，并获得一个晶石碎块"
+      title: "&a&l点击分解"
+      lore: "&r消耗一个分解石\n&r将物品分解为少量铸造金属\n&6有几率获得一个晶石碎块"
   title:
-    enchant: "&5&l物品附魔"
-    repulse: "&9&l物品消魔"
-    forge: "&4&l物品铸造"
-    recycle: "&2&l物品分解"
+    enchant: "&5&l附魔"
+    repulse: "&9&l消魔"
+    forge: "&4&l铸造"
+    recycle: "&2&l分解"
