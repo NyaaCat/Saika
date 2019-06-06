@@ -7,15 +7,19 @@ import org.bukkit.inventory.ItemStack;
 public class BonusItem implements BaseManager.NbtedISerializable {
     @Serializable
     String id = "";
+
     @Serializable
     String nbt = "";
-
     BonusItem(){
 
     }
 
     BonusItem(ItemStack itemStack){
         nbt = ItemStackUtils.itemToBase64(itemStack);
+    }
+
+    public String getId() {
+        return id;
     }
 
     @Override

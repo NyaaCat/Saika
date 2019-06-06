@@ -589,7 +589,7 @@ public class Commands extends CommandReceiver {
                     return;
                 }
                 ForgeableItem.Bonus bonus = new ForgeableItem.Bonus();
-                bonus.item = bonusItem.toNbt();
+                bonus.item = bonusItem.getId();
                 bonus.chance = probability;
                 ForgeableItem forgeableItem = manager.getForgeableItem(id);
                 switch (type) {
