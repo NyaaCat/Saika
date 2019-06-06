@@ -332,7 +332,7 @@ public class ForgeManager {
                     .filter(forgeableItem -> element.equals(forgeableItem.getElement()))
                     .collect(Collectors.toList());
         }
-        return null;
+        return new ArrayList<>();
     }
 
     public String addBonus(ItemStack itemInMainHand) {
@@ -536,12 +536,14 @@ public class ForgeManager {
 
         void removeItemFile(String id) throws IOException {
             File parentDir = new File(dataDir, "items");
-            File ymlFile = new File(dataDir, id + ".yml");
+            File ymlFile = new File(parentDir, id + ".yml");
             File deleted = new File(dataDir, "deleted");
             if (!deleted.exists()) {
                 deleted.mkdir();
             }
-            Files.move(ymlFile.toPath(), new File(deleted, id + ".yml.deleted").toPath());
+            if (ymlFile.exists()){
+                Files.move(ymlFile.toPath(), new File(deleted, id + ".yml.deleted").toPath());
+            }
         }
 
         public void saveItem(String id) {

@@ -218,8 +218,11 @@ public class EnchantUi implements InventoryHolder {
 
                     nextLevel = Math.min(nextLevel + resultLevel, enchantMaxLevel);
                     itemMeta.removeEnchant(enchantment);
-                    itemMeta.addEnchant(enchantment, nextLevel, true);
-                    break;case REPULSE: nextLevel = Math.max(level - nextLevel, 0);
+                    if (nextLevel > 0) {
+                        itemMeta.addEnchant(enchantment, nextLevel, true);
+                    }
+                    break;
+                    case REPULSE: nextLevel = Math.max(level - nextLevel, 0);
                     itemMeta.removeEnchant(enchantment);
                     if (nextLevel > 0) {
                         itemMeta.addEnchant(enchantment, nextLevel, true);

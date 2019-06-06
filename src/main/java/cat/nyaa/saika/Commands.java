@@ -122,7 +122,7 @@ public class Commands extends CommandReceiver {
             }
             switch (top) {
                 case "level":
-                    if (arguments[2] == null) {
+                    if (arguments.length<3 || arguments[2] == null) {
                         str.add("level");
                     } else {
                         str.add("element-consumption");
@@ -411,19 +411,52 @@ public class Commands extends CommandReceiver {
                         .send(sender);
                 break;
             case "recycle":
-                int min = Integer.parseInt(value);
-                int max = arguments.nextInt();
-                int hard = arguments.nextInt();
-                String bonus = arguments.nextString();
-                double chance = arguments.nextDouble();
-                BonusItem bonusItem = forgeManager.getBonus(bonus);
-                if (bonusItem == null) {
-                    new Message(I18n.format("modify.error.recycle", bonus))
-                            .send(sender);
+                String action = arguments.nextString();
+                ForgeableItem.RecycleInfo recycle = forgeableItem.getRecycle();
+                switch (action){
+                    case "min":
+                        int min = Integer.parseInt(value);
+                        forgeableItem.setRecycle(min, recycle.max, recycle.hard, recycle.bonus.item, recycle.bonus.chance);
+                        new Message("").append(I18n.format("modify.success.recycle.min", min), forgeableItem.getItemStack())
+                                .send(sender);
+                        break;
+                    case "max":
+                        int max = Integer.parseInt(value);
+                        forgeableItem.setRecycle(recycle.min, max, recycle.hard, recycle.bonus.item, recycle.bonus.chance);
+                        new Message("").append(I18n.format("modify.success.recycle.max", max), forgeableItem.getItemStack())
+                                .send(sender);
+                        break;
+                    case "hard":
+                        int hard = Integer.parseInt(value);
+                        forgeableItem.setRecycle(recycle.min, recycle.max, hard, recycle.bonus.item, recycle.bonus.chance);
+                        new Message("").append(I18n.format("modify.success.recycle.hard", hard), forgeableItem.getItemStack())
+                                .send(sender);
+                        break;
+                    case "bonus":
+                        String bonus = arguments.nextString();
+                        if (bonus.equals("-1")){
+                            forgeableItem.setRecycle(recycle.min, recycle.max, recycle.hard, "", recycle.bonus.chance);
+                            new Message("").append(I18n.format("modify.success.recycle.no_bonus"), forgeableItem.getItemStack())
+                                    .send(sender);
+                            return;
+                        }
+                        BonusItem bonusItem = forgeManager.getBonus(bonus);
+                        if (bonusItem == null) {
+                            new Message(I18n.format("modify.error.recycle", bonus))
+                                    .send(sender);
+                            return;
+                        }
+                        forgeableItem.setRecycle(recycle.min, recycle.max, recycle.hard, bonusItem.toNbt(), recycle.bonus.chance);
+                        new Message("").append(I18n.format("modify.success.recycle.bonus", bonus), forgeableItem.getItemStack())
+                                .send(sender);
+                        break;
+                    case "chance":
+                        double chance = arguments.nextDouble();
+                        forgeableItem.setRecycle(recycle.min, recycle.max, recycle.hard, recycle.bonus.item, chance);
+                        new Message("").append(I18n.format("modify.success.recycle.chance", chance), forgeableItem.getItemStack())
+                                .send(sender);
+                        break;
                 }
-                forgeableItem.setRecycle(min, max, hard, bonus, chance);
-                new Message("").append(I18n.format("modify.success.recycle", min, max, hard, bonus, chance), forgeableItem.getItemStack())
-                        .send(sender);
                 break;
             default:
                 new Message(I18n.format("modify.error.unknown"))
@@ -608,6 +641,8 @@ public class Commands extends CommandReceiver {
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         ForgeableItem item = forgeManager.addItem(itemInMainHand, level, element, cost, weight);
         ((Player) sender).getInventory().setItemInMainHand(item.getItemStack());
+        new Message("").append(I18n.format("add.success", item.getId()), item.getItemStack())
+                .send(sender);
     }
 
     @SubCommand("remove")

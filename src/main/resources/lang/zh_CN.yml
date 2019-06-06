@@ -33,8 +33,14 @@ modify:
     level: "成功修改 {itemName} 的等级为 %s"
     element: "成功修改 {itemName} 的元素为 %s"
     cost: "成功修改 {itemName} 的最低铸造消耗为 %d"
-    weight: "成功修改 {itemName} 的权重为 %d"
-    recycle: "成功修改 {itemName} 的重铸信息为\n最低返还 %d%%, 最高返还 %d%%, 最少返还个数 %d, 额外奖励 id %s, 额外奖励几率 %.2f%%"
+    weight: "成功修改 {itemName} 的权重为 %s"
+    recycle:
+      min: "成功修改 {itemName} 的最低返还率为 %s%%"
+      max: "成功修改 {itemName} 的最高返还率为 %s%%"
+      hard: "成功修改 {itemName} 的最低返还个数为 %s"
+      no_bonus: "成功修改 {itemName} 的额外为 无"
+      bonus: "成功修改 {itemName} 的额外奖励为 %s"
+      chance: "成功修改 {itemName} 的额外几率为 %.2f%%" # "成功修改 {itemName} 的重铸信息为\n最低返还 %d%%, 最高返还 %d%%, 最少返还个数 %d, 额外奖励 id %s, 额外奖励几率 %.2f%%"
   error:
     recycle: "没有id为 %s 的额外奖励配置"
     no_item: "没有找到id为 %s 的可铸造物品"
@@ -66,6 +72,7 @@ error:
   not_player: "只有玩家才能执行此命令"
   permission: "你没有 %s 权限"
 add:
+  success: "成功添加物品 %s {itemName} *{amount}"
   error:
     no_item: "主手没有物品"
 remove:

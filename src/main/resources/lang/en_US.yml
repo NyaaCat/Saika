@@ -33,7 +33,13 @@ modify:
     element: "modified {itemName} 's element to %s"
     cost: "modified {itemName} 's minimal cost to %d"
     weight: "modified {itemName} 's weight to %d"
-    recycle: "modified {itemName} 's recycling infomation to\nmin percentage:%d%, max %d%, 最少返还个数%d, 额外奖励id %d, 额外奖励几率%d%%s"
+    recycle:
+      min: "modified {itemName} 's min recycle percentage to %s%%"
+      max: "modified {itemName} 's max recycle percentage to %s%%"
+      hard: "modified {itemName} 's minimum amount to %s"
+      no_bonus: "modified {itemName} 's  to none"
+      bonus: "modified {itemName} 's bonus id to %s"
+      chance: "modified {itemName} 's bonus chance to %.2f%%"
   error:
     recycle: "no bonus config for id %s "
     no_item: "no forgeable item for id %s"
@@ -68,6 +74,7 @@ error:
   not_player: "only players can use this command"
   permission: "you don't have permission %s"
 add:
+  success: "successfully added item %s {itemName} *{amount}"
   error:
     no_item: "there's no item in your main hand"
 remove:

@@ -108,7 +108,7 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
         return ForgeItemType.ITEM;
     }
 
-    public void setRecycle(int min, int max, int value, String bonus, double chance) {
+    public void  setRecycle(int min, int max, int value, String bonus, double chance) {
         recycle.min = min;
         recycle.max =max;
         recycle.hard = value;
