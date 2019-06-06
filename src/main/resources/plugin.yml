@@ -13,3 +13,26 @@ commands:
     permission: saika.command
     permission-message: "You do not have the required permission: <permission>"
     usage: "/<command> [SubCommand...] [Arguments...] or /<command> help"
+permissions:
+  saika.admin.add:
+    description: add a forgeable item.
+    default: op
+  saika.admin.define:
+    description: define a forge iron/element/enchant/repulse.
+    default: op
+  saika.admin.delete:
+    description: delete a forge iron/element/enchant/repulse.
+    default: op
+  saika.admin.modify:
+    description: modify a forge iron/element/enchant/repulse.
+    default: op
+  saika.admin.bonus:
+    description: manage bonus items
+    default: op
+  saika.admin.remove:
+    description: remove a forgeable item
+    default: op
+
+  saika.open:
+    description: open a forge UI
+    default: true
