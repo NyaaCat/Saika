@@ -3,10 +3,7 @@ package cat.nyaa.saika.forge.ui;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.saika.I18n;
 import cat.nyaa.saika.Saika;
-import cat.nyaa.saika.forge.ForgeElement;
-import cat.nyaa.saika.forge.ForgeIron;
-import cat.nyaa.saika.forge.ForgeManager;
-import cat.nyaa.saika.forge.ForgeableItem;
+import cat.nyaa.saika.forge.*;
 import cat.nyaa.saika.forge.roll.ForgeRecipe;
 import cat.nyaa.saika.forge.roll.RecipieValidation;
 import org.bukkit.Bukkit;
@@ -160,7 +157,9 @@ public class ForgeUi implements InventoryHolder {
         }
         int result = random.nextInt(100);
         if (result < chance){
-            return ItemStackUtils.itemFromBase64(forgeBonus.item);
+            ForgeManager forgeManager = ForgeManager.getForgeManager();
+            BonusItem bonus = forgeManager.getBonus(forgeBonus.item);
+            return ItemStackUtils.itemFromBase64(bonus.toNbt());
         }
         else return null;
     }

@@ -24,6 +24,9 @@ public abstract class BaseManager<T extends BaseManager.NbtedISerializable> impl
     }
 
     public int nextId(){
+        while (itemMap.containsKey(String.valueOf(id))){
+            id++;
+        }
         return id++;
     }
 

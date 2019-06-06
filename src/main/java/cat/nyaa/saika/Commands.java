@@ -446,7 +446,7 @@ public class Commands extends CommandReceiver {
                                     .send(sender);
                             return;
                         }
-                        forgeableItem.setRecycle(recycle.min, recycle.max, recycle.hard, bonusItem.toNbt(), recycle.bonus.chance);
+                        forgeableItem.setRecycle(recycle.min, recycle.max, recycle.hard, bonus, recycle.bonus.chance);
                         new Message("").append(I18n.format("modify.success.recycle.bonus", bonus), forgeableItem.getItemStack())
                                 .send(sender);
                         break;

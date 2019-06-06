@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static cat.nyaa.nyaacore.BasicItemMatcher.MatchingMode.ARBITRARY;
 import static cat.nyaa.saika.forge.BaseManager.NbtedISerializable;
@@ -112,7 +113,7 @@ public class ForgeManager {
         ItemStack clone = itemStack.clone();
         removeStoredEnchants(clone);
         Map<String, ForgeEnchantBook> itemMap = enchantBookManager.enchants.itemMap;
-        if (itemMap.values().stream().anyMatch(forgeEnchantBook -> forgeEnchantBook.itemMatcher.matches(clone))){
+        if (itemMap.values().stream().anyMatch(forgeEnchantBook -> forgeEnchantBook.itemMatcher.matches(clone))) {
             throw new NbtExistException();
         }
         ForgeEnchantBook forgeEnchantBook = new ForgeEnchantBook(clone, type);
@@ -197,17 +198,8 @@ public class ForgeManager {
         );
         YamlConfiguration finalIdConf = idConf;
         forgeableItemManager.load();
-        if (finalIdConf != null) {
-            ConfigurationSection section = finalIdConf.getConfigurationSection(forgeableItemManager.getClass().getName());
-            forgeableItemManager.loadId(section);
-            enchantBookManager.load();
-            enchantBookManager.enchants.loadId(finalIdConf.getConfigurationSection(enchantBookManager.enchants.getClass().getName()));
-            enchantBookManager.repulses.loadId(finalIdConf.getConfigurationSection(enchantBookManager.repulses.getClass().getName()));
-
-            ConfigurationSection bonusSection = finalIdConf.getConfigurationSection(bonusManager.getClass().getName());
-            bonusManager.load();
-            bonusManager.loadId(bonusSection);
-        }
+        enchantBookManager.load();
+        bonusManager.load();
         managers.forEach(baseManager -> {
             baseManager.load();
             if (finalIdConf != null) {
@@ -215,6 +207,7 @@ public class ForgeManager {
                 baseManager.loadId(section);
             }
         });
+
         loadNbtMap(managers);
     }
 
@@ -271,7 +264,7 @@ public class ForgeManager {
         switch (enchant) {
             case ENCHANT:
                 ForgeEnchantBook remove = enchantBookManager.enchants.itemMap.remove(id);
-                if (remove!=null) {
+                if (remove != null) {
                     ItemStack clone = remove.itemStack.clone();
                     removeStoredEnchants(clone);
                     nbtMap.remove(ItemStackUtils.itemToBase64(clone));
@@ -280,7 +273,7 @@ public class ForgeManager {
                 } else return false;
             case REPULSE:
                 ForgeEnchantBook remove1 = enchantBookManager.enchants.itemMap.remove(id);
-                if (remove1!=null) {
+                if (remove1 != null) {
                     ItemStack clone = remove1.itemStack.clone();
                     removeStoredEnchants(clone);
                     nbtMap.remove(ItemStackUtils.itemToBase64(clone));
@@ -515,6 +508,9 @@ public class ForgeManager {
             File[] files = parentDir.listFiles();
             try {
                 if (files != null && files.length > 0) {
+                    List<File> validFiles = Arrays.stream(files).filter(ForgeManager.this::isNameValid).collect(Collectors.toList());
+                    OptionalInt id = calcId(validFiles);
+                    this.id = id.orElse(0) + 1;
                     for (File f :
                             files) {
                         if (f.getName().endsWith(".yml")) {
@@ -534,6 +530,7 @@ public class ForgeManager {
             }
         }
 
+
         void removeItemFile(String id) throws IOException {
             File parentDir = new File(dataDir, "items");
             File ymlFile = new File(parentDir, id + ".yml");
@@ -541,7 +538,7 @@ public class ForgeManager {
             if (!deleted.exists()) {
                 deleted.mkdir();
             }
-            if (ymlFile.exists()){
+            if (ymlFile.exists()) {
                 Files.move(ymlFile.toPath(), new File(deleted, id + ".yml.deleted").toPath());
             }
         }
@@ -551,7 +548,7 @@ public class ForgeManager {
             if (!parentDir.exists()) {
                 parentDir.mkdirs();
             }
-            File ymlFile = new File(parentDir, id+".yml");
+            File ymlFile = new File(parentDir, id + ".yml");
             try {
                 ForgeableItem f = itemMap.get(id);
                 YamlConfiguration conf = new YamlConfiguration();
@@ -561,6 +558,36 @@ public class ForgeManager {
                 plugin.getServer().getLogger().log(Level.SEVERE, "exception saving " + ymlFile.getName(), e);
             }
         }
+    }
+
+    private boolean isNameValid(File file) {
+        String name = file.getName();
+        if (!name.endsWith(".yml")) return false;
+        String[] split = name.split("\\.");
+        if (split.length > 1){
+            String sid = split[0];
+            try{
+                int id = Integer.parseInt(sid);
+            }catch (NumberFormatException e){
+                return false;
+            }
+            return true;
+        }else return false;
+    }
+
+    private OptionalInt calcId(List<File> validFiles) {
+        return validFiles.stream().mapToInt(file -> {
+            String name = file.getName();
+            String[] split = name.split("\\.");
+            if (split.length > 1) {
+                String sid = split[0];
+                try {
+                    return Integer.parseInt(sid);
+                } catch (NumberFormatException e) {
+                    return 0;
+                }
+            } else return 0;
+        }).max();
     }
 
     class EnchantBookManager extends BaseManager<ForgeEnchantBook> {
@@ -670,6 +697,8 @@ public class ForgeManager {
                     forgeEnchantBook.itemStack = forgeEnchantBook.itemMatcher.itemTemplate;
                     addItemNbt(forgeEnchantBook);
                 });
+                OptionalInt max = keys.stream().mapToInt(s -> Integer.parseInt(s)).max();
+                this.id = max.orElse(0) + 1;
             }
         }
 
@@ -710,6 +739,8 @@ public class ForgeManager {
                     forgeRepulse.setItem(ItemStackUtils.itemFromBase64(forgeRepulse.nbt));
                     addItemNbt(forgeRepulse);
                 });
+                OptionalInt max = keys.stream().mapToInt(s -> Integer.parseInt(s)).max();
+                this.id = max.orElse(0) + 1;
             }
         }
     }
@@ -746,6 +777,9 @@ public class ForgeManager {
             }
             File[] list = ymlDir.listFiles();
             if (list != null && list.length > 0) {
+                List<File> validFiles = Arrays.stream(list).filter(ForgeManager.this::isNameValid).collect(Collectors.toList());
+                OptionalInt id = calcId(validFiles);
+                this.id = id.orElse(0) + 1;
                 for (File f :
                         list) {
                     try {
@@ -796,6 +830,7 @@ public class ForgeManager {
                         element1.itemStack = ItemStackUtils.itemFromBase64(element1.nbt);
                     });
                 }
+
             } catch (IOException | InvalidConfigurationException e) {
                 plugin.getServer().getLogger().log(Level.SEVERE, "exception while loading " + ymlFile.getName(), e);
             }
@@ -833,6 +868,8 @@ public class ForgeManager {
                         recycler.itemStack = ItemStackUtils.itemFromBase64(recycler.nbt);
                     });
                 }
+                OptionalInt max = itemMap.keySet().stream().mapToInt(s -> Integer.parseInt(s)).max();
+                this.id = max.orElse(0) + 1;
             } catch (IOException | InvalidConfigurationException e) {
                 plugin.getServer().getLogger().log(Level.SEVERE, "exception while saving " + ymlFile.getName(), e);
             }
@@ -870,6 +907,8 @@ public class ForgeManager {
                         iron.itemStack = ItemStackUtils.itemFromBase64(iron.nbt);
                     });
                 }
+                OptionalInt max = itemMap.keySet().stream().mapToInt(s -> Integer.parseInt(s)).max();
+                this.id = max.orElse(0) + 1;
             } catch (IOException | InvalidConfigurationException e) {
                 plugin.getServer().getLogger().log(Level.SEVERE, "exception while saving " + ymlFile.getName(), e);
             }
@@ -885,7 +924,7 @@ public class ForgeManager {
                         files) {
                     if (f.getName().endsWith(".yml")) {
                         File file = new File(backupDir, f.getName());
-                        if (file.exists()){
+                        if (file.exists()) {
                             Files.move(f.toPath(), file.toPath());
                         }
                     }
