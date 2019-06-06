@@ -34,7 +34,7 @@ modify:
     element: "成功修改 {itemName} 的元素为 %s"
     cost: "成功修改 {itemName} 的最低铸造消耗为 %d"
     weight: "成功修改 {itemName} 的权重为 %d"
-    recycle: "成功修改 {itemName} 的重铸信息为\n最低返还%d%%, 最高返还%d%%, 最少返还个数%d, 额外奖励id %s, 额外奖励几率%.2f%%"
+    recycle: "成功修改 {itemName} 的重铸信息为\n最低返还 %d%%, 最高返还 %d%%, 最少返还个数 %d, 额外奖励 id %s, 额外奖励几率 %.2f%%"
   error:
     recycle: "没有id为 %s 的额外奖励配置"
     no_item: "没有找到id为 %s 的可铸造物品"
@@ -42,7 +42,7 @@ modify:
 inspect:
   info: "物品 id: %s {itemName} "
   error:
-    no_item: "没有id为 %s 的可铸造物品"
+    no_item: "没有 id 为 %s 的可铸造物品"
 list:
   info: "物品 id: %s {itemName} "
   iron: "铸造材料: {itemName} &r*{amount} "
@@ -74,43 +74,43 @@ remove:
     no_item: "没有id为 %s 的物品"
 open:
   error:
-    no_required_block: "&c访问失败。&6请移动到 {block} 附近 %d 方块距离内"
+    no_required_block: "&c访问失败。&6请移动到 &b{block}&6 附近 &b%d&6 方块距离内"
 enchant:
   error:
-    insufficient_exp: "&c附魔所需要的经验值不足"
+    insufficient_exp: "&c附魔所需经验值不足"
 
 ui:
   enchant:
     invalid:
       title: "&c&l无法附魔"
-      lore: "&r请在上方放入可附魔的物品\n&r下方放入有效的附魔书\n&r并保证经验值充足"
+      lore: "&r请在上方放入可附魔的物品\n&r下方放入&d魔法书\n&r并确保经验值充足\n\n&7每等级附魔消耗 &b100&7 点经验"
     valid:
       title: "&a&l点击附魔"
-      lore: "&r消耗附魔书并添加全部或部分附魔到物品\n\n&r附魔概率参考\n&e大成功 {chance_great}%% ：添加全部附魔等级\n&e成功 {chance_normal}%% ：添加一半附魔等级\n&e失败 {chance_fail}%% ：不添加附魔等级\n&e大失败 {chance_destroy}%% ：损毁物品\n&7m每级附魔需要消耗 100 点经验"
+      lore: "&r消耗附魔书并添加附魔到物品\n\n&r附魔结果概率\n&eS &b{chance_great}%% &r：获得全部附魔等级\n&aM &b{chance_normal}%% &r：获得部分附魔等级\n&6F &b{chance_fail}%% &r：无法获得附魔等级\n&cL &b{chance_destroy}%% &r：物品损毁\n\n&r&7每级附魔需要消耗 &b100&7 点经验"
   repulse:
     invalid:
       title: "&c&l无效物品"
-      lore: "&r请在上方放入将要消魔的物品，下方放入消魔石\n&r&c消失诅咒&f不能被消除"
+      lore: "&r请在上方放入将要消魔的物品\n&r下方放入消魔石\n\n&r&c消失诅咒&f不能被消除"
     valid:
       title: "&a&l点击消魔"
-      lore: "&r消耗一个消魔石，随机消除物品附魔其中一项的全部等级\n&r&c消失诅咒&f不能被消除"
+      lore: "&r消耗一个消魔石，随机消除物品附魔其中一项的全部等级\n\n&r&c消失诅咒&f不能被消除"
   forge:
     valid:
       title: "&a&l点击铸造"
-      lore: "&r消耗&e所有&r铸造金属\n&r并根据金属等级消耗晶石\n\n&r晶石消耗参考\n&e1 - 2 级铸造：消耗 1 个晶石\n&e3 - 4 级铸造：消耗 2 个晶石\n&e5 级铸造：消耗 3 个晶石"
+      lore: "&r消耗&e所有&r铸造金属\n&r并根据金属等级消耗晶石\n\n&r晶石消耗参考\n&e1-2 级&r铸造消耗 &b1&r 个晶石\n&e3-4 级&r铸造消耗 &b2&r 个晶石\n&e5 级铸造&r消耗 &b3&r 个晶石"
     invalid:
       title: "&c&l无效物品"
-      lore: "&r请在上方放入铸造金属，下方放入晶石"
+      lore: "&r请在上方放入铸造金属\n&r下方放入晶石"
     no_item:
       title: "&e&l无可用铸造方案"
-      lore: "&f可能的参考\n&b- 增加金属数量\n&b- 增加晶石数量\n&b- 更换金属等级或晶石属性"
+      lore: "&f可能的尝试\n&b-&r 增加金属数量\n&b-&r 增加晶石数量\n&b-&r 更换金属等级或晶石属性"
   recycle:
     invalid:
       title: "&c&l无效物品"
       lore: "&r请在上方放入&e通过铸造得到&r的物品\n&r下方放入分解石"
     valid:
       title: "&a&l点击分解"
-      lore: "&r消耗一个分解石\n&r将物品分解为少量铸造金属\n&6有几率获得一个晶石碎块"
+      lore: "&r消耗一个分解石\n&r将物品分解为铸造金属\n\n&6几率获得一个晶石碎块"
   title:
     enchant: "&5&l附魔"
     repulse: "&9&l消魔"
