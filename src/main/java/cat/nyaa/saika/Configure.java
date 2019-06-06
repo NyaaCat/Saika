@@ -60,6 +60,9 @@ public class Configure extends PluginConfigure {
     @Serializable(name = "sound.bonus")
     public SoundConf bonusSound = new SoundConf();
 
+    @Serializable(name = "sound.repulse")
+    public SoundConf repulseSound = new SoundConf();
+
     @Serializable(name = "effect.forge")
     public EffectConf forgeEffect = new EffectConf();
 

@@ -74,7 +74,7 @@ remove:
     no_item: "没有id为 %s 的物品"
 open:
   error:
-    no_required_block: "There are no {block} in %d blocks"
+    no_required_block: " %d 格范围内没有找到 {block} "
 enchant:
   error:
     insufficient_exp: "&c附魔所需要的经验值不足"

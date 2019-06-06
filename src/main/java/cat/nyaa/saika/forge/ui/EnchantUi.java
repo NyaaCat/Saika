@@ -31,6 +31,7 @@ public class EnchantUi implements InventoryHolder {
     ItemStack invalid;
     ItemStack valid;
     ItemStack resultItem = new ItemStack(Material.AIR);
+    EnchantResult result = EnchantResult.SUCCESS;
     int exp = 0;
 
     public EnchantUi() {
@@ -201,14 +202,20 @@ public class EnchantUi implements InventoryHolder {
             switch (enchantBook.getEnchantmentType()) {
                 default: case ENCHANT:
                     result = getResult(enchantChance);
+                    this.result = result;
                     int resultLevel = level;
                     switch (result) {
                         case SUCCESS:
-                            break;case HALF: resultLevel /= 2;
-                            break;case FAIL: resultLevel = 0;
-                            break;case EPIC_FAIL: destroy.set(true);
+                            break;
+                        case HALF: resultLevel /= 2;
+                            break;
+                        case FAIL: resultLevel = 0;
+                            break;
+                        case EPIC_FAIL:
+                            destroy.set(true);
                             break;
                     }
+
                     nextLevel = Math.min(nextLevel + resultLevel, enchantMaxLevel);
                     itemMeta.removeEnchant(enchantment);
                     itemMeta.addEnchant(enchantment, nextLevel, true);

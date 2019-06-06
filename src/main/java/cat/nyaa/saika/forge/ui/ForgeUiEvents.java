@@ -139,6 +139,7 @@ public class ForgeUiEvents implements Listener {
                         spawnExp(ev, repulseUi.getLevelRepulsed());
                         repulseUi.cost();
                     }
+                    showRepulseEffect(ev);
                 }
                 ev.setCancelled(true);
                 repulseUi.updateValidationLater();
@@ -224,7 +225,7 @@ public class ForgeUiEvents implements Listener {
                             giveItem(ev, itemStack);
                             ExperienceUtils.subtractExpPoints(player, expCost);
                             enchantUi.cost();
-                            showForgeEffect(ev);
+                            showEnchantEffect(ev,enchantUi.result);
                         }
                     } else {
                         new Message(I18n.format("enchant.error.insufficient_exp"))
@@ -324,8 +325,8 @@ public class ForgeUiEvents implements Listener {
             Configure.EffectConf forgeEffect = plugin.getConfigure().getForgeEffect();
             Location location = playerEntity.getLocation();
             Object extraData = getExtraData(forgeEffect.extra);
-
-            showEffect(player, forgeEffect, location, extraData);
+            Configure.SoundConf forgeSound = plugin.getConfigure().forgeSound;
+            showEffect(player, forgeEffect, forgeSound, location, extraData);
         } catch (Exception e) {
             server.getLogger().log(Level.WARNING, "wrong config", e);
         }
@@ -337,22 +338,24 @@ public class ForgeUiEvents implements Listener {
         try {
             Player player = server.getPlayer(ev.getWhoClicked().getUniqueId());
             Configure.EffectConf effect;
+            Configure.SoundConf sound;
             switch (result) {
                 case SUCCESS:
                 case HALF:
                     effect = Saika.plugin.getConfigure().getEnchantSuccessEffect();
+                    sound = plugin.getConfigure().successSound;
                     break;
                 case FAIL:
                 case EPIC_FAIL:
                     effect = Saika.plugin.getConfigure().getEnchantFailEffect();
+                    sound = plugin.getConfigure().failSound;
                     break;
                 default:
                     return;
             }
             Location location = playerEntity.getLocation();
             Object extraData = getExtraData(effect.extra);
-
-            showEffect(player, effect, location, extraData);
+            showEffect(player, effect, sound, location, extraData);
         } catch (Exception e) {
             server.getLogger().log(Level.WARNING, "wrong config", e);
         }
@@ -366,8 +369,8 @@ public class ForgeUiEvents implements Listener {
             Configure.EffectConf effect = plugin.getConfigure().getEnchantSuccessEffect();
             Location location = playerEntity.getLocation();
             Object extraData = getExtraData(effect.extra);
-
-            showEffect(player, effect, location, extraData);
+            Configure.SoundConf repulseSound = plugin.getConfigure().repulseSound;
+            showEffect(player, effect, repulseSound, location, extraData);
         } catch (Exception e) {
             server.getLogger().log(Level.WARNING, "wrong config", e);
         }
@@ -381,21 +384,20 @@ public class ForgeUiEvents implements Listener {
             Configure.EffectConf effect = plugin.getConfigure().recycleEffect;
             Location location = playerEntity.getLocation();
             Object extraData = getExtraData(effect.extra);
-
-            showEffect(player, effect, location, extraData);
+            Configure.SoundConf recycleSound = plugin.getConfigure().recycleSound;
+            showEffect(player, effect, recycleSound, location, extraData);
         } catch (Exception e) {
             server.getLogger().log(Level.WARNING, "wrong config", e);
         }
     }
 
-    private void showEffect(Player player, Configure.EffectConf forgeEffect, Location location, Object extraData) {
+    private void showEffect(Player player, Configure.EffectConf forgeEffect, Configure.SoundConf soundConf, Location location, Object extraData) {
         Objects.requireNonNull(player);
         Objects.requireNonNull(forgeEffect);
         Objects.requireNonNull(location);
         World world = player.getWorld();
         world.spawnParticle(forgeEffect.particle, location, forgeEffect.amount, forgeEffect.offsetX, forgeEffect.offsetY, forgeEffect.offsetZ, forgeEffect.speed, extraData);
-        Configure.SoundConf sound = plugin.getConfigure().forgeSound;
-        world.playSound(location, sound.name, 1f, (float) sound.pitch);
+        world.playSound(location, soundConf.name, 1f, (float) soundConf.pitch);
     }
 
     private void spawnExp(InventoryClickEvent ev, int levelRepulsed) {
