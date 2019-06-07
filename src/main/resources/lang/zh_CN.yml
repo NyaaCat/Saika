@@ -102,6 +102,8 @@ ui:
       title: "&a&l点击消魔"
       lore: "&r消耗一个消魔石，随机消除物品附魔其中一项的全部等级\n\n&r&c消失诅咒&f不能被消除"
   forge:
+    lowEfficiency:
+      lore: "&c警告:金属利用率低下"
     valid:
       title: "&a&l点击铸造"
       lore: "&r消耗&e所有&r铸造金属\n&r并根据金属等级消耗晶石\n\n&r晶石消耗参考\n&e1-2 级&r铸造消耗 &b1&r 个晶石\n&e3-4 级&r铸造消耗 &b2&r 个晶石\n&e5 级铸造&r消耗 &b3&r 个晶石"

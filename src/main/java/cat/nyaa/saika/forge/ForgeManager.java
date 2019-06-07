@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static cat.nyaa.nyaacore.BasicItemMatcher.MatchingMode.ARBITRARY;
 import static cat.nyaa.saika.forge.BaseManager.NbtedISerializable;
@@ -477,6 +476,15 @@ public class ForgeManager {
         return forgeableItemManager.itemMap.values().stream().map(ForgeItem::getId).collect(Collectors.toList());
     }
 
+    public boolean isLowEfficincy(ForgeRecipe recipe, int amount) {
+        List<ForgeableItem> itemsByRecipie = getItemsByRecipie(recipe);
+        int maxCost = itemsByRecipie.stream()
+                .mapToInt(ForgeableItem::getMinCost)
+                .max().orElse(-1);
+        double lowEfficiencyMultiplier = Saika.plugin.getConfigure().lowEfficiencyMultiplier;
+        return maxCost > 0 && (maxCost * lowEfficiencyMultiplier) < amount;
+    }
+
     class ForgeableItemManager extends BaseManager<ForgeableItem> {
 
         @Override
@@ -564,15 +572,15 @@ public class ForgeManager {
         String name = file.getName();
         if (!name.endsWith(".yml")) return false;
         String[] split = name.split("\\.");
-        if (split.length > 1){
+        if (split.length > 1) {
             String sid = split[0];
-            try{
+            try {
                 int id = Integer.parseInt(sid);
-            }catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
                 return false;
             }
             return true;
-        }else return false;
+        } else return false;
     }
 
     private OptionalInt calcId(List<File> validFiles) {

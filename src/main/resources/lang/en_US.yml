@@ -101,6 +101,8 @@ ui:
       title: "&aclick to repulse"
       lore: "&rconsumes one repulse source and wipe out an non-curse enchant of the item."
   forge:
+    lowEfficiency:
+      lore: "&cwarning: low material efficiency"
     valid:
       title: "&aclick to forge"
       lore: "&rconsumes all forge material and some element\n&eForge Level 1 - 2 : consumes 1 element\n&eForge Level 3 - 4 : consumes 2 elements\n&eForge Level 5 : consumes 3 elements"
@@ -110,6 +112,7 @@ ui:
     no_item:
       title: "&eno items can be forged"
       lore: "&rneeds more materials"
+
   recycle:
     invalid:
       title: "&cinvalid item"

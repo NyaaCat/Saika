@@ -29,6 +29,7 @@ public class ForgeUi implements InventoryHolder {
     ItemStack valid;
     ItemStack invalid;
     ItemStack noItem;
+    boolean isLowEfficiency = false;
     private int costedIron = 0;
 
     public ForgeUi() {
@@ -81,6 +82,12 @@ public class ForgeUi implements InventoryHolder {
         }
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         if (forgeManager.hasItemOfRecipe(recipe)) {
+            ItemStack iron = this.inventory.getItem(0);
+            if (iron != null) {
+                isLowEfficiency = forgeManager.isLowEfficincy(recipe, iron.getAmount());
+            } else {
+                isLowEfficiency = false;
+            }
             onValid();
         } else {
             onNoItem();
@@ -96,21 +103,50 @@ public class ForgeUi implements InventoryHolder {
     }
 
     public void onCancel() {
-        inventory.setItem(2,new ItemStack(Material.AIR));
+        inventory.setItem(2, new ItemStack(Material.AIR));
     }
 
     private void onNoItem() {
-        inventory.setItem(2,noItem);
+        inventory.setItem(2, noItem);
         validation = RecipieValidation.NO_ITEM;
     }
 
     private void onValid() {
-        inventory.setItem(2,valid);
+        if (isLowEfficiency) {
+            addLowEfficiencyLore(valid);
+        } else {
+            removeLowEfficiencyLore(valid);
+        }
+        inventory.setItem(2, valid);
         validation = RecipieValidation.VALID;
     }
 
+    private void removeLowEfficiencyLore(ItemStack valid) {
+        ItemMeta itemMeta = valid.getItemMeta();
+        if (itemMeta != null) {
+            List<String> lore = itemMeta.getLore();
+            if (lore != null) {
+                addMeta(valid, "ui.forge.valid.title", "ui.forge.valid.lore");
+            }
+        }
+    }
+
+    private void addLowEfficiencyLore(ItemStack valid) {
+        ItemMeta itemMeta = valid.getItemMeta();
+        if (itemMeta != null) {
+            List<String> lore = itemMeta.getLore();
+            if (lore != null) {
+                addMeta(valid, "ui.forge.valid.title", "ui.forge.valid.lore");
+                String format = I18n.format("ui.forge.lowEfficiency.lore");
+                lore.add(format);
+                itemMeta.setLore(lore);
+                valid.setItemMeta(itemMeta);
+            }
+        }
+    }
+
     private void onInvalid() {
-        inventory.setItem(2,invalid);
+        inventory.setItem(2, invalid);
     }
 
     public void openInventory(Player player) {
@@ -127,12 +163,12 @@ public class ForgeUi implements InventoryHolder {
     }
 
     public void updateValidationLater() {
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
                 updateValidation();
             }
-        }.runTaskLater(Saika.plugin,1);
+        }.runTaskLater(Saika.plugin, 1);
     }
 
     public int cost(ForgeIron iron) {
@@ -143,10 +179,10 @@ public class ForgeUi implements InventoryHolder {
         }
         this.inventory.setItem(0, new ItemStack(Material.AIR));
         ItemStack elementItem = this.inventory.getItem(1);
-        if (elementItem != null){
-            elementItem.setAmount(Math.max(0,elementItem.getAmount()-elementCost));
+        if (elementItem != null) {
+            elementItem.setAmount(Math.max(0, elementItem.getAmount() - elementCost));
         }
-        this.inventory.setItem(1,elementItem);
+        this.inventory.setItem(1, elementItem);
         return costedIron;
     }
 
@@ -162,15 +198,14 @@ public class ForgeUi implements InventoryHolder {
             return null;
         }
         double chance = forgeBonus.chance;
-        if (chance <= 0){
+        if (chance <= 0) {
             return null;
         }
         int result = random.nextInt(100);
-        if (result < chance){
+        if (result < chance) {
             ForgeManager forgeManager = ForgeManager.getForgeManager();
             BonusItem bonus = forgeManager.getBonus(forgeBonus.item);
             return ItemStackUtils.itemFromBase64(bonus.toNbt());
-        }
-        else return null;
+        } else return null;
     }
 }

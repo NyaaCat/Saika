@@ -89,6 +89,9 @@ public class Configure extends PluginConfigure {
     @Serializable(name = "position.enchant.distance")
     public int enchantDistance = 3;
 
+    @Serializable(name = "forge.lowEfficiency.multiplier")
+    public double lowEfficiencyMultiplier = 1.5;
+
 
     public static class SoundConf implements ISerializable {
         @Serializable
