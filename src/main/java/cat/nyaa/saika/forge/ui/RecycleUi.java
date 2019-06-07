@@ -32,7 +32,7 @@ public class RecycleUi implements InventoryHolder {
 
     public RecycleUi() {
         invalid = new ItemStack(Material.RED_STAINED_GLASS, 1);
-        valid = new ItemStack(Material.GREEN_STAINED_GLASS, 1);
+        valid = new ItemStack(Material.LIME_STAINED_GLASS, 1);
         addMeta(valid, "ui.recycle.valid.title", "ui.recycle.valid.lore");
         addMeta(invalid, "ui.recycle.invalid.title", "ui.recycle.invalid.lore");
     }
@@ -151,7 +151,13 @@ public class RecycleUi implements InventoryHolder {
             }
             itemCost = is.getAmount();
             int recycleResult = random.nextInt(recycle.max - recycle.min) + recycle.min;
-            int amount = (int) Math.round(forgeableItem.getMinCost() * (((double) recycleResult)/100d));
+            int costTag = ForgeableItem.getCostTag(itemStack);
+            int amount;
+            if (costTag == -1) {
+                amount = (int) Math.round(forgeableItem.getMinCost() * (((double) recycleResult) / 100d));
+            }else {
+                amount = (int) Math.round(costTag * (((double) recycleResult) / 100d));
+            }
             ForgeIron iron = forgeManager.getIron(forgeableItem.getLevel());
             if (iron == null){
                 return null;

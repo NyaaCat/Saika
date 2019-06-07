@@ -32,7 +32,7 @@ public class RepulseUi implements InventoryHolder {
 
     public RepulseUi() {
         invalid = new ItemStack(Material.RED_STAINED_GLASS, 1);
-        valid = new ItemStack(Material.GREEN_STAINED_GLASS, 1);
+        valid = new ItemStack(Material.LIME_STAINED_GLASS, 1);
         addMeta(invalid, "ui.repulse.invalid.title", "ui.repulse.invalid.lore");
         addMeta(valid, "ui.repulse.valid.title", "ui.repulse.valid.lore");
     }

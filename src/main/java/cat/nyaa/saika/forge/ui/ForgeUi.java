@@ -29,13 +29,14 @@ public class ForgeUi implements InventoryHolder {
     ItemStack valid;
     ItemStack invalid;
     ItemStack noItem;
+    private int costedIron = 0;
 
     public ForgeUi() {
 
     }
 
     private void initStatusIndicator() {
-        valid = new ItemStack(Material.GREEN_STAINED_GLASS, 1);
+        valid = new ItemStack(Material.LIME_STAINED_GLASS, 1);
         invalid = new ItemStack(Material.RED_STAINED_GLASS, 1);
         noItem = new ItemStack(Material.YELLOW_STAINED_GLASS, 1);
         addMeta(valid, "ui.forge.valid.title", "ui.forge.valid.lore");
@@ -134,14 +135,23 @@ public class ForgeUi implements InventoryHolder {
         }.runTaskLater(Saika.plugin,1);
     }
 
-    public void cost(ForgeIron iron) {
+    public int cost(ForgeIron iron) {
         int elementCost = iron.getCost();
+        ItemStack ironStack = this.inventory.getItem(0);
+        if (ironStack != null) {
+            this.costedIron = ironStack.getAmount();
+        }
         this.inventory.setItem(0, new ItemStack(Material.AIR));
         ItemStack elementItem = this.inventory.getItem(1);
         if (elementItem != null){
             elementItem.setAmount(Math.max(0,elementItem.getAmount()-elementCost));
         }
         this.inventory.setItem(1,elementItem);
+        return costedIron;
+    }
+
+    public int getCostedIron() {
+        return costedIron;
     }
 
     Random random = new Random();

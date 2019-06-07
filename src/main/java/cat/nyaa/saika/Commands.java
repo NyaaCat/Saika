@@ -35,7 +35,7 @@ public class Commands extends CommandReceiver {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (args.length> 0) {
+        if (args.length > 0) {
             List<String> strings = commandCompleter.onSubCommand(args[0], args);
             if (strings == null) {
                 return super.onTabComplete(sender, command, alias, args);
@@ -116,13 +116,16 @@ public class Commands extends CommandReceiver {
 
         List<String> completeDefine(String subCommand, String[] arguments) {
             List<String> str = new ArrayList<>();
+            if (arguments.length < 2) {
+                return define;
+            }
             String top = arguments[1];
-            if (top == null) {
+            if (top == null || top.equals("")) {
                 return define;
             }
             switch (top) {
                 case "level":
-                    if (arguments.length<3 || arguments[2] == null) {
+                    if (arguments.length < 3 || arguments[2].equals("")) {
                         str.add("level");
                     } else {
                         str.add("element-consumption");
@@ -143,11 +146,11 @@ public class Commands extends CommandReceiver {
 
         List<String> completeDelete(String subCommand, String[] arguments) {
             List<String> str = new ArrayList<>();
-            String top = arguments[1];
-            if (top == null) {
+            if (arguments.length == 2) {
                 return define;
+            } else if (arguments.length == 3){
+                str.add("id");
             }
-            str.add("id");
             return str;
         }
 
@@ -212,7 +215,7 @@ public class Commands extends CommandReceiver {
 
         List<String> completeList(String subCommand, String[] arguments) {
             List<String> str = new ArrayList<>();
-            switch (arguments.length){
+            switch (arguments.length) {
                 case 2:
                     str.add("level");
                     break;
@@ -413,7 +416,7 @@ public class Commands extends CommandReceiver {
             case "recycle":
                 String action = arguments.nextString();
                 ForgeableItem.RecycleInfo recycle = forgeableItem.getRecycle();
-                switch (action){
+                switch (action) {
                     case "min":
                         int min = Integer.parseInt(value);
                         forgeableItem.setRecycle(min, recycle.max, recycle.hard, recycle.bonus.item, recycle.bonus.chance);
@@ -434,7 +437,7 @@ public class Commands extends CommandReceiver {
                         break;
                     case "bonus":
                         String bonus = arguments.nextString();
-                        if (bonus.equals("-1")){
+                        if (bonus.equals("-1")) {
                             forgeableItem.setRecycle(recycle.min, recycle.max, recycle.hard, "", recycle.bonus.chance);
                             new Message("").append(I18n.format("modify.success.recycle.no_bonus"), forgeableItem.getItemStack())
                                     .send(sender);

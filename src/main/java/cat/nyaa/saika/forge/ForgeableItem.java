@@ -3,14 +3,18 @@ package cat.nyaa.saika.forge;
 import cat.nyaa.nyaacore.configuration.ISerializable;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.saika.Saika;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
+import org.bukkit.inventory.meta.tags.ItemTagType;
 
 import java.util.Map;
 
 public class ForgeableItem extends ForgeItem implements Elementable, Levelable, Enchantable, ISerializable {
+    public static NamespacedKey FORGE_COST = new NamespacedKey(Saika.plugin, "forgeCost");
 
     @Serializable
     String id = "";
@@ -37,6 +41,32 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
         forge.level = level;
         forge.minCost = minCost;
         forge.weight = weight;
+    }
+
+    public static void addCostTagTo(ItemStack itemStack, int cost) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta != null) {
+            CustomItemTagContainer customTag = itemMeta.getCustomTagContainer().getCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER);
+            if (customTag != null) {
+                customTag.setCustomTag(FORGE_COST, ItemTagType.INTEGER, cost);
+            }
+            itemMeta.getCustomTagContainer().setCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER, customTag);
+            itemStack.setItemMeta(itemMeta);
+        }
+    }
+
+    public static int getCostTag(ItemStack itemStack) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta != null) {
+            CustomItemTagContainer customTag = itemMeta.getCustomTagContainer().getCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER);
+            if (customTag != null) {
+                Integer cost = customTag.getCustomTag(FORGE_COST, ItemTagType.INTEGER);
+                if (cost != null) {
+                    return cost;
+                }
+            }
+        }
+        return -1;
     }
 
     public void setForgeBonus(Bonus bonus) {
@@ -110,7 +140,7 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
 
     public void setRecycle(int min, int max, int value, String bonus, double chance) {
         recycle.min = min;
-        recycle.max =max;
+        recycle.max = max;
         recycle.hard = value;
         recycle.bonus.item = bonus;
         recycle.bonus.chance = chance;

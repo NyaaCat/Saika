@@ -252,11 +252,12 @@ public class ForgeUiEvents implements Listener {
                     forgeUi.updateValidation();
                     ForgeableItem item = forgeUi.onForge();
                     if (item != null) {
-                        ItemStack itemStack = item.getItemStack();
-                        giveItem(ev, itemStack);
+                        ItemStack itemStack = item.getItemStack().clone();
                         String level = item.getLevel();
                         ForgeIron iron = ForgeManager.getForgeManager().getIron(level);
-                        forgeUi.cost(iron);
+                        int cost = forgeUi.cost(iron);
+                        ForgeableItem.addCostTagTo(itemStack, cost);
+                        giveItem(ev, itemStack);
                         ItemStack bonus = forgeUi.onBonus(item);
                         if (bonus != null) {
                             giveItemToBackpack(ev, bonus);
@@ -498,9 +499,12 @@ public class ForgeUiEvents implements Listener {
 
     private void moveCurrentItemDown(InventoryClickEvent ev, ItemStack currentItem) {
         Inventory targetInv = ev.getView().getBottomInventory();
-        if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
-            ev.setCancelled(true);
-            return;
+        ItemMeta itemMeta = currentItem.getItemMeta();
+        if (itemMeta!=null) {
+            if (itemMeta.getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
+                ev.setCancelled(true);
+                return;
+            }
         }
         if (InventoryUtils.hasEnoughSpace(targetInv, currentItem, 1)) {
             if (InventoryUtils.hasEnoughSpace(ev.getView().getBottomInventory(), currentItem, currentItem.getAmount())) {

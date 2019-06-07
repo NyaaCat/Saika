@@ -36,7 +36,7 @@ public class EnchantUi implements InventoryHolder {
 
     public EnchantUi() {
         invalid = new ItemStack(Material.RED_STAINED_GLASS, 1);
-        valid = new ItemStack(Material.GREEN_STAINED_GLASS, 1);
+        valid = new ItemStack(Material.LIME_STAINED_GLASS, 1);
         addMeta(invalid, "ui.enchant.invalid.title", "ui.enchant.invalid.lore", null);
         EnchantChance enchantChance = Saika.plugin.getConfigure().getEnchantChance();
         addMeta(valid, "ui.enchant.valid.title", "ui.enchant.valid.lore", enchantChance);
