@@ -28,6 +28,7 @@ public class RepulseUi implements InventoryHolder {
     ItemStack invalid;
     ItemStack valid;
     ItemStack resultItem = new ItemStack(Material.AIR);
+    Map<Enchantment, Integer> repulsed = new LinkedHashMap<>();
     int exp = 0;
 
     public RepulseUi() {
@@ -97,6 +98,7 @@ public class RepulseUi implements InventoryHolder {
             if (itemMeta == null) {
                 onInvalid();
             } else {
+                repulsed = new LinkedHashMap<>();
                 Map<Enchantment, Integer> itemEnchants = itemMeta.getEnchants();
                 List<Enchantment> blacklist = Saika.plugin.getConfigure().blacklist.parallelStream()
                         .map(s -> Enchantment.getByKey(NamespacedKey.minecraft(s.toLowerCase())))
@@ -111,6 +113,7 @@ public class RepulseUi implements InventoryHolder {
                 int itemToRemove = random.nextInt(size);
                 Enchantment ench = validList.get(itemToRemove);
                 Integer level = itemEnchants.get(ench);
+                repulsed.put(ench, level);
                 exp += level;
                 itemMeta.removeEnchant(ench);
                 resultItem.setItemMeta(itemMeta);
@@ -167,5 +170,9 @@ public class RepulseUi implements InventoryHolder {
 
     int getLevelRepulsed(){
         return exp;
+    }
+
+    public Map<Enchantment, Integer> getRepulsed() {
+        return repulsed;
     }
 }

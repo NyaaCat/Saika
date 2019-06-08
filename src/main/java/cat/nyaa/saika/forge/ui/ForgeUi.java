@@ -58,7 +58,7 @@ public class ForgeUi implements InventoryHolder {
 
     private RecipieValidation validation = RecipieValidation.INVALID_BOTH;
 
-    private ForgeRecipe getRecipe() {
+    ForgeRecipe getRecipe() {
         ItemStack fuel = inventory.getItem(1);
         ItemStack smelting = inventory.getItem(0);
         ForgeManager forgeManager = ForgeManager.getForgeManager();

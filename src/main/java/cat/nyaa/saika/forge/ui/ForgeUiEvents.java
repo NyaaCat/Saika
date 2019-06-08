@@ -10,6 +10,8 @@ import cat.nyaa.saika.Saika;
 import cat.nyaa.saika.forge.ForgeIron;
 import cat.nyaa.saika.forge.ForgeManager;
 import cat.nyaa.saika.forge.ForgeableItem;
+import cat.nyaa.saika.forge.roll.ForgeRecipe;
+import cat.nyaa.saika.log.Logger;
 import org.bukkit.*;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.HumanEntity;
@@ -136,10 +138,11 @@ public class ForgeUiEvents implements Listener {
                     ItemStack itemStack = repulseUi.onRepulse();
                     if (itemStack != null) {
                         giveItem(ev, itemStack);
+                        Logger.logRepulse(itemStack, ev.getWhoClicked().getName(), repulseUi.getRepulsed(), repulseUi.getLevelRepulsed());
                         spawnExp(ev, repulseUi.getLevelRepulsed());
                         repulseUi.cost();
+                        showRepulseEffect(ev);
                     }
-                    showRepulseEffect(ev);
                 }
                 ev.setCancelled(true);
                 repulseUi.updateValidationLater();
@@ -174,6 +177,7 @@ public class ForgeUiEvents implements Listener {
                         giveItem(ev, item);
                         recycleUi.cost();
                         ItemStack itemStack = recycleUi.onBonus();
+                        Logger.logRecycle(recycleUi.getRecycledItem(), ev.getWhoClicked().getName(), recycleUi.getLastRecycledForgeItem().getId(), item, item.getAmount());
                         if (itemStack != null) {
                             giveItemToBackpack(ev, itemStack);
                             playBonusSound(ev);
@@ -224,6 +228,7 @@ public class ForgeUiEvents implements Listener {
                         if (itemStack != null) {
                             giveItem(ev, itemStack);
                             ExperienceUtils.subtractExpPoints(player, expCost);
+                            Logger.logEnchant(itemStack, ev.getWhoClicked().getName(), enchantUi.getEnchanted(), expCost);
                             enchantUi.cost();
                             showEnchantEffect(ev,enchantUi.result);
                         }
@@ -250,6 +255,7 @@ public class ForgeUiEvents implements Listener {
             if (currentItem != null && currentItem.getItemMeta() != null) {
                 if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
                     forgeUi.updateValidation();
+                    ForgeRecipe recipe = forgeUi.getRecipe();
                     ForgeableItem item = forgeUi.onForge();
                     if (item != null) {
                         ItemStack itemStack = item.getItemStack().clone();
@@ -258,6 +264,8 @@ public class ForgeUiEvents implements Listener {
                         int cost = forgeUi.cost(iron);
                         ForgeableItem.addCostTagTo(itemStack, cost);
                         giveItem(ev, itemStack);
+                        String playerName = ev.getWhoClicked().getName();
+                        Logger.logForge(item, playerName, recipe);
                         ItemStack bonus = forgeUi.onBonus(item);
                         if (bonus != null) {
                             giveItemToBackpack(ev, bonus);

@@ -32,6 +32,7 @@ public class EnchantUi implements InventoryHolder {
     ItemStack valid;
     ItemStack resultItem = new ItemStack(Material.AIR);
     EnchantResult result = EnchantResult.SUCCESS;
+    Map<Enchantment, Integer> enchanted = new LinkedHashMap<>();
     int exp = 0;
 
     public EnchantUi() {
@@ -136,6 +137,7 @@ public class EnchantUi implements InventoryHolder {
                 result = j;
                 break;
             }
+            sum = nextSum;
         }
         switch (result) {
             default:
@@ -199,6 +201,7 @@ public class EnchantUi implements InventoryHolder {
             int nextLevel = originalLevel;
             EnchantChance enchantChance = configure.getEnchantChance();
             EnchantResult result;
+            enchanted = new LinkedHashMap<>();
             switch (enchantBook.getEnchantmentType()) {
                 default: case ENCHANT:
                     result = getResult(enchantChance);
@@ -220,6 +223,7 @@ public class EnchantUi implements InventoryHolder {
                     itemMeta.removeEnchant(enchantment);
                     if (nextLevel > 0) {
                         itemMeta.addEnchant(enchantment, nextLevel, true);
+                        enchanted.put(enchantment, nextLevel);
                     }
                     break;
                     case REPULSE: nextLevel = Math.max(level - nextLevel, 0);
@@ -281,5 +285,9 @@ public class EnchantUi implements InventoryHolder {
 
     public int getLevels() {
         return exp;
+    }
+
+    public Map<Enchantment, Integer> getEnchanted(){
+        return enchanted;
     }
 }

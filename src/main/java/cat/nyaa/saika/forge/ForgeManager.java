@@ -390,9 +390,9 @@ public class ForgeManager {
         return null;
     }
 
-    public ForgeIron getIron(ItemStack element) {
-        if (element == null) return null;
-        ItemStack is = element.clone();
+    public ForgeIron getIron(ItemStack iron) {
+        if (iron == null) return null;
+        ItemStack is = iron.clone();
         is.setAmount(1);
         String nbt = ItemStackUtils.itemToBase64(is);
         ForgeItem forgeItem = nbtMap.get(nbt);

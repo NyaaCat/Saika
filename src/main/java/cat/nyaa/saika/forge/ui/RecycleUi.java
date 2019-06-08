@@ -29,6 +29,7 @@ public class RecycleUi implements InventoryHolder {
     private ItemStack invalid;
     private int itemCost = 1;
     private ForgeableItem lastSuccessRecycle;
+    private ItemStack recycledItem;
 
     public RecycleUi() {
         invalid = new ItemStack(Material.RED_STAINED_GLASS, 1);
@@ -83,6 +84,11 @@ public class RecycleUi implements InventoryHolder {
                     }
                 }
                 if (recycle == null || recycle.max - recycle.min <= 0 || recycle.min < 0 || recycle.max <= 0) {
+                    onInvalid();
+                    return;
+                }
+                ForgeIron iron = forgeManager.getIron(forgeableItem.getLevel());
+                if (iron == null){
                     onInvalid();
                     return;
                 }
@@ -160,11 +166,13 @@ public class RecycleUi implements InventoryHolder {
             }
             ForgeIron iron = forgeManager.getIron(forgeableItem.getLevel());
             if (iron == null){
+                onInvalid();
                 return null;
             }
             ItemStack ista = iron.getItemStack().clone();
             ista.setAmount(Math.max(recycle.hard, amount));
             this.lastSuccessRecycle = forgeableItem;
+            recycledItem = itemStack;
             return ista;
         }
     }
@@ -212,5 +220,13 @@ public class RecycleUi implements InventoryHolder {
             BonusItem bonus = forgeManager.getBonus(forgeBonus.item);
             return ItemStackUtils.itemFromBase64(bonus.toNbt());        }
         else return null;
+    }
+
+    public ItemStack getRecycledItem() {
+        return recycledItem;
+    }
+
+    public ForgeableItem getLastRecycledForgeItem() {
+        return lastSuccessRecycle;
     }
 }
