@@ -478,7 +478,7 @@ public class Commands extends CommandReceiver {
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         ForgeableItem forgeableItem = forgeManager.getForgeableItem(id);
         if (forgeableItem != null) {
-            Message message = new Message("").append(I18n.format("inspect.info", id), forgeableItem.getItemStack());//&r{itemName}&r * {amount}
+            Message message = new Message("").append(I18n.format("inspect.info", id, forgeableItem.getWeight()), forgeableItem.getItemStack());//&r{itemName}&r * {amount}
             sendItemInfo(sender, message, forgeManager, forgeableItem);
             message.send(sender);
         } else {
@@ -503,7 +503,7 @@ public class Commands extends CommandReceiver {
             new Message(I18n.format("list.success"))
                     .send(sender);
             s.forEach(forgeableItem -> {
-                Message message = new Message("").append(I18n.format("list.info", forgeableItem.getId()), forgeableItem.getItemStack());
+                Message message = new Message("").append(I18n.format("list.info", forgeableItem.getId() , forgeableItem.getWeight()), forgeableItem.getItemStack());
                 sendItemInfo(sender, message, forgeManager, forgeableItem);
                 message.send(sender);
             });

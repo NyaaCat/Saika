@@ -46,11 +46,11 @@ modify:
     no_item: "没有找到id为 %s 的可铸造物品"
     unknown: "未知修改目标"
 inspect:
-  info: "物品 id: %s {itemName} "
+  info: "物品 id: %s {itemName} 权重 %d"
   error:
     no_item: "没有 id 为 %s 的可铸造物品"
 list:
-  info: "物品 id: %s {itemName} "
+  info: "物品 id: %s {itemName} 权重 %d"
   iron: "铸造材料: {itemName} &r*{amount} "
   element: "晶石:{itemName} &r*{amount} "
   forge_bonus: "铸造额外奖励: {itemName} &r*{amount} 几率: %.2f%%"

@@ -45,11 +45,11 @@ modify:
     no_item: "no forgeable item for id %s"
     unknown: "unknown target"
 inspect:
-  info: "id: %s {itemName}"
+  info: "id: %s {itemName}, weight %d"
   error:
     no_item: "no forgeable item for id %s"
 list:
-  info: "id: %s {itemName}"
+  info: "id: %s {itemName}, weight %d"
   iron: "{itemName} &r*{amount}"
   element: "{itemName} &r*{amount}"
   forge_bonus: "forge bonus: {itemName} &r*{amount} chance: %d"
