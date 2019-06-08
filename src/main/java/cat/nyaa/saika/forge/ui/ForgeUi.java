@@ -134,14 +134,17 @@ public class ForgeUi implements InventoryHolder {
     private void addLowEfficiencyLore(ItemStack valid) {
         ItemMeta itemMeta = valid.getItemMeta();
         if (itemMeta != null) {
-            List<String> lore = itemMeta.getLore();
-            if (lore != null) {
                 addMeta(valid, "ui.forge.valid.title", "ui.forge.valid.lore");
+                ItemMeta itemMeta1 = valid.getItemMeta();
                 String format = I18n.format("ui.forge.lowEfficiency.lore");
-                lore.add(format);
-                itemMeta.setLore(lore);
-                valid.setItemMeta(itemMeta);
-            }
+                if (itemMeta1 !=null){
+                    List<String> lore = itemMeta1.getLore();
+                    if (lore!=null){
+                        lore.add(format);
+                        itemMeta1.setLore(lore);
+                        valid.setItemMeta(itemMeta1);
+                    }
+                }
         }
     }
 

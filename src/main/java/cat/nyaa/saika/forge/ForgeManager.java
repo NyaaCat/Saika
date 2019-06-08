@@ -477,7 +477,8 @@ public class ForgeManager {
     }
 
     public boolean isLowEfficincy(ForgeRecipe recipe, int amount) {
-        List<ForgeableItem> itemsByRecipie = getItemsByRecipie(recipe);
+        ForgeRecipe fakeRecipie = new ForgeRecipe(recipe.getElement(), 64, recipe.getIronLevel(), 64);
+        List<ForgeableItem> itemsByRecipie = getItemsByRecipie(fakeRecipie);
         int maxCost = itemsByRecipie.stream()
                 .mapToInt(ForgeableItem::getMinCost)
                 .max().orElse(-1);
