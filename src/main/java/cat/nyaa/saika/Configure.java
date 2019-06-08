@@ -91,6 +91,8 @@ public class Configure extends PluginConfigure {
 
     @Serializable(name = "forge.lowEfficiency.multiplier")
     public double lowEfficiencyMultiplier = 1.5;
+    @Serializable(name = "log.enabled")
+    public boolean logEnabled = false;
 
 
     public static class SoundConf implements ISerializable {
