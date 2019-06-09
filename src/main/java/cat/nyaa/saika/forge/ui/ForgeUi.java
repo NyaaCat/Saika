@@ -95,6 +95,7 @@ public class ForgeUi implements InventoryHolder {
     }
 
     public ForgeableItem onForge() {
+        this.updateValidation();
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         if (validation.equals(RecipieValidation.VALID)) {
             ForgeableItem item = forgeManager.forgeItem(getRecipe());

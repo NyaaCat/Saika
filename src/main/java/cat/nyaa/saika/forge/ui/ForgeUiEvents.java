@@ -13,12 +13,15 @@ import cat.nyaa.saika.forge.ForgeableItem;
 import cat.nyaa.saika.forge.roll.ForgeRecipe;
 import cat.nyaa.saika.log.Logger;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.*;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -58,15 +61,6 @@ public class ForgeUiEvents implements Listener {
         repulseUiList.put(inventory, repulseUi);
     }
 
-    @EventHandler
-    public void onInventoryClose(InventoryCloseEvent ev) {
-        Inventory inventory = ev.getInventory();
-        giveItemBack(ev, inventory, forgeUiList);
-        giveItemBack(ev, inventory, enchantUiList);
-        giveItemBack(ev, inventory, recycleUiList);
-        giveItemBack(ev, inventory, repulseUiList);
-    }
-
     private void giveItemBack(InventoryCloseEvent ev, Inventory inventory, Map<Inventory, ? extends InventoryHolder> enchantUiList) {
         if (enchantUiList.remove(inventory) != null) {
             for (int i = 0; i < 3; i++) {
@@ -83,6 +77,43 @@ public class ForgeUiEvents implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void onDirectInteract(PlayerInteractEvent event){
+        Configure configure = plugin.getConfigure();
+        if (!configure.directInteractEnabled) {
+            return;
+        }
+        if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
+            Player player = event.getPlayer();
+            Block clickedBlock = event.getClickedBlock();
+            if (clickedBlock != null){
+                if (player.isSneaking()){
+                    return;
+                }
+                Material forgeBlock = configure.getForgeBlock();
+                Material enchantBlock = configure.getEnchantBlock();
+                if (clickedBlock.getType().equals(forgeBlock)){
+                    event.setCancelled(true);
+                    new ForgeUi().openInventory(player);
+                    return;
+                }else if (clickedBlock.getType().equals(enchantBlock)){
+                    event.setCancelled(true);
+                    new EnchantUi().openInventory(player);
+                    return;
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent ev) {
+        Inventory inventory = ev.getInventory();
+        giveItemBack(ev, inventory, forgeUiList);
+        giveItemBack(ev, inventory, enchantUiList);
+        giveItemBack(ev, inventory, recycleUiList);
+        giveItemBack(ev, inventory, repulseUiList);
     }
 
     @EventHandler
@@ -255,8 +286,8 @@ public class ForgeUiEvents implements Listener {
             if (currentItem != null && currentItem.getItemMeta() != null) {
                 if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
                     forgeUi.updateValidation();
-                    ForgeRecipe recipe = forgeUi.getRecipe();
                     ForgeableItem item = forgeUi.onForge();
+                    ForgeRecipe recipe = forgeUi.getRecipe();
                     if (item != null) {
                         ItemStack itemStack = item.getItemStack().clone();
                         String level = item.getLevel();

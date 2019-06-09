@@ -53,7 +53,6 @@ public class Configure extends PluginConfigure {
     @Serializable(name = "sound.success")
     public SoundConf successSound = new SoundConf();
 
-
     @Serializable(name = "sound.fail")
     public SoundConf failSound = new SoundConf();
 
@@ -91,8 +90,12 @@ public class Configure extends PluginConfigure {
 
     @Serializable(name = "forge.lowEfficiency.multiplier")
     public double lowEfficiencyMultiplier = 1.5;
+
     @Serializable(name = "log.enabled")
     public boolean logEnabled = false;
+
+    @Serializable(name = "directInteract")
+    public boolean directInteractEnabled = false;
 
 
     public static class SoundConf implements ISerializable {
