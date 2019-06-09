@@ -89,7 +89,7 @@ public class ForgeUiEvents implements Listener {
             Player player = event.getPlayer();
             Block clickedBlock = event.getClickedBlock();
             if (clickedBlock != null){
-                if (player.isSneaking()){
+                if (player.isSneaking() && !player.getInventory().getItemInMainHand().getType().equals(Material.AIR)){
                     return;
                 }
                 Material forgeBlock = configure.getForgeBlock();
