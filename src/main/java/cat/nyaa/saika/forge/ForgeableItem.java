@@ -170,9 +170,9 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
 
     public static class RecycleInfo implements ISerializable {
         @Serializable
-        public int min = 30;
+        public int min = 50;
         @Serializable
-        public int max = 70;
+        public int max = 100;
         @Serializable
         public int hard = 1;
         @Serializable
