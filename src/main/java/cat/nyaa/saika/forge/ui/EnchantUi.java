@@ -72,7 +72,7 @@ public class EnchantUi implements InventoryHolder {
             onInvalid();
             return;
         }
-        if (itemStack.getAmount() != 1 || !(itemStack.getType().getMaxDurability() > 0)) {
+        if (itemStack.getAmount() != 1) {
             onInvalid();
             return;
         }
@@ -173,7 +173,7 @@ public class EnchantUi implements InventoryHolder {
             }
             Map<Enchantment, Integer> bookEnchants = ((EnchantmentStorageMeta) enchantSourceMeta).getStoredEnchants();
             ItemMeta itemMeta = clone.getItemMeta();
-            if (itemStack.getAmount() != 1 || !(itemStack.getType().getMaxDurability() > 0)) {
+            if (itemStack.getAmount() != 1) {
                 onInvalid();
                 return null;
             }
