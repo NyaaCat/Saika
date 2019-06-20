@@ -9,10 +9,12 @@ import cat.nyaa.nyaacore.utils.LocaleUtils;
 import cat.nyaa.saika.forge.*;
 import cat.nyaa.saika.forge.EnchantSource.EnchantmentType;
 import cat.nyaa.saika.forge.ForgeManager.NbtExistException;
+import cat.nyaa.saika.forge.roll.ForgeRecipe;
 import cat.nyaa.saika.forge.ui.EnchantUi;
 import cat.nyaa.saika.forge.ui.ForgeUi;
 import cat.nyaa.saika.forge.ui.RecycleUi;
 import cat.nyaa.saika.forge.ui.RepulseUi;
+import cat.nyaa.saika.log.Logger;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -709,6 +711,31 @@ public class Commands extends CommandReceiver {
                 break;
         }
         return true;
+    }
+
+    @SubCommand("autoRoll")
+    public void onAutoRoll(CommandSender sender, Arguments arguments){
+        if (dontHavePermission(sender, PERMISSION_ADMIN, "")){
+            return;
+        }
+        String iron = arguments.nextString();
+        int ironAmount = arguments.nextInt();
+        String element = arguments.nextString();
+        int elementAmount = arguments.nextInt();
+        int rollTimes = arguments.nextInt();
+        ForgeManager forgeManager = ForgeManager.getForgeManager();
+        ForgeIron forgeIron = forgeManager.getIron(iron);
+        ForgeElement forgeElement = forgeManager.getElement(element);
+        ForgeRecipe recipe = new ForgeRecipe(forgeElement, elementAmount, forgeIron, ironAmount);
+        boolean b = forgeManager.hasItemOfRecipe(recipe);
+        for (int i = 0; i < rollTimes; i++) {
+            ForgeableItem forgeableItem = forgeManager.forgeItem(recipe);
+            if (forgeableItem != null) {
+                ItemStack itemStack = forgeableItem.getItemStack().clone();
+                String playerName = sender.getName();
+                Logger.logForge(forgeableItem, playerName, recipe);
+            }
+        }
     }
 
     private boolean checkRequiredBlock(Player sender, String action) {
