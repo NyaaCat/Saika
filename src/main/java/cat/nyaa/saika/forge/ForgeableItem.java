@@ -154,6 +154,12 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
         return recycle.bonus;
     }
 
+    public void setItem(ItemStack itemInMainHand) {
+        super.itemStack = itemInMainHand;
+        super.addItemTag();
+        nbt = ItemStackUtils.itemToBase64(itemInMainHand);
+    }
+
     public static class ForgeInfo implements ISerializable {
         @Serializable
         String element = "";

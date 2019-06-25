@@ -386,7 +386,7 @@ public class Commands extends CommandReceiver {
         }
         String id = arguments.nextString();
         String targetVal = arguments.nextString();
-        String value = arguments.nextString();
+        String value = arguments.top();
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         ForgeableItem forgeableItem = forgeManager.getForgeableItem(id);
         if (forgeableItem == null) {
@@ -396,26 +396,31 @@ public class Commands extends CommandReceiver {
         }
         switch (targetVal) {
             case "level":
+                Objects.requireNonNull(value);
                 forgeableItem.setLevel(value);
                 new Message("").append(I18n.format("modify.success.level", value), forgeableItem.getItemStack())
                         .send(sender);
                 break;
             case "element":
+                Objects.requireNonNull(value);
                 forgeableItem.setElement(value);
                 new Message("").append(I18n.format("modify.success.element", value), forgeableItem.getItemStack())
                         .send(sender);
                 break;
             case "cost":
+                Objects.requireNonNull(value);
                 forgeableItem.setMinCost(Integer.parseInt(value));
                 new Message("").append(I18n.format("modify.success.cost", value), forgeableItem.getItemStack())
                         .send(sender);
                 break;
             case "weight":
+                Objects.requireNonNull(value);
                 forgeableItem.setWeight(Integer.parseInt(value));
                 new Message("").append(I18n.format("modify.success.weight", value), forgeableItem.getItemStack())
                         .send(sender);
                 break;
             case "recycle":
+                Objects.requireNonNull(value);
                 String action = arguments.nextString();
                 ForgeableItem.RecycleInfo recycle = forgeableItem.getRecycle();
                 switch (action) {
@@ -462,6 +467,22 @@ public class Commands extends CommandReceiver {
                                 .send(sender);
                         break;
                 }
+                break;
+            case "item":
+                if (!(sender instanceof Player)){
+                    new Message(I18n.format("error.not_player"))
+                            .send(sender);
+                    return;
+                }
+                ItemStack itemInMainHand = ((Player) sender).getInventory().getItemInMainHand();
+                if (itemInMainHand.getType().equals(Material.AIR)) {
+                    new Message(I18n.format("modify.error.no_item"))
+                            .send(sender);
+                    return;
+                }
+                forgeableItem.setItem(itemInMainHand);
+                new Message("").append(I18n.format("modify.success.item", id), itemInMainHand)
+                        .send(sender);
                 break;
             default:
                 new Message(I18n.format("modify.error.unknown"))

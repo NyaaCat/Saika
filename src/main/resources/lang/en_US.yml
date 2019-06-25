@@ -33,6 +33,7 @@ modify:
     element: "modified {itemName} 's element to %s"
     cost: "modified {itemName} 's minimal cost to %d"
     weight: "modified {itemName} 's weight to %d"
+    item: "successfully modified item %s {itemName} *{amount}"
     recycle:
       min: "modified {itemName} 's min recycle percentage to %s%%"
       max: "modified {itemName} 's max recycle percentage to %s%%"
@@ -40,6 +41,7 @@ modify:
       no_bonus: "modified {itemName} 's  to none"
       bonus: "modified {itemName} 's bonus id to %s"
       chance: "modified {itemName} 's bonus chance to %.2f%%"
+
   error:
     recycle: "no bonus config for id %s "
     no_item: "no forgeable item for id %s"
