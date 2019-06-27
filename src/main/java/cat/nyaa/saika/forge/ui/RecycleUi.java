@@ -218,6 +218,9 @@ public class RecycleUi implements InventoryHolder {
         if (result < chance){
             ForgeManager forgeManager = ForgeManager.getForgeManager();
             BonusItem bonus = forgeManager.getBonus(forgeBonus.item);
+            if(bonus == null){
+                return null;
+            }
             return ItemStackUtils.itemFromBase64(bonus.toNbt());        }
         else return null;
     }
