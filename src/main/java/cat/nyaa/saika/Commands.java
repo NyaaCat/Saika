@@ -166,13 +166,21 @@ public class Commands extends CommandReceiver {
             List<String> str = new ArrayList<>();
             switch (arguments.length) {
                 case 2:
-                    str.add("id");
+                    ForgeManager forgeManager = ForgeManager.getForgeManager();
+                    List<String> itemList = forgeManager.getItemList();
+                    if(arguments[1] != null){
+                        itemList = itemList.stream().filter(s -> s.startsWith(arguments[1])).collect(Collectors.toList());
+                    }
+                    str.addAll(itemList);
                     break;
                 case 3:
-                    str = define;
+                    str = new ArrayList<>(define);
+                    str.add("item");
                     break;
                 case 4:
-                    str.add("value");
+                    if (arguments[2] == null || !arguments[2].equalsIgnoreCase("item")) {
+                        str.add("value");
+                    }
                     break;
                 default:
                     break;
@@ -526,7 +534,9 @@ public class Commands extends CommandReceiver {
             new Message(I18n.format("list.success"))
                     .send(sender);
             s.forEach(forgeableItem -> {
-                Message message = new Message("").append(I18n.format("list.info", forgeableItem.getId() , forgeableItem.getWeight()), forgeableItem.getItemStack());
+                Message message = new Message("")
+                        .append(I18n.format("list.info", forgeableItem.getId() , forgeableItem.getWeight()), forgeableItem.getItemStack());
+
                 sendItemInfo(sender, message, forgeManager, forgeableItem);
                 message.send(sender);
             });
@@ -556,17 +566,18 @@ public class Commands extends CommandReceiver {
         message.append(I18n.format("list.element"), elementItem);
         ForgeableItem.Bonus forgeBonus = forgeableItem.getForgeBonus();
         if (!forgeBonus.item.equals("")) {
-            try {
-                ItemStack itemStack = ItemStackUtils.itemFromBase64(forgeBonus.item);
-                message.append(I18n.format("list.forge_bonus", forgeBonus.chance), itemStack);
-            } catch (Exception e) {
+            BonusItem bonus = forgeManager.getBonus(forgeBonus.item);
+            if (bonus != null){
+                ItemStack itemStack = ItemStackUtils.itemFromBase64(bonus.toNbt());
+                message.append("\n").append(I18n.format("list.forge_bonus", forgeBonus.chance), itemStack);
             }
         }
         ForgeableItem.Bonus recycleBonus = forgeableItem.getRecycleBonus();
         if (!recycleBonus.item.equals("")) {
             try {
-                ItemStack itemStack = ItemStackUtils.itemFromBase64(recycleBonus.item);
-                message.append(I18n.format("list.recycle_bonus", recycleBonus.chance), itemStack);
+                BonusItem bonus = forgeManager.getBonus(recycleBonus.item);
+                ItemStack itemStack = ItemStackUtils.itemFromBase64(bonus.toNbt());
+                message.append("\n").append(I18n.format("list.recycle_bonus", recycleBonus.chance), itemStack);
             } catch (Exception e) {
             }
         }
