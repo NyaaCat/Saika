@@ -9,11 +9,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.inventory.meta.tags.ItemTagType;
 
-import java.util.UUID;
-
-abstract class ForgeItem implements BaseManager.NbtedISerializable {
+public abstract class ForgeItem implements BaseManager.NbtedISerializable {
     public static final NamespacedKey ITEM_TAG = new NamespacedKey(Saika.plugin, "forgeItem");
-    public static final NamespacedKey ITEM_UUID = new NamespacedKey(Saika.plugin, "forgeUuid");
+    public static final NamespacedKey ITEM_ID = new NamespacedKey(Saika.plugin, "forgeUuid");
     static ForgeManager forgeManager = ForgeManager.getForgeManager();
 
     ItemStack itemStack;
@@ -25,7 +23,7 @@ abstract class ForgeItem implements BaseManager.NbtedISerializable {
         this.itemStack = itemStack;
     }
 
-    protected void addItemTag(){
+    public static void addItemTag(ItemStack itemStack, String id){
         ItemMeta itemMeta = itemStack.getItemMeta();
         CustomItemTagContainer forgeItemTags = null;
         if (itemMeta != null) {
@@ -33,9 +31,9 @@ abstract class ForgeItem implements BaseManager.NbtedISerializable {
             if (customTagContainer.hasCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER)) {
                 forgeItemTags = customTagContainer.getCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER);
             } else {
-                forgeItemTags = this.createItemTag(customTagContainer);
+                forgeItemTags = createItemTag(customTagContainer);
             }
-            forgeItemTags.setCustomTag(ITEM_UUID, ItemTagType.STRING, id);
+            forgeItemTags.setCustomTag(ITEM_ID, ItemTagType.STRING, id);
             customTagContainer.setCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER, forgeItemTags);
             itemStack.setItemMeta(itemMeta);
         }
@@ -61,7 +59,7 @@ abstract class ForgeItem implements BaseManager.NbtedISerializable {
         return ItemStackUtils.itemToBase64(clone);
     }
 
-    private CustomItemTagContainer createItemTag(CustomItemTagContainer customTagContainer) {
+    private static CustomItemTagContainer createItemTag(CustomItemTagContainer customTagContainer) {
         CustomItemTagContainer newContainer = customTagContainer.getAdapterContext().newTagContainer();
         customTagContainer.setCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER, newContainer);
         return newContainer;

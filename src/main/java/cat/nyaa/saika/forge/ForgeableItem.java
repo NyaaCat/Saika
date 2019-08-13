@@ -128,12 +128,6 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
     }
 
     @Override
-    protected void addItemTag() {
-        super.addItemTag();
-        nbt = ItemStackUtils.itemToBase64(itemStack);
-    }
-
-    @Override
     public ForgeItemType getType() {
         return ForgeItemType.ITEM;
     }
@@ -156,7 +150,6 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
 
     public void setItem(ItemStack itemInMainHand) {
         super.itemStack = itemInMainHand;
-        super.addItemTag();
         nbt = ItemStackUtils.itemToBase64(itemInMainHand);
     }
 

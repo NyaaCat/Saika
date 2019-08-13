@@ -8,6 +8,7 @@ import cat.nyaa.saika.Configure;
 import cat.nyaa.saika.I18n;
 import cat.nyaa.saika.Saika;
 import cat.nyaa.saika.forge.ForgeIron;
+import cat.nyaa.saika.forge.ForgeItem;
 import cat.nyaa.saika.forge.ForgeManager;
 import cat.nyaa.saika.forge.ForgeableItem;
 import cat.nyaa.saika.forge.roll.ForgeRecipe;
@@ -293,6 +294,7 @@ public class ForgeUiEvents implements Listener {
                         String level = item.getLevel();
                         ForgeIron iron = ForgeManager.getForgeManager().getIron(level);
                         int cost = forgeUi.cost(iron);
+                        ForgeItem.addItemTag(itemStack, item.getId());
                         ForgeableItem.addCostTagTo(itemStack, cost);
                         giveItem(ev, itemStack);
                         String playerName = ev.getWhoClicked().getName();

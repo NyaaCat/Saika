@@ -72,11 +72,16 @@ public class RecycleUi implements InventoryHolder {
                 onInvalid();
                 return;
             }
-            String id = customTag.getCustomTag(ForgeableItem.ITEM_UUID, ItemTagType.STRING);
+            String id = customTag.getCustomTag(ForgeableItem.ITEM_ID, ItemTagType.STRING);
             ForgeableItem forgeableItem = forgeManager.getForgeableItem(id);
             if (forgeableItem != null) {
                 ForgeableItem.RecycleInfo recycle = forgeableItem.getRecycle();
                 ItemStack is = forgeableItem.getItemStack();
+                int costTag = ForgeableItem.getCostTag(itemStack);
+                if (costTag == -1){
+                    onInvalid();
+                    return;
+                }
                 if (is.getAmount() > 1) {
                     if (itemStack.getAmount() < is.getAmount()) {
                         onInvalid();
@@ -137,7 +142,7 @@ public class RecycleUi implements InventoryHolder {
                 onInvalid();
                 return null;
             }
-            String id = customTag.getCustomTag(ForgeableItem.ITEM_UUID, ItemTagType.STRING);
+            String id = customTag.getCustomTag(ForgeableItem.ITEM_ID, ItemTagType.STRING);
             ForgeableItem forgeableItem = forgeManager.getForgeableItem(id);
 
             if (forgeableItem == null) {
@@ -160,7 +165,8 @@ public class RecycleUi implements InventoryHolder {
             int costTag = ForgeableItem.getCostTag(itemStack);
             int amount;
             if (costTag == -1) {
-                amount = (int) Math.round(forgeableItem.getMinCost() * (((double) recycleResult) / 100d));
+                onInvalid();
+                return null;
             }else {
                 amount = (int) Math.round(costTag * (((double) recycleResult) / 100d));
             }

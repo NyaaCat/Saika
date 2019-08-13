@@ -98,8 +98,8 @@ public class ForgeManager {
         ItemStack clone = itemStack.clone();
         clone.setAmount(1);
         ForgeIron forgeIron = new ForgeIron(clone, level, elementCost);
-        String s = ironManager.addItem(forgeIron);
-        forgeIron.id = s;
+        ironManager.addItem(level, forgeIron);
+        forgeIron.id = level;
         addItemNbt(forgeIron);
         saveManager(ironManager);
         return forgeIron;
@@ -338,7 +338,6 @@ public class ForgeManager {
         ForgeableItem item = new ForgeableItem(itemInMainHand, level, element, cost, weight);
         String id = forgeableItemManager.addItem(item);
         item.setId(id);
-        item.addItemTag();
         saveManager(forgeableItemManager);
         return item;
     }
@@ -527,7 +526,6 @@ public class ForgeManager {
                             conf.load(f);
                             ForgeableItem item = new ForgeableItem();
                             item.deserialize(conf);
-                            item.addItemTag();
                             addItem(item.id, item);
                         }
                     }
@@ -916,8 +914,8 @@ public class ForgeManager {
                         iron.itemStack = ItemStackUtils.itemFromBase64(iron.nbt);
                     });
                 }
-                OptionalInt max = itemMap.keySet().stream().mapToInt(s -> Integer.parseInt(s)).max();
-                this.id = max.orElse(0) + 1;
+//                OptionalInt max = itemMap.keySet().stream().mapToInt(s -> Integer.parseInt(s)).max();
+//                this.id = max.orElse(0) + 1;
             } catch (IOException | InvalidConfigurationException e) {
                 plugin.getServer().getLogger().log(Level.SEVERE, "exception while saving " + ymlFile.getName(), e);
             }
