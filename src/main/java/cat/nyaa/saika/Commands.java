@@ -797,11 +797,13 @@ public class Commands extends CommandReceiver {
         if (forgeElement == null) {
             new Message("").append(I18n.format("roll.error.no_element"))
                     .send(sender);
+            return;
         }
         ForgeRecipe forgeRecipe = new ForgeRecipe(forgeElement, elementNum, forgeIron, ironNum);
         if (!forgeManager.hasItemOfRecipe(forgeRecipe)) {
             new Message("").append(I18n.format("roll.error.no_recipe"))
                     .send(sender);
+            return;
         }
         ForgeableItem forgeableItem = forgeManager.forgeItem(forgeRecipe);
         if (!InventoryUtils.addItem(((Player) sender), forgeableItem.getItemStack())) {
@@ -812,7 +814,6 @@ public class Commands extends CommandReceiver {
             mess.send(sender);
             ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
             mess.send(consoleSender);
-
         }
     }
 
