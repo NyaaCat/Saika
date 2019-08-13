@@ -125,3 +125,9 @@ ui:
     repulse: "&9&l消魔"
     forge: "&4&l铸造"
     recycle: "&2&l分解"
+roll:
+  error:
+    no_iron: "铸造金属无效,请联系管理员"
+    no_element: "铸造元素无效,请联系管理员"
+    no_recipe: "无效铸造方案,请联系管理员"
+  success: "成功铸造 {itemName} &r* {amount}"

@@ -4,6 +4,7 @@ import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
+import cat.nyaa.nyaacore.utils.InventoryUtils;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.LocaleUtils;
 import cat.nyaa.saika.forge.*;
@@ -15,10 +16,12 @@ import cat.nyaa.saika.forge.ui.ForgeUi;
 import cat.nyaa.saika.forge.ui.RecycleUi;
 import cat.nyaa.saika.forge.ui.RepulseUi;
 import cat.nyaa.saika.log.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -150,7 +153,7 @@ public class Commands extends CommandReceiver {
             List<String> str = new ArrayList<>();
             if (arguments.length == 2) {
                 return define;
-            } else if (arguments.length == 3){
+            } else if (arguments.length == 3) {
                 str.add("id");
             }
             return str;
@@ -168,7 +171,7 @@ public class Commands extends CommandReceiver {
                 case 2:
                     ForgeManager forgeManager = ForgeManager.getForgeManager();
                     List<String> itemList = forgeManager.getItemList();
-                    if(arguments[1] != null){
+                    if (arguments[1] != null) {
                         itemList = itemList.stream().filter(s -> s.startsWith(arguments[1])).collect(Collectors.toList());
                     }
                     str.addAll(itemList);
@@ -477,7 +480,7 @@ public class Commands extends CommandReceiver {
                 }
                 break;
             case "item":
-                if (!(sender instanceof Player)){
+                if (!(sender instanceof Player)) {
                     new Message(I18n.format("error.not_player"))
                             .send(sender);
                     return;
@@ -535,7 +538,7 @@ public class Commands extends CommandReceiver {
                     .send(sender);
             s.forEach(forgeableItem -> {
                 Message message = new Message("")
-                        .append(I18n.format("list.info", forgeableItem.getId() , forgeableItem.getWeight()), forgeableItem.getItemStack());
+                        .append(I18n.format("list.info", forgeableItem.getId(), forgeableItem.getWeight()), forgeableItem.getItemStack());
 
                 sendItemInfo(sender, message, forgeManager, forgeableItem);
                 message.send(sender);
@@ -567,7 +570,7 @@ public class Commands extends CommandReceiver {
         ForgeableItem.Bonus forgeBonus = forgeableItem.getForgeBonus();
         if (!forgeBonus.item.equals("")) {
             BonusItem bonus = forgeManager.getBonus(forgeBonus.item);
-            if (bonus != null){
+            if (bonus != null) {
                 ItemStack itemStack = ItemStackUtils.itemFromBase64(bonus.toNbt());
                 message.append("\n").append(I18n.format("list.forge_bonus", forgeBonus.chance), itemStack);
             }
@@ -746,8 +749,8 @@ public class Commands extends CommandReceiver {
     }
 
     @SubCommand("autoRoll")
-    public void onAutoRoll(CommandSender sender, Arguments arguments){
-        if (dontHavePermission(sender, PERMISSION_ADMIN, "")){
+    public void onAutoRoll(CommandSender sender, Arguments arguments) {
+        if (dontHavePermission(sender, PERMISSION_ADMIN, "")) {
             return;
         }
         String iron = arguments.nextString();
@@ -767,6 +770,49 @@ public class Commands extends CommandReceiver {
                 String playerName = sender.getName();
                 Logger.logForge(forgeableItem, playerName, recipe);
             }
+        }
+    }
+
+    @SubCommand(value = "roll", permission = "saika.roll")
+    public void onRoll(CommandSender sender, Arguments arguments) {
+        String element = arguments.nextString();
+        int elementNum = arguments.nextInt();
+        String iron = arguments.nextString();
+        int ironNum = arguments.nextInt();
+
+        if (!(sender instanceof Player)) {
+            new Message(I18n.format("error.not_player"))
+                    .send(sender);
+            return;
+        }
+
+        ForgeManager forgeManager = ForgeManager.getForgeManager();
+        ForgeIron forgeIron = forgeManager.getIron(iron);
+        ForgeElement forgeElement = forgeManager.getElement(element);
+        if (forgeIron == null) {
+            new Message("").append(I18n.format("roll.error.no_iron"))
+                    .send(sender);
+            return;
+        }
+        if (forgeElement == null) {
+            new Message("").append(I18n.format("roll.error.no_element"))
+                    .send(sender);
+        }
+        ForgeRecipe forgeRecipe = new ForgeRecipe(forgeElement, elementNum, forgeIron, ironNum);
+        if (!forgeManager.hasItemOfRecipe(forgeRecipe)) {
+            new Message("").append(I18n.format("roll.error.no_recipe"))
+                    .send(sender);
+        }
+        ForgeableItem forgeableItem = forgeManager.forgeItem(forgeRecipe);
+        if (!InventoryUtils.addItem(((Player) sender), forgeableItem.getItemStack())) {
+            ((Player) sender).getWorld().dropItem(((Player) sender).getLocation(), forgeableItem.getItemStack());
+        }
+        if (sender.isOp()) {
+            Message mess = new Message("").append(I18n.format("roll.success"), forgeableItem.getItemStack());
+            mess.send(sender);
+            ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
+            mess.send(consoleSender);
+
         }
     }
 

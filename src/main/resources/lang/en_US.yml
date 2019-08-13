@@ -127,3 +127,9 @@ ui:
     repulse: "Repulsing"
     forge: "Forging"
     recycle: "Recycling"
+roll:
+  error:
+    no_iron: "invalid iron, please contact administrator"
+    no_element: "invalid element, please contact administrator"
+    no_recipe: "no valid recipe, please contact administrator"
+  success: "successfully forged {itemName} &r* {amount}"
