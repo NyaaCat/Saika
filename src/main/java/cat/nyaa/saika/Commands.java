@@ -16,12 +16,10 @@ import cat.nyaa.saika.forge.ui.ForgeUi;
 import cat.nyaa.saika.forge.ui.RecycleUi;
 import cat.nyaa.saika.forge.ui.RepulseUi;
 import cat.nyaa.saika.log.Logger;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -87,8 +85,87 @@ public class Commands extends CommandReceiver {
                 case "list":
                     str = completeList(subCommand, arguments);
                     break;
+                case "roll":
+                    str = comleteRoll(subCommand, arguments);
+                    break;
+                case "autoRoll":
+                    str = comleteAutoRoll(subCommand, arguments);
+                    break;
                 default:
                     break;
+            }
+            return str;
+        }
+
+        private List<String> comleteRoll(String subCommand, String[] arguments) {
+            List<String> str = new ArrayList<>();
+            String cmd = arguments[arguments.length - 1];
+            switch (arguments.length) {
+                case 2:
+                    str.addAll(getElements());
+                    break;
+                case 3:
+                    str.add("elementAmount");
+                    break;
+                case 4:
+                    str.addAll(getLevels());
+                    break;
+                case 5:
+                    str.add("levelAmount");
+                    break;
+                case 6:
+                    str.add("true");
+                    str.add("false");
+                    break;
+                default:
+                    break;
+            }
+            List<String> collect = str.stream().filter(s -> s.startsWith(cmd)).collect(Collectors.toList());
+            if (!collect.isEmpty()){
+                str = collect;
+            }
+            return str;
+        }
+
+        private List<String> getElements() {
+            ArrayList<String> str = new ArrayList<>();
+            ForgeManager forgeManager = ForgeManager.getForgeManager();
+            str.addAll(forgeManager.getElementList());
+            return str;
+        }
+
+        private List<String> getLevels() {
+            ArrayList<String> str = new ArrayList<>();
+            ForgeManager forgeManager = ForgeManager.getForgeManager();
+            str.addAll(forgeManager.getIronList());
+            return str;
+        }
+
+        private List<String> comleteAutoRoll(String subCommand, String[] arguments) {
+            List<String> str = new ArrayList<>();
+            String cmd = arguments[arguments.length - 1];
+            switch (arguments.length) {
+                case 2:
+                    str.addAll(getLevels());
+                    break;
+                case 3:
+                    str.add("elementAmount");
+                    break;
+                case 4:
+                    str.addAll(getElements());
+                    break;
+                case 5:
+                    str.add("levelAmount");
+                    break;
+                case 6:
+                    str.add("rollTimes");
+                    break;
+                default:
+                    break;
+            }
+            List<String> collect = str.stream().filter(s -> s.startsWith(cmd)).collect(Collectors.toList());
+            if (!collect.isEmpty()){
+                str = collect;
             }
             return str;
         }
@@ -104,10 +181,10 @@ public class Commands extends CommandReceiver {
             List<String> str = new ArrayList<>();
             switch (arguments.length) {
                 case 2:
-                    str.add("level");
+                    str = getLevels();
                     break;
                 case 3:
-                    str.add("element");
+                    str = getElements();
                     break;
                 case 4:
                     str.add("consumption");
@@ -230,10 +307,10 @@ public class Commands extends CommandReceiver {
             List<String> str = new ArrayList<>();
             switch (arguments.length) {
                 case 2:
-                    str.add("level");
+                    str = getLevels();
                     break;
                 case 3:
-                    str.add("element");
+                    str = getElements();
                     break;
             }
             return str;
@@ -806,14 +883,18 @@ public class Commands extends CommandReceiver {
             return;
         }
         ForgeableItem forgeableItem = forgeManager.forgeItem(forgeRecipe);
-        if (!InventoryUtils.addItem(((Player) sender), forgeableItem.getItemStack())) {
+        String canRecycle = arguments.top();
+        ItemStack itemStack = forgeableItem.getItemStack();
+        if (canRecycle != null && canRecycle.equals("true")) {
+            ForgeableItem.addItemTag(itemStack, forgeableItem.getId());
+            ForgeableItem.addCostTagTo(itemStack, ironNum);
+        }
+        if (!InventoryUtils.addItem(((Player) sender), itemStack)) {
             ((Player) sender).getWorld().dropItem(((Player) sender).getLocation(), forgeableItem.getItemStack());
         }
         if (sender.isOp()) {
             Message mess = new Message("").append(I18n.format("roll.success"), forgeableItem.getItemStack());
-            mess.send(sender);
-            ConsoleCommandSender consoleSender = Bukkit.getConsoleSender();
-            mess.send(consoleSender);
+            mess.send(sender);Logger.logForge(forgeableItem, sender.getName(), forgeRecipe);
         }
     }
 

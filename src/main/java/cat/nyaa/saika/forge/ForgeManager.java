@@ -467,6 +467,10 @@ public class ForgeManager {
         return ironManager.itemMap.values().stream().map(iron -> iron.id).collect(Collectors.toList());
     }
 
+    public List<String> getIronList() {
+        return ironManager.itemMap.values().stream().map(ForgeIron::getLevel).collect(Collectors.toList());
+    }
+
     public List<String> getElementList() {
         return elementManager.itemMap.values().stream().map(element -> element.element).collect(Collectors.toList());
     }
