@@ -1,9 +1,11 @@
 package cat.nyaa.saika;
 
-import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
+import cat.nyaa.nyaacore.cmdreceiver.Arguments;
+import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
+import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import cat.nyaa.nyaacore.utils.InventoryUtils;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.LocaleUtils;
@@ -18,7 +20,6 @@ import cat.nyaa.saika.forge.ui.RepulseUi;
 import cat.nyaa.saika.log.Logger;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -36,66 +37,7 @@ public class Commands extends CommandReceiver {
     Saika plugin;
     SaikaCommandCompleter commandCompleter;
 
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (args.length > 0) {
-            List<String> strings = commandCompleter.onSubCommand(args[0], args);
-            if (strings == null) {
-                return super.onTabComplete(sender, command, alias, args);
-            }
-            return strings;
-        } else {
-            return super.onTabComplete(sender, command, alias, args);
-        }
-    }
-
     class SaikaCommandCompleter {
-        List<String> open = Arrays.asList("forge", "enchant", "repulse", "recycle");
-        List<String> add;
-        List<String> define = Arrays.asList("level", "element", "enchant", "repulse", "recycle");
-        List<String> list;
-
-        List<String> onSubCommand(String subCommand, String[] arguments) {
-            List<String> str = null;
-            switch (subCommand) {
-                case "open":
-                    str = completeOpen(subCommand, arguments);
-                    break;
-                case "add":
-                    str = completeAdd(subCommand, arguments);
-                    break;
-                case "define":
-                    str = completeDefine(subCommand, arguments);
-                    break;
-                case "delete":
-                    str = completeDelete(subCommand, arguments);
-                    break;
-                case "remove":
-                    str = completeRemove(subCommand, arguments);
-                    break;
-                case "modify":
-                    str = completeModify(subCommand, arguments);
-                    break;
-                case "bonus":
-                    str = completeBonus(subCommand, arguments);
-                    break;
-                case "inspect":
-                    str = completeInspect(subCommand, arguments);
-                    break;
-                case "list":
-                    str = completeList(subCommand, arguments);
-                    break;
-                case "roll":
-                    str = comleteRoll(subCommand, arguments);
-                    break;
-                case "autoRoll":
-                    str = comleteAutoRoll(subCommand, arguments);
-                    break;
-                default:
-                    break;
-            }
-            return str;
-        }
 
         private List<String> comleteRoll(String subCommand, String[] arguments) {
             List<String> str = new ArrayList<>();
@@ -121,23 +63,9 @@ public class Commands extends CommandReceiver {
                     break;
             }
             List<String> collect = str.stream().filter(s -> s.startsWith(cmd)).collect(Collectors.toList());
-            if (!collect.isEmpty()){
+            if (!collect.isEmpty()) {
                 str = collect;
             }
-            return str;
-        }
-
-        private List<String> getElements() {
-            ArrayList<String> str = new ArrayList<>();
-            ForgeManager forgeManager = ForgeManager.getForgeManager();
-            str.addAll(forgeManager.getElementList());
-            return str;
-        }
-
-        private List<String> getLevels() {
-            ArrayList<String> str = new ArrayList<>();
-            ForgeManager forgeManager = ForgeManager.getForgeManager();
-            str.addAll(forgeManager.getIronList());
             return str;
         }
 
@@ -164,7 +92,7 @@ public class Commands extends CommandReceiver {
                     break;
             }
             List<String> collect = str.stream().filter(s -> s.startsWith(cmd)).collect(Collectors.toList());
-            if (!collect.isEmpty()){
+            if (!collect.isEmpty()) {
                 str = collect;
             }
             return str;
@@ -328,7 +256,7 @@ public class Commands extends CommandReceiver {
         return "";
     }
 
-    @SubCommand("reload")
+    @SubCommand(value = "reload")
     public void onReload(CommandSender sender, Arguments arguments) {
         if (dontHavePermission(sender, PERMISSION_ADMIN, "")) {
             return;
@@ -338,7 +266,7 @@ public class Commands extends CommandReceiver {
                 .send(sender);
     }
 
-    @SubCommand("define")
+    @SubCommand(value = "define", tabCompleter = "defineCompleter")
     public void onDefine(CommandSender sender, Arguments arguments) {
         if (dontHavePermission(sender, PERMISSION_ADMIN, "define")) {
             return;
@@ -406,7 +334,7 @@ public class Commands extends CommandReceiver {
         }
     }
 
-    @SubCommand("delete")
+    @SubCommand(value = "delete", tabCompleter = "deleteCompleter")
     public void onDelete(CommandSender sender, Arguments arguments) {
         if (dontHavePermission(sender, PERMISSION_ADMIN, "delete")) {
             return;
@@ -467,7 +395,7 @@ public class Commands extends CommandReceiver {
         }
     }
 
-    @SubCommand("modify")
+    @SubCommand(value = "modify", tabCompleter = "modifyCompleter")
     public void onModify(CommandSender sender, Arguments arguments) {
         if (dontHavePermission(sender, PERMISSION_ADMIN, "modify")) {
             return;
@@ -580,7 +508,7 @@ public class Commands extends CommandReceiver {
         forgeManager.saveItem(id);
     }
 
-    @SubCommand("inspect")
+    @SubCommand(value = "inspect", tabCompleter = "inspectCompleter")
     public void onInspect(CommandSender sender, Arguments arguments) {
         if (dontHavePermission(sender, PERMISSION_ADMIN, "inspect")) {
             return;
@@ -598,7 +526,7 @@ public class Commands extends CommandReceiver {
         }
     }
 
-    @SubCommand("list")
+    @SubCommand(value = "list", tabCompleter = "listCompleter")
     public void onList(CommandSender sender, Arguments arguments) {
         if (dontHavePermission(sender, PERMISSION_LIST, null)) {
             return;
@@ -665,7 +593,7 @@ public class Commands extends CommandReceiver {
 
     Random random = new Random();
 
-    @SubCommand("bonus")
+    @SubCommand(value = "bonus", tabCompleter = "bonusCompleter")
     public void onBonus(CommandSender sender, Arguments arguments) {
         if (dontHavePermission(sender, PERMISSION_ADMIN, "bonus")) {
             return;
@@ -734,7 +662,7 @@ public class Commands extends CommandReceiver {
         }
     }
 
-    @SubCommand("add")
+    @SubCommand(value = "add", tabCompleter = "addCompleter")
     public void onAdd(CommandSender sender, Arguments arguments) {
         if (dontHavePermission(sender, PERMISSION_ADMIN, "add")) {
             return;
@@ -762,7 +690,7 @@ public class Commands extends CommandReceiver {
                 .send(sender);
     }
 
-    @SubCommand("remove")
+    @SubCommand(value = "remove", tabCompleter = "removeCompleter")
     public void onRemove(CommandSender sender, Arguments arguments) {
         if (dontHavePermission(sender, PERMISSION_ADMIN, "remove")) {
             return;
@@ -785,7 +713,7 @@ public class Commands extends CommandReceiver {
         }
     }
 
-    @SubCommand("open")
+    @SubCommand(value = "open", tabCompleter = "openCompleter")
     public boolean onOpen(CommandSender sender, Arguments arguments) {
         String action = arguments.nextString();
         if (!action.equals("forge") && !action.equals("enchant") && !action.equals("repulse") && !action.equals("recycle")) {
@@ -825,15 +753,15 @@ public class Commands extends CommandReceiver {
         return true;
     }
 
-    @SubCommand("autoRoll")
+    @SubCommand(value = "consoleRoll", tabCompleter = "consoleRollCompleter")
     public void onAutoRoll(CommandSender sender, Arguments arguments) {
         if (dontHavePermission(sender, PERMISSION_ADMIN, "")) {
             return;
         }
-        String iron = arguments.nextString();
-        int ironAmount = arguments.nextInt();
         String element = arguments.nextString();
         int elementAmount = arguments.nextInt();
+        String iron = arguments.nextString();
+        int ironAmount = arguments.nextInt();
         int rollTimes = arguments.nextInt();
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         ForgeIron forgeIron = forgeManager.getIron(iron);
@@ -850,7 +778,7 @@ public class Commands extends CommandReceiver {
         }
     }
 
-    @SubCommand(value = "roll", permission = "saika.roll")
+    @SubCommand(value = "roll", permission = "saika.roll", tabCompleter = "rollCompleter")
     public void onRoll(CommandSender sender, Arguments arguments) {
         String element = arguments.nextString();
         int elementNum = arguments.nextInt();
@@ -877,24 +805,35 @@ public class Commands extends CommandReceiver {
             return;
         }
         ForgeRecipe forgeRecipe = new ForgeRecipe(forgeElement, elementNum, forgeIron, ironNum);
+        String canRecycle = arguments.top();
+        int forgeTimes = 1;
+        try {
+            arguments.next();
+            String top = arguments.top();
+            if (top != null && !"".equals(top)) {
+                forgeTimes = Integer.parseInt(top);
+            }
+        } catch (NumberFormatException e) {}
         if (!forgeManager.hasItemOfRecipe(forgeRecipe)) {
             new Message("").append(I18n.format("roll.error.no_recipe"))
                     .send(sender);
             return;
         }
-        ForgeableItem forgeableItem = forgeManager.forgeItem(forgeRecipe);
-        String canRecycle = arguments.top();
-        ItemStack itemStack = forgeableItem.getItemStack();
-        if (canRecycle != null && canRecycle.equals("true")) {
-            ForgeableItem.addItemTag(itemStack, forgeableItem.getId());
-            ForgeableItem.addCostTagTo(itemStack, ironNum);
-        }
-        if (!InventoryUtils.addItem(((Player) sender), itemStack)) {
-            ((Player) sender).getWorld().dropItem(((Player) sender).getLocation(), forgeableItem.getItemStack());
-        }
-        if (sender.isOp()) {
-            Message mess = new Message("").append(I18n.format("roll.success"), forgeableItem.getItemStack());
-            mess.send(sender);Logger.logForge(forgeableItem, sender.getName(), forgeRecipe);
+        for (int i = 0; i < forgeTimes; i++) {
+            ForgeableItem forgeableItem = forgeManager.forgeItem(forgeRecipe);
+            ItemStack itemStack = forgeableItem.getItemStack();
+            if (canRecycle != null && canRecycle.equals("true")) {
+                ForgeableItem.addItemTag(itemStack, forgeableItem.getId());
+                ForgeableItem.addCostTagTo(itemStack, ironNum);
+            }
+            if (!InventoryUtils.addItem(((Player) sender), itemStack)) {
+                ((Player) sender).getWorld().dropItem(((Player) sender).getLocation(), forgeableItem.getItemStack());
+            }
+            if (sender.isOp()) {
+                Message mess = new Message("").append(I18n.format("roll.success"), forgeableItem.getItemStack());
+                mess.send(sender);
+                Logger.logForge(forgeableItem, sender.getName(), forgeRecipe);
+            }
         }
     }
 
@@ -939,7 +878,7 @@ public class Commands extends CommandReceiver {
                                     .boxed()
                                     .map(z -> location.clone().add(p.getKey(), p.getValue(), z))
                     ).collect(Collectors.toList());
-            if (nearbyBlock.parallelStream().anyMatch(loc -> loc.getBlock().getType() == forgeBlock)) match = true;
+            if (nearbyBlock.stream().anyMatch(loc -> loc.getBlock().getType().equals(forgeBlock))) match = true;
             else match = false;
             if (!match) {
                 new Message("")
@@ -948,6 +887,289 @@ public class Commands extends CommandReceiver {
             }
         }
         return match;
+    }
+
+    private List<String> open = Arrays.asList("forge", "enchant", "repulse", "recycle");
+    private List<String> define = Arrays.asList("level", "element", "enchant", "repulse", "recycle");
+
+    public List<String> defineCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        String target = arguments.nextString();
+        switch (arguments.length()) {
+            case 2:
+                completeStr.addAll(define);
+                break;
+            case 3:
+                if ("level".equals(target) || "element".equals(target)) {
+                    completeStr.add("id");
+                }
+                break;
+            case 4:
+                if (target.equals("level")) {
+                    completeStr.add("element cost");
+                }
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> deleteCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()) {
+            case 2:
+                completeStr.addAll(define);
+                break;
+            case 3:
+                String target = arguments.nextString();
+                ForgeManager forgeManager = ForgeManager.getForgeManager();
+                switch (target) {
+                    case "level":
+                        completeStr.addAll(forgeManager.getIronList());
+                        break;
+                    case "element":
+                        completeStr.addAll(forgeManager.getElementList());
+                        break;
+                    case "enchant":
+                        completeStr.addAll(forgeManager.getEnchantBookIds());
+                        break;
+                    case "repulse":
+                        completeStr.addAll(forgeManager.getRepulseIds());
+                        break;
+                    case "recycle":
+                        completeStr.addAll(forgeManager.getRecycleIds());
+                        break;
+                    default:
+                        break;
+                }
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> modifyCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        ForgeManager forgeManager = ForgeManager.getForgeManager();
+        switch (arguments.length()) {
+            case 2:
+                completeStr.addAll(forgeManager.getForgeableItemList());
+                break;
+            case 3:
+                completeStr.add("level");
+                completeStr.add("element");
+                completeStr.add("cost");
+                completeStr.add("weight");
+                completeStr.add("recycle");
+                completeStr.add("item");
+                break;
+            case 4:
+                arguments.next();
+                String target = arguments.next();
+                switch (target) {
+                    case "level":
+                        completeStr.addAll(getLevels());
+                        break;
+                    case "element":
+                        completeStr.addAll(getElements());
+                        break;
+                    case "recycle":
+                        completeStr.addAll(getRecycles());
+                        break;
+                    default:
+                        break;
+                }
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> inspectCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()) {
+            case 2:
+                ForgeManager forgeManager = ForgeManager.getForgeManager();
+                completeStr.addAll(forgeManager.getForgeableItemList());
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> listCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()) {
+            case 2:
+                completeStr.addAll(getLevels());
+                break;
+            case 3:
+                completeStr.addAll(getElements());
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> bonusCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()) {
+            case 2:
+                completeStr.add("add");
+                completeStr.add("set");
+                break;
+            case 3:
+                String target = arguments.nextString();
+                if ("set".equals(target)) {
+                    completeStr.add("forge");
+                    completeStr.add("recycle");
+                }
+                break;
+            case 4:
+                String target1 = arguments.nextString();
+                if ("set".equals(target1)) {
+                    ForgeManager forgeManager = ForgeManager.getForgeManager();
+                    completeStr.addAll(forgeManager.getForgeableItemList());
+                }
+                break;
+            case 5:
+                String target2 = arguments.nextString();
+                if ("set".equals(target2)) {
+                    ForgeManager forgeManager = ForgeManager.getForgeManager();
+                    completeStr.addAll(forgeManager.getBonusIds());
+                }
+                break;
+            case 6:
+                String target3 = arguments.nextString();
+                if ("set".equals(target3)) {
+                completeStr.add("probability");
+            }
+            break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> addCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()) {
+            case 2:
+                completeStr.addAll(getLevels());
+                break;
+            case 3:
+                completeStr.addAll(getElements());
+                break;
+            case 4:
+                completeStr.add("cost");
+                break;
+            case 5:
+                completeStr.add("weight");
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> removeCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()) {
+            case 2:
+                ForgeManager forgeManager = ForgeManager.getForgeManager();
+                completeStr.addAll(forgeManager.getForgeableItemList());
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> openCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()) {
+            case 2:
+                completeStr.addAll(open);
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> rollCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()) {
+            case 2:
+                completeStr.addAll(getElements());
+                break;
+            case 3:
+                completeStr.add("element amount");
+                break;
+            case 4:
+                completeStr.addAll(getLevels());
+                break;
+            case 5:
+                completeStr.add("material amount");
+                break;
+            case 6:
+                completeStr.add("can recycle");
+                completeStr.add("true");
+                completeStr.add("false");
+                break;
+            case 7:
+                completeStr.add("roll times");
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> consoleRollCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()) {
+            case 2:
+                completeStr.addAll(getElements());
+                break;
+            case 3:
+                completeStr.add("element amount");
+                break;
+            case 4:
+                completeStr.addAll(getLevels());
+                break;
+            case 5:
+                completeStr.add("material amount");
+                break;
+            case 6:
+                completeStr.add("roll times");
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    public List<String> sampleCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.length()) {
+            case 2:
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    private List<String> filtered(Arguments arguments, List<String> completeStr) {
+        String next = "";
+        int remains = arguments.remains();
+        for (int i = 0; i < remains; i++) {
+            String next1 = arguments.next();
+            next = next1 == null ? next : next1;
+        }
+        String finalNext = next;
+        return completeStr.stream().filter(s -> s.startsWith(finalNext)).collect(Collectors.toList());
+    }
+
+    private List<String> getElements() {
+        ArrayList<String> str = new ArrayList<>();
+        ForgeManager forgeManager = ForgeManager.getForgeManager();
+        str.addAll(forgeManager.getElementList());
+        return str;
+    }
+
+    private List<String> getLevels() {
+        ArrayList<String> str = new ArrayList<>();
+        ForgeManager forgeManager = ForgeManager.getForgeManager();
+        str.addAll(forgeManager.getIronList());
+        return str;
+    }
+
+    private Collection<? extends String> getRecycles() {
+        ForgeManager forgeManager = ForgeManager.getForgeManager();
+        return forgeManager.getRecycleIds();
     }
 
     private boolean dontHavePermission(CommandSender sender, String mainPermission, String subPermission) {

@@ -489,6 +489,26 @@ public class ForgeManager {
         return maxCost > 0 && (maxCost * lowEfficiencyMultiplier) < amount;
     }
 
+    public Collection<? extends String> getEnchantBookIds() {
+        return enchantBookManager.enchants.itemMap.keySet();
+    }
+
+    public Collection<? extends String> getRepulseIds() {
+        return enchantBookManager.repulses.itemMap.keySet();
+    }
+
+    public Collection<? extends String> getRecycleIds() {
+        return recycleManager.itemMap.keySet();
+    }
+
+    public Collection<? extends String> getForgeableItemList() {
+        return forgeableItemManager.itemMap.keySet();
+    }
+
+    public Collection<? extends String> getBonusIds() {
+        return bonusManager.itemMap.keySet();
+    }
+
     class ForgeableItemManager extends BaseManager<ForgeableItem> {
 
         @Override
