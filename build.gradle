@@ -3,9 +3,9 @@ plugins {
 }
 
 group 'Nyaacat'
-version '1.4'
+version '1.5'
 
-ext.minecraftVersion = "1.15"
+ext.minecraftVersion = "1.15.1"
 
 sourceCompatibility = 1.8
 
