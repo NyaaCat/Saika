@@ -83,7 +83,7 @@ public class ForgeUiEvents implements Listener {
     @EventHandler
     public void onDirectInteract(PlayerInteractEvent event){
         Configure configure = plugin.getConfigure();
-        if (!configure.directInteractEnabled) {
+        if (!configure.isWorldDirectClickEnabled(event.getPlayer().getWorld())) {
             return;
         }
         if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){

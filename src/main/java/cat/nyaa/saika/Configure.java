@@ -6,6 +6,7 @@ import cat.nyaa.saika.forge.ui.EnchantChance;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -94,8 +95,11 @@ public class Configure extends PluginConfigure {
     @Serializable(name = "log.enabled")
     public boolean logEnabled = false;
 
-    @Serializable(name = "directInteract")
+    @Serializable(name = "directInteract.global")
     public boolean directInteractEnabled = false;
+
+    @Serializable(name = "directInteract.worlds")
+    public List<String> directInteractWorlds = new ArrayList<>();
 
 
     public static class SoundConf implements ISerializable {
@@ -153,6 +157,10 @@ public class Configure extends PluginConfigure {
 
     public EffectConf getEnchantFailEffect() {
         return failEffect;
+    }
+
+    public boolean isWorldDirectClickEnabled(World world){
+        return directInteractEnabled && directInteractWorlds.contains(world.getName());
     }
 
     public EnchantChance getEnchantChance() {
