@@ -89,6 +89,19 @@ public class Configure extends PluginConfigure {
     @Serializable(name = "position.enchant.distance")
     public int enchantDistance = 3;
 
+    @Serializable(name = "position.recycle.block")
+    public Material recycleBlock = Material.ENCHANTING_TABLE;
+
+    @Serializable(name = "position.recycle.distance")
+    public int recycleDistance = 3;
+
+    @Serializable(name = "position.repulse.block")
+    public Material repulseBlock = Material.ENCHANTING_TABLE;
+
+    @Serializable(name = "position.repulse.distance")
+    public int repulseDistance = 3;
+
+
     @Serializable(name = "forge.lowEfficiency.multiplier")
     public double lowEfficiencyMultiplier = 1.5;
 
@@ -100,6 +113,14 @@ public class Configure extends PluginConfigure {
 
     @Serializable(name = "directInteract.worlds")
     public List<String> directInteractWorlds = new ArrayList<>();
+
+    public Material getRecycleBlock() {
+        return recycleBlock;
+    }
+
+    public Material getRepulseBlock() {
+        return repulseBlock;
+    }
 
 
     public static class SoundConf implements ISerializable {

@@ -95,17 +95,32 @@ public class ForgeUiEvents implements Listener {
                 }
                 Material forgeBlock = configure.getForgeBlock();
                 Material enchantBlock = configure.getEnchantBlock();
-                if (clickedBlock.getType().equals(forgeBlock)){
+                Material recycleBlock = configure.getRecycleBlock();
+                Material repulseBlock = configure.getRepulseBlock();
+
+                if (clickedBlock.getType().equals(forgeBlock) && inRange(player, clickedBlock, configure.forgeDistance)){
                     event.setCancelled(true);
                     new ForgeUi().openInventory(player);
                     return;
-                }else if (clickedBlock.getType().equals(enchantBlock)){
+                }else if (clickedBlock.getType().equals(enchantBlock) && inRange(player, clickedBlock, configure.enchantDistance)){
                     event.setCancelled(true);
                     new EnchantUi().openInventory(player);
+                    return;
+                }else if (clickedBlock.getType().equals(recycleBlock) && inRange(player, clickedBlock, configure.recycleDistance)){
+                    event.setCancelled(true);
+                    new RecycleUi().openInventory(player);
+                    return;
+                }else if (clickedBlock.getType().equals(repulseBlock) && inRange(player, clickedBlock, configure.repulseDistance)){
+                    event.setCancelled(true);
+                    new RepulseUi().openInventory(player);
                     return;
                 }
             }
         }
+    }
+
+    private boolean inRange(Player player, Block clickedBlock, double dis){
+        return player.getLocation().distance(clickedBlock.getLocation()) <= dis;
     }
 
     @EventHandler
