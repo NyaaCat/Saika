@@ -93,7 +93,10 @@ ui:
       lore: "&r请在上方放入可附魔的物品\n&r下方放入&d魔法书\n&r并确保经验值充足\n\n&7每等级附魔消耗 &b100&7 点经验"
     valid:
       title: "&a&l点击附魔"
-      lore: "&r消耗附魔书并添加附魔到物品\n\n&r附魔结果概率\n&eS &b{chance_great}%% &r：获得全部附魔等级\n&aM &b{chance_normal}%% &r：获得部分附魔等级\n&6F &b{chance_fail}%% &r：无法获得附魔等级\n&cL &b{chance_destroy}%% &r：物品损毁\n\n&r&7每级附魔需要消耗 &b100&7 点经验"
+      lore: "&r消耗附魔书并添加附魔到物品\n\n&r附魔结果概率\n&eS &b{chance_great}%% &r：获得全部附魔等级\n&aM &b{chance_normal}%% &r：获得部分附魔等级\n&6F &b{chance_fail}%% &r：无法获得附魔等级\n&cL &b{chance_destroy}%% &r：物品损毁\n\n&r&7本次附魔需要 {exp} 点经验"
+    insufficient:
+      title: "&e&l经验不足"
+      lore: "&r附魔所需经验不足\n\n&r附魔结果概率\n&eS &b{chance_great}%% &r：获得全部附魔等级\n&aM &b{chance_normal}%% &r：获得部分附魔等级\n&6F &b{chance_fail}%% &r：无法获得附魔等级\n&cL &b{chance_destroy}%% &r：物品损毁\n\n&r&7本次附魔需要 {exp} 点经验"
   repulse:
     invalid:
       title: "&c&l无效物品"

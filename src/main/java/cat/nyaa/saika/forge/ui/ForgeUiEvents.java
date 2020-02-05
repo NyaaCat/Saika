@@ -97,20 +97,25 @@ public class ForgeUiEvents implements Listener {
                 Material enchantBlock = configure.getEnchantBlock();
                 Material recycleBlock = configure.getRecycleBlock();
                 Material repulseBlock = configure.getRepulseBlock();
+                if (!inRange(player, clickedBlock, configure.forgeDistance)) {
+                    new Message("").append(I18n.format("error.not_in_range")).send(player);
+                    event.setCancelled(true);
+                    return;
+                }
 
-                if (clickedBlock.getType().equals(forgeBlock) && inRange(player, clickedBlock, configure.forgeDistance)){
+                if (clickedBlock.getType().equals(forgeBlock)){
                     event.setCancelled(true);
                     new ForgeUi().openInventory(player);
                     return;
-                }else if (clickedBlock.getType().equals(enchantBlock) && inRange(player, clickedBlock, configure.enchantDistance)){
+                }else if (clickedBlock.getType().equals(enchantBlock)){
                     event.setCancelled(true);
                     new EnchantUi().openInventory(player);
                     return;
-                }else if (clickedBlock.getType().equals(recycleBlock) && inRange(player, clickedBlock, configure.recycleDistance)){
+                }else if (clickedBlock.getType().equals(recycleBlock)){
                     event.setCancelled(true);
                     new RecycleUi().openInventory(player);
                     return;
-                }else if (clickedBlock.getType().equals(repulseBlock) && inRange(player, clickedBlock, configure.repulseDistance)){
+                }else if (clickedBlock.getType().equals(repulseBlock)){
                     event.setCancelled(true);
                     new RepulseUi().openInventory(player);
                     return;
@@ -135,13 +140,16 @@ public class ForgeUiEvents implements Listener {
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent ev) {
         Inventory clickedInventory = ev.getView().getTopInventory();
+        HumanEntity whoClicked = ev.getWhoClicked();
+        if (!(whoClicked instanceof Player))return;
+        Player player = (Player) whoClicked;
         if (forgeUiList.containsKey(clickedInventory)) {
             if (ev.getRawSlots().stream().anyMatch(integer -> integer < 3)) {
                 forgeUiList.get(clickedInventory).updateValidationLater();
             }
         } else if (enchantUiList.containsKey(clickedInventory)) {
             if (ev.getRawSlots().stream().anyMatch(integer -> integer < 3)) {
-                enchantUiList.get(clickedInventory).updateValidationLater();
+                enchantUiList.get(clickedInventory).updateValidationLater(ExperienceUtils.getExpPoints(player));
             }
         } else if (recycleUiList.containsKey(clickedInventory)) {
             if (ev.getRawSlots().stream().anyMatch(integer -> integer < 3)) {
@@ -261,15 +269,16 @@ public class ForgeUiEvents implements Listener {
         ItemStack cursor = ev.getCursor();
         ItemStack currentItem = ev.getCurrentItem();
         EnchantUi enchantUi = enchantUiList.get(clickedInventory);
+        HumanEntity whoClicked = ev.getWhoClicked();
+        if (!(whoClicked instanceof Player)) return;
+        Player player = (Player) whoClicked;
         if (ev.getSlot() == 2) {
             if (notValidResultAction(ev, cursor)) return;
             if (currentItem != null && currentItem.getItemMeta() != null) {
                 if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
-                    enchantUi.updateValidation();
-                    UUID uniqueId = ev.getWhoClicked().getUniqueId();
-                    Player player = ev.getWhoClicked().getServer().getPlayer(uniqueId);
                     int expCost = plugin.getConfigure().enchantExp * enchantUi.getLevels();
                     int exp = ExperienceUtils.getExpPoints(player);
+                    enchantUi.updateValidation(exp);
                     if (exp >= expCost) {
                         ItemStack itemStack = enchantUi.onEnchant();
                         if (itemStack != null) {
@@ -284,13 +293,13 @@ public class ForgeUiEvents implements Listener {
                                 .send(player);
                     }
                     ev.setCancelled(true);
-                    enchantUi.updateValidationLater();
+                    enchantUi.updateValidationLater(ExperienceUtils.getExpPoints(player));
                     return;
                 }
             }
         }
         onGeneralClick(ev, cursor, currentItem);
-        enchantUi.updateValidationLater();
+        enchantUi.updateValidationLater(ExperienceUtils.getExpPoints(player));
     }
 
     private void forgeUiClicked(InventoryClickEvent ev, Inventory clickedInventory) {

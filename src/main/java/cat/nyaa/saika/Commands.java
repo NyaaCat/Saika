@@ -727,7 +727,7 @@ public class Commands extends CommandReceiver {
                     .send(sender);
             return false;
         }
-        if (!checkRequiredBlock((Player) sender, action)) {
+        if (!sender.isOp() && !checkRequiredBlock((Player) sender, action)) {
             return false;
         }
         switch (action) {

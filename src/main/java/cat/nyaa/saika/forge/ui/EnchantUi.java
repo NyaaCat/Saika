@@ -30,17 +30,22 @@ public class EnchantUi implements InventoryHolder {
     private Inventory inventory;
     ItemStack invalid;
     ItemStack valid;
+    ItemStack expInsufficient;
     ItemStack resultItem = new ItemStack(Material.AIR);
     EnchantResult result = EnchantResult.SUCCESS;
     Map<Enchantment, Integer> enchanted = new LinkedHashMap<>();
     int exp = 0;
 
+    EnchantChance enchantChance;
+
     public EnchantUi() {
         invalid = new ItemStack(Material.RED_STAINED_GLASS, 1);
         valid = new ItemStack(Material.LIME_STAINED_GLASS, 1);
+        expInsufficient = new ItemStack(Material.YELLOW_STAINED_GLASS, 1);
+        enchantChance = Saika.plugin.getConfigure().getEnchantChance();
         addMeta(invalid, "ui.enchant.invalid.title", "ui.enchant.invalid.lore", null);
-        EnchantChance enchantChance = Saika.plugin.getConfigure().getEnchantChance();
         addMeta(valid, "ui.enchant.valid.title", "ui.enchant.valid.lore", enchantChance);
+        addMeta(expInsufficient, "ui.enchant.expInsufficient.title", "ui.enchant.expInsufficient.lore", enchantChance);
     }
 
     private void addMeta(ItemStack item, String title, String lore, EnchantChance enchantChance) {
@@ -53,7 +58,8 @@ public class EnchantUi implements InventoryHolder {
             formattedLore = formattedLore.replace("{chance_great}", String.valueOf(enchantChance.getSuccess()))
                     .replace("{chance_normal}", String.valueOf(enchantChance.getHalf()))
                     .replace("{chance_fail}", String.valueOf(enchantChance.getFail()))
-                    .replace("{chance_destroy}", String.valueOf(enchantChance.getEpicFail()));
+                    .replace("{chance_destroy}", String.valueOf(enchantChance.getEpicFail()))
+                    .replace("{exp}", String.valueOf(getLevels() * Saika.plugin.getConfigure().enchantExp));
         }
         List<String> split = new ArrayList<>(Arrays.asList(formattedLore.split("\n")));
         itemMeta.setLore(split);
@@ -64,7 +70,7 @@ public class EnchantUi implements InventoryHolder {
 
     Random random = new Random();
 
-    public void updateValidation() {
+    public void updateValidation(int expPoints) {
         ItemStack itemStack = inventory.getItem(0);
         ItemStack enchantSource = inventory.getItem(1);
         exp = 0;
@@ -95,7 +101,7 @@ public class EnchantUi implements InventoryHolder {
                     for (Map.Entry<Enchantment, Integer> entry : bookEnchants.entrySet()) {
                         Enchantment enchantment = entry.getKey();
                         Integer level = entry.getValue();
-                        exp += level;
+                        exp += Math.min(level, Saika.plugin.getConfigure().enchantMaxLevel);
                         if (enchants.containsKey(enchantment)) {
                             Integer originLevel = enchants.get(enchantment);
                             int enchantMaxLevel = Saika.plugin.getConfigure().enchantMaxLevel;
@@ -108,9 +114,16 @@ public class EnchantUi implements InventoryHolder {
                             break;
                         }
                     }
+                    enchants.forEach((enchantment, integer) -> {
+                        exp += integer;
+                    });
                 }
                 if (isValid.get()) {
-                    onValid();
+                    if (exp * Saika.plugin.getConfigure().enchantExp > expPoints){
+                        onInsufficientExp();
+                    }else {
+                        onValid();
+                    }
                 } else {
                     onInvalid();
                 }
@@ -248,12 +261,20 @@ public class EnchantUi implements InventoryHolder {
     }
 
     private void onValid() {
+        addMeta(valid, "ui.enchant.valid.title", "ui.enchant.valid.lore", enchantChance);
         inventory.setItem(2, valid);
         validation = RecipieValidation.VALID;
     }
 
     private void onInvalid() {
+        addMeta(invalid, "ui.enchant.invalid.title", "ui.enchant.invalid.lore", null);
         inventory.setItem(2, invalid);
+        validation = RecipieValidation.INVALID_BOTH;
+    }
+
+    void onInsufficientExp(){
+        addMeta(expInsufficient, "ui.enchant.insufficient.title", "ui.enchant.insufficient.lore", enchantChance);
+        inventory.setItem(2, expInsufficient);
         validation = RecipieValidation.INVALID_BOTH;
     }
 
@@ -269,11 +290,11 @@ public class EnchantUi implements InventoryHolder {
         return Bukkit.createInventory(null, InventoryType.FURNACE);
     }
 
-    public void updateValidationLater() {
+    public void updateValidationLater(int expPoints) {
         new BukkitRunnable() {
             @Override
             public void run() {
-                updateValidation();
+                updateValidation(expPoints);
             }
         }.runTaskLater(Saika.plugin, 1);
     }

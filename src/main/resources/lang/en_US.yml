@@ -94,7 +94,10 @@ ui:
       lore: "&rplease put the item to be enchant in the upper slot, and enchant source in the lower slot"
     valid:
       title: "&aclick to enchant"
-      lore: "&renchant source will be consumed. Results may be\n&eSuccess {chance_great} :add the stored enchant to the item.\n&Normal {chance_normal} :add the half-leveled enchant to the item\n&Failed {chance_fail} don't do anything to your item\n&eEpic_Fail {chance_destroy}:destroy your item\n&7100 exps are required for enchanting."
+      lore: "&renchant source will be consumed.\n\n &rResults may be\n&eSuccess {chance_great} :add the stored enchant to the item.\n&rNormal {chance_normal} :add the half-leveled enchant to the item\n&cFailed {chance_fail} don't do anything to your item\n&eEpic_Fail {chance_destroy}:destroy your item\n&7{exp} exps are required for enchanting."
+    insufficient:
+      title: "&e&lInsufficient Exp"
+      lore: "&ryou don't have enough Experience.\n\n &rResults may be\n&eSuccess {chance_great} :add the stored enchant to the item.\n&rNormal {chance_normal} :add the half-leveled enchant to the item\n&cFailed {chance_fail} don't do anything to your item\n&eEpic_Fail {chance_destroy}:destroy your item\n&7{exp} exps are required for enchanting."
   repulse:
     invalid:
       title: "&cinvalid item"
