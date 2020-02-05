@@ -97,6 +97,10 @@ public class ForgeUiEvents implements Listener {
                 Material enchantBlock = configure.getEnchantBlock();
                 Material recycleBlock = configure.getRecycleBlock();
                 Material repulseBlock = configure.getRepulseBlock();
+                if (!clickedBlock.getType().equals(forgeBlock) && !clickedBlock.getType().equals(enchantBlock) && !clickedBlock.getType().equals(recycleBlock) && !clickedBlock.getType().equals(repulseBlock)){
+                    return;
+                }
+
                 if (!inRange(player, clickedBlock, configure.forgeDistance)) {
                     new Message("").append(I18n.format("error.not_in_range")).send(player);
                     event.setCancelled(true);
