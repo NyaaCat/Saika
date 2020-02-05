@@ -45,7 +45,7 @@ public class EnchantUi implements InventoryHolder {
         enchantChance = Saika.plugin.getConfigure().getEnchantChance();
         addMeta(invalid, "ui.enchant.invalid.title", "ui.enchant.invalid.lore", null);
         addMeta(valid, "ui.enchant.valid.title", "ui.enchant.valid.lore", enchantChance);
-        addMeta(expInsufficient, "ui.enchant.expInsufficient.title", "ui.enchant.expInsufficient.lore", enchantChance);
+        addMeta(expInsufficient, "ui.enchant.insufficient.title", "ui.enchant.insufficient.lore", enchantChance);
     }
 
     private void addMeta(ItemStack item, String title, String lore, EnchantChance enchantChance) {
