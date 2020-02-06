@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'Nyaacat'
-version '1.5'
+version '1.6'
 
 ext.minecraftVersion = "1.15.1"
 

@@ -107,11 +107,9 @@ public class EnchantUi implements InventoryHolder {
                             int enchantMaxLevel = Saika.plugin.getConfigure().enchantMaxLevel;
                             if (originLevel < enchantMaxLevel) {
                                 isValid.set(true);
-                                break;
                             }
                         } else {
                             isValid.set(true);
-                            break;
                         }
                     }
                     enchants.forEach((enchantment, integer) -> {

@@ -68,7 +68,7 @@ public class RepulseUi implements InventoryHolder {
             ItemMeta itemMeta = itemStack.getItemMeta();
             if (itemMeta != null) {
                 Map<Enchantment, Integer> enchants = itemMeta.getEnchants();
-                List<Enchantment> blacklist = Saika.plugin.getConfigure().blacklist.parallelStream()
+                List<Enchantment> blacklist = Saika.plugin.getConfigure().blacklist.stream()
                         .map(s -> Enchantment.getByKey(NamespacedKey.minecraft(s.toLowerCase())))
                         .collect(Collectors.toList());
                 AtomicBoolean isValid = new AtomicBoolean(false);
@@ -100,7 +100,7 @@ public class RepulseUi implements InventoryHolder {
             } else {
                 repulsed = new LinkedHashMap<>();
                 Map<Enchantment, Integer> itemEnchants = itemMeta.getEnchants();
-                List<Enchantment> blacklist = Saika.plugin.getConfigure().blacklist.parallelStream()
+                List<Enchantment> blacklist = Saika.plugin.getConfigure().blacklist.stream()
                         .map(s -> Enchantment.getByKey(NamespacedKey.minecraft(s.toLowerCase())))
                         .collect(Collectors.toList());
                 List<Enchantment> validList = itemEnchants.keySet().stream()
