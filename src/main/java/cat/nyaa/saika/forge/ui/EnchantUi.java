@@ -101,15 +101,19 @@ public class EnchantUi implements InventoryHolder {
                     for (Map.Entry<Enchantment, Integer> entry : bookEnchants.entrySet()) {
                         Enchantment enchantment = entry.getKey();
                         Integer level = entry.getValue();
-                        exp += Math.min(level, Saika.plugin.getConfigure().enchantMaxLevel);
+
+                        int enchantMaxLevel = getEnchantMaxLevel(enchantment);
+                        exp += Math.min(level, enchantMaxLevel);
                         if (enchants.containsKey(enchantment)) {
                             Integer originLevel = enchants.get(enchantment);
-                            int enchantMaxLevel = Saika.plugin.getConfigure().enchantMaxLevel;
-                            if (originLevel < enchantMaxLevel) {
+                            int maxLevel = enchantMaxLevel;
+                            if (originLevel < maxLevel) {
                                 isValid.set(true);
                             }
                         } else {
-                            isValid.set(true);
+                            if (enchantMaxLevel > 0) {
+                                isValid.set(true);
+                            }
                         }
                     }
                     enchants.forEach((enchantment, integer) -> {
@@ -129,6 +133,12 @@ public class EnchantUi implements InventoryHolder {
                 onInvalid();
             }
         }
+    }
+
+    private int getEnchantMaxLevel(Enchantment enchantment) {
+        Configure configure = Saika.plugin.getConfigure();
+        Integer maxOverride = configure.enchantLevelOverride.getOrDefault(enchantment.getKey().toString(), configure.enchantMaxLevel);
+        return maxOverride;
     }
 
     private EnchantResult getResult(EnchantChance enchantChance) {
@@ -201,7 +211,6 @@ public class EnchantUi implements InventoryHolder {
     private ItemStack enchantItem(ForgeEnchantBook enchantBook, ItemStack clone, Map<Enchantment, Integer> bookEnchants, ItemMeta itemMeta) {
         Map<Enchantment, Integer> itemEnchants = itemMeta.getEnchants();
         Configure configure = Saika.plugin.getConfigure();
-        int enchantMaxLevel = configure.enchantMaxLevel;
         AtomicBoolean destroy = new AtomicBoolean(false);
         Map<Enchantment, Integer> finalItemEnchants = itemEnchants;
         bookEnchants.forEach((enchantment, level) -> {
@@ -229,7 +238,7 @@ public class EnchantUi implements InventoryHolder {
                             destroy.set(true);
                             break;
                     }
-
+                    int enchantMaxLevel = getEnchantMaxLevel(enchantment);
                     nextLevel = Math.min(nextLevel + resultLevel, enchantMaxLevel);
                     itemMeta.removeEnchant(enchantment);
                     if (nextLevel > 0) {

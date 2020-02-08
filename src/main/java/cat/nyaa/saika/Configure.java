@@ -10,9 +10,7 @@ import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Configure extends PluginConfigure {
     @Serializable
@@ -38,6 +36,9 @@ public class Configure extends PluginConfigure {
 
     @Serializable(name = "enchant.probability.destroy")
     public int enchantProbabilityDestroy = 1;
+
+    @Serializable(name = "enchant.level")
+    public Map<String, Integer> enchantLevelOverride = new LinkedHashMap<>();
 
     @Serializable(name = "repulse.repulseExp")
     public int repulseExp = 100;
