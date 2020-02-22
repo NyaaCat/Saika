@@ -1,5 +1,5 @@
 # Saika
-Saika card-rolling game system for Spigot.
+Saika Card-rolling Game System for Spigot.
 
 ##Features
 - Easily create item random rolling pool by creating Forge-iron & Forge-element combination & forge recepie
