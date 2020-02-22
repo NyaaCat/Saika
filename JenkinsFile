@@ -1,0 +1,18 @@
+
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                sh './gradle build'
+            }
+        }
+
+    }
+    post {
+        always {
+            archiveArtifacts artifacts: 'build/libs/Saika-*.jar', fingerprint: true
+            cleanWs()
+        }
+    }
+}
