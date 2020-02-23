@@ -5,9 +5,6 @@ pipeline {
         stage('Build') {
             steps {
                 sh './gradlew build'
-                WarnError('This is a canary build!'){
-                    sh './gradlew -q checkRelease'
-                }
             }
         }
 
