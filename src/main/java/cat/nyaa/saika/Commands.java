@@ -538,13 +538,16 @@ public class Commands extends CommandReceiver {
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         List<ForgeableItem> s = forgeManager.listItem(level, element);
         s.sort(Comparator.comparingInt(ForgeableItem::getMinCost));
+        double weightSum = s.stream()
+                .mapToInt(ForgeableItem::getWeight)
+                .sum();
         if (!s.isEmpty()) {
             new Message(I18n.format("list.success"))
                     .send(sender);
             s.forEach(forgeableItem -> {
                 Message message = new Message("")
-                        .append(I18n.format("list.info", forgeableItem.getId(), forgeableItem.getWeight()), forgeableItem.getItemStack());
-
+                        .append(I18n.format("list.info", forgeableItem.getId(), forgeableItem.getWeight()), forgeableItem.getItemStack())
+                        .append(I18n.format("list.possibility", (((double) forgeableItem.getWeight()) / weightSum) * 100));
                 sendItemInfo(sender, message, forgeManager, forgeableItem);
                 message.send(sender);
             });
@@ -577,7 +580,7 @@ public class Commands extends CommandReceiver {
             BonusItem bonus = forgeManager.getBonus(forgeBonus.item);
             if (bonus != null) {
                 ItemStack itemStack = ItemStackUtils.itemFromBase64(bonus.toNbt());
-                message.append("\n").append(I18n.format("list.forge_bonus", forgeBonus.chance), itemStack);
+                message.append(I18n.format("list.forge_bonus", forgeBonus.chance), itemStack);
             }
         }
         ForgeableItem.Bonus recycleBonus = forgeableItem.getRecycleBonus();
@@ -585,7 +588,7 @@ public class Commands extends CommandReceiver {
             try {
                 BonusItem bonus = forgeManager.getBonus(recycleBonus.item);
                 ItemStack itemStack = ItemStackUtils.itemFromBase64(bonus.toNbt());
-                message.append("\n").append(I18n.format("list.recycle_bonus", recycleBonus.chance), itemStack);
+                message.append(I18n.format("list.recycle_bonus", recycleBonus.chance), itemStack);
             } catch (Exception e) {
             }
         }

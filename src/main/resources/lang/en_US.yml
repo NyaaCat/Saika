@@ -52,6 +52,7 @@ inspect:
     no_item: "no forgeable item for id %s"
 list:
   info: "id: %s {itemName}, weight %d"
+  possibility: "possibility %.2f%% "
   iron: "{itemName} &r*{amount}"
   element: "{itemName} &r*{amount}"
   forge_bonus: "forge bonus: {itemName} &r*{amount} chance: %d"

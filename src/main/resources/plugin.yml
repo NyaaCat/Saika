@@ -35,6 +35,9 @@ permissions:
   saika.admin.remove:
     description: remove a forgeable item
     default: op
+  saika.list:
+    description: list pool information
+    default: op
 
   saika.open:
     description: open a forge UI
