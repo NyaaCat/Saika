@@ -88,7 +88,7 @@ public class ListCommand extends CommandReceiver {
         ForgeIron iron = forgeManager.getIron(level);
         ForgeElement element1 = forgeManager.getElement(element);
 
-        s.sort(Comparator.comparingInt(ForgeableItem::getWeight).reversed());
+        s.sort(Comparator.comparingInt(ForgeableItem::getWeight));
         double weightSum = s.stream()
                 .mapToInt(ForgeableItem::getWeight)
                 .sum();

@@ -563,7 +563,7 @@ public class Commands extends CommandReceiver {
         ForgeIron iron = forgeManager.getIron(level);
         ForgeElement element1 = forgeManager.getElement(element);
 
-        s.sort(Comparator.comparingInt(ForgeableItem::getWeight).reversed());
+        s.sort(Comparator.comparingInt(ForgeableItem::getMinCost).thenComparing(forgeableItem1 -> - forgeableItem1.getWeight()));
         double weightSum = s.stream()
                 .mapToInt(ForgeableItem::getWeight)
                 .sum();
@@ -576,6 +576,7 @@ public class Commands extends CommandReceiver {
                 Message message = new Message("")
                         .append(I18n.format("list.info", forgeableItem.getId(), forgeableItem.getWeight()))
                         .append(I18n.format("list.possibility", (((double) forgeableItem.getWeight()) / weightSum) * 100))
+                        .append(I18n.format("list.iron"), itemInfo.getIronStack())
                         .append(I18n.format("list.item"), forgeableItem.getItemStack());
 
                 message.send(sender);
