@@ -59,7 +59,7 @@ list:
   item: "物品 {itemName} * {amount}"
   error:
     no_result: "没有满足条件的合成方案"
-  success: "查询成功"
+  success: "以 {itemName} 和 {itemName:1} * {amount:1} 铸造可能的结果:"
 bonus:
   set:
     forge: "成功设置额外奖励 %s 至合成配方 %s"
