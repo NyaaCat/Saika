@@ -50,12 +50,13 @@ inspect:
   error:
     no_item: "没有 id 为 %s 的可铸造物品"
 list:
-  info: "物品 id: %s {itemName} 权重 %d"
+  info: "物品 id: %s 权重 %d"
   possibility: "几率 %.2f%% "
   iron: "铸造材料: {itemName} &r*{amount} "
   element: "晶石:{itemName} &r*{amount} "
-  forge_bonus: "铸造额外奖励: {itemName} &r*{amount} 几率: %.2f%%"
-  recycle_bonus: "回收额外奖励: {itemName} &r*{amount} 几率: %.2f%%"
+  forge_bonus: "铸造额外奖励: {itemName} &r*{amount} 几率: %.2f%% "
+  recycle_bonus: "回收额外奖励: {itemName} &r*{amount} 几率: %.2f%% "
+  item: "物品 {itemName} * {amount}"
   error:
     no_result: "没有满足条件的合成方案"
   success: "查询成功"

@@ -32,7 +32,6 @@ import java.util.stream.IntStream;
 public class Commands extends CommandReceiver {
     private static final String PERMISSION_ADMIN = "saika.admin";
     private static final String PERMISSION_OPEN = "saika.open";
-    private static final String PERMISSION_LIST = "saika.list";
 
     Saika plugin;
     SaikaCommandCompleter commandCompleter;
@@ -517,8 +516,28 @@ public class Commands extends CommandReceiver {
         ForgeManager forgeManager = ForgeManager.getForgeManager();
         ForgeableItem forgeableItem = forgeManager.getForgeableItem(id);
         if (forgeableItem != null) {
+            InspectInfo itemInfo = getItemInfo(forgeManager, forgeableItem);
             Message message = new Message("").append(I18n.format("inspect.info", id, forgeableItem.getWeight()), forgeableItem.getItemStack());//&r{itemName}&r * {amount}
-            sendItemInfo(sender, message, forgeManager, forgeableItem);
+            message.append(I18n.format("list.iron"), itemInfo.getIronStack());
+            message.append(I18n.format("list.element"), itemInfo.getElementItem());
+            try {
+                ForgeableItem.Bonus forgeBonus1 = itemInfo.forgeBonus;
+                BonusItem forgeBonusItem = forgeManager.getBonus(forgeBonus1.item);
+                if (forgeBonusItem != null) {
+                    ItemStack itemStack = ItemStackUtils.itemFromBase64(forgeBonusItem.toNbt());
+                    message.append("\n").append(I18n.format("list.forge_bonus", forgeBonus1.chance), itemStack);
+                }
+            } catch (Exception e) {
+            }
+            try {
+                ForgeableItem.Bonus recycleBonus = itemInfo.recycleBonus;
+                BonusItem recycleBonusItem = forgeManager.getBonus(recycleBonus.item);
+                if (recycleBonusItem != null) {
+                    ItemStack itemStack = ItemStackUtils.itemFromBase64(recycleBonusItem.toNbt());
+                    message.append("\n").append(I18n.format("list.recycle_bonus", recycleBonus.chance), itemStack);
+                }
+            } catch (Exception e) {
+            }
             message.send(sender);
         } else {
             new Message(I18n.format("inspect.error.no_item", id))
@@ -528,27 +547,37 @@ public class Commands extends CommandReceiver {
 
     @SubCommand(value = "list", tabCompleter = "listCompleter")
     public void onList(CommandSender sender, Arguments arguments) {
-        if (dontHavePermission(sender, PERMISSION_LIST, null)) {
+        if (dontHavePermission(sender, PERMISSION_ADMIN, null)) {
             return;
         }
 
         String level = arguments.nextString();
         String element = arguments.nextString();
+        int ironAmount = 64;
+        if (arguments.top()!=null){
+            ironAmount = arguments.nextInt();
+        }
 
         ForgeManager forgeManager = ForgeManager.getForgeManager();
-        List<ForgeableItem> s = forgeManager.listItem(level, element);
-        s.sort(Comparator.comparingInt(ForgeableItem::getMinCost));
+        List<ForgeableItem> s = forgeManager.listItem(level, element,ironAmount);
+        ForgeIron iron = forgeManager.getIron(level);
+        ForgeElement element1 = forgeManager.getElement(element);
+
+        s.sort(Comparator.comparingInt(ForgeableItem::getWeight).reversed());
         double weightSum = s.stream()
                 .mapToInt(ForgeableItem::getWeight)
                 .sum();
         if (!s.isEmpty()) {
-            new Message(I18n.format("list.success"))
+            new Message("").append(I18n.format("list.success"), element1.getItemStack(), iron.getItemStack())
                     .send(sender);
             s.forEach(forgeableItem -> {
+                InspectInfo itemInfo = getItemInfo(forgeManager, forgeableItem);
+
                 Message message = new Message("")
-                        .append(I18n.format("list.info", forgeableItem.getId(), forgeableItem.getWeight()), forgeableItem.getItemStack())
-                        .append(I18n.format("list.possibility", (((double) forgeableItem.getWeight()) / weightSum) * 100));
-                sendItemInfo(sender, message, forgeManager, forgeableItem);
+                        .append(I18n.format("list.info", forgeableItem.getId(), forgeableItem.getWeight()))
+                        .append(I18n.format("list.possibility", (((double) forgeableItem.getWeight()) / weightSum) * 100))
+                        .append(I18n.format("list.item"), forgeableItem.getItemStack());
+
                 message.send(sender);
             });
         } else {
@@ -557,41 +586,67 @@ public class Commands extends CommandReceiver {
         }
     }
 
-    private void sendItemInfo(CommandSender sender, Message message, ForgeManager forgeManager, ForgeableItem forgeableItem) {
-        ForgeIron iron = forgeManager.getIron(forgeableItem.getLevel());
-        ItemStack ironItem;
-        if (iron == null) {
-            ironItem = new ItemStack(Material.AIR);
-        } else {
-            ironItem = iron.getItemStack();
-            ironItem.setAmount(forgeableItem.getMinCost());
+    public static class InspectInfo{
+        private final ForgeableItem forgeableItem;
+        private final ForgeIron iron;
+        private final ForgeElement ele;
+        private final ForgeableItem.Bonus forgeBonus;
+        private final ForgeableItem.Bonus recycleBonus;
+
+        private ItemStack ironStack = null;
+        private ItemStack elementItem = null;
+
+        InspectInfo(ForgeableItem forgeableItem, ForgeIron iron, ForgeElement ele, ForgeableItem.Bonus forgeBonus, ForgeableItem.Bonus recycleBonus) {
+            this.forgeableItem = forgeableItem;
+            this.iron = iron;
+            this.ele = ele;
+            this.forgeBonus = forgeBonus;
+            this.recycleBonus = recycleBonus;
         }
-        message.append(I18n.format("list.iron"), ironItem);
-        ForgeElement ele = forgeManager.getElement(forgeableItem.getElement());
-        ItemStack elementItem;
-        if (ele == null) {
-            elementItem = new ItemStack(Material.AIR);
-        } else {
-            elementItem = ele.getItemStack();
-        }
-        message.append(I18n.format("list.element"), elementItem);
-        ForgeableItem.Bonus forgeBonus = forgeableItem.getForgeBonus();
-        if (!forgeBonus.item.equals("")) {
-            BonusItem bonus = forgeManager.getBonus(forgeBonus.item);
-            if (bonus != null) {
-                ItemStack itemStack = ItemStackUtils.itemFromBase64(bonus.toNbt());
-                message.append(I18n.format("list.forge_bonus", forgeBonus.chance), itemStack);
+
+        public ItemStack getIronStack() {
+            if (ironStack == null){
+                if (iron == null) {
+                    ironStack = new ItemStack(Material.AIR);
+                } else {
+                    ironStack = iron.getItemStack();
+                    ironStack.setAmount(forgeableItem.getMinCost());
+                }
             }
+            return ironStack;
+        }
+
+        public ItemStack getElementItem(){
+            if (elementItem == null){
+                if (ele == null) {
+                    elementItem = new ItemStack(Material.AIR);
+                } else {
+                    elementItem = ele.getItemStack();
+                }
+            }
+            return elementItem;
+        }
+
+    }
+
+    public static InspectInfo getItemInfo(ForgeManager forgeManager, ForgeableItem forgeableItem){
+        ForgeIron iron = forgeManager.getIron(forgeableItem.getLevel());
+        ForgeElement ele = forgeManager.getElement(forgeableItem.getElement());
+        BonusItem forgeBonusItem = null;
+        BonusItem recycleBonusItem = null;
+
+        ForgeableItem.Bonus forgeBonus = forgeableItem.getForgeBonus();
+
+        if (!forgeBonus.item.equals("")) {
+            forgeBonusItem = forgeManager.getBonus(forgeBonus.item);
         }
         ForgeableItem.Bonus recycleBonus = forgeableItem.getRecycleBonus();
-        if (!recycleBonus.item.equals("")) {
-            try {
-                BonusItem bonus = forgeManager.getBonus(recycleBonus.item);
-                ItemStack itemStack = ItemStackUtils.itemFromBase64(bonus.toNbt());
-                message.append(I18n.format("list.recycle_bonus", recycleBonus.chance), itemStack);
-            } catch (Exception e) {
-            }
-        }
+
+        return new InspectInfo(forgeableItem, iron, ele, forgeBonus, recycleBonus);
+    }
+
+    private void sendItemInfo(CommandSender sender, Message message) {
+
     }
 
     Random random = new Random();

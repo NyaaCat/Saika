@@ -316,11 +316,11 @@ public class ForgeManager {
         }.runTaskAsynchronously(plugin);
     }
 
-    public List<ForgeableItem> listItem(String level, String element) {
+    public List<ForgeableItem> listItem(String level, String element, int ironAmount) {
         Map<String, ForgeableItem> itemMap = forgeableItemManager.itemMap;
         if (!itemMap.isEmpty()) {
             return itemMap.values().stream()
-                    .filter(forgeableItem -> level.equals(forgeableItem.getLevel()))
+                    .filter(forgeableItem -> level.equals(forgeableItem.getLevel()) && forgeableItem.getMinCost() <= ironAmount)
                     .filter(forgeableItem -> element.equals(forgeableItem.getElement()))
                     .collect(Collectors.toList());
         }

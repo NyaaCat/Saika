@@ -12,6 +12,7 @@ public class Saika extends JavaPlugin{
     private Configure configure;
     private I18n i18n;
     private Commands commands;
+    private ListCommand listCommand;
     private Events events;
     private ForgeUiEvents forgeUiEvents;
     private ForgeManager manager;
@@ -31,14 +32,17 @@ public class Saika extends JavaPlugin{
         commands = new Commands(this, i18n);
         events = new Events(this);
         forgeUiEvents = new ForgeUiEvents(this);
+        listCommand = new ListCommand(this, i18n);
     }
 
     @Override
     public void onEnable() {
         super.onEnable();
         PluginCommand saika = getCommand("saika");
+        PluginCommand saikal = getCommand("saikal");
         saika.setExecutor(commands);
         saika.setTabCompleter(commands);
+        saikal.setExecutor(listCommand);
         getServer().getPluginManager().registerEvents(events, this);
         getServer().getPluginManager().registerEvents(forgeUiEvents, this);
         Logger.getInstance();
@@ -57,7 +61,9 @@ public class Saika extends JavaPlugin{
     }
 
     public void reload() {
+        configure = new Configure();
         configure.load();
+        i18n.language = configure.language;
         i18n.load();
         manager.reload();
     }

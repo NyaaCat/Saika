@@ -13,6 +13,11 @@ commands:
     permission: saika.command
     permission-message: "You do not have the required permission: <permission>"
     usage: "/<command> [SubCommand...] [Arguments...] or /<command> help"
+  saikal:
+    description: Pool list Command for Saika plugin
+    permission: saika.list
+    permission-message: "You do not have the required permission: <permission>"
+    usage: "/<command> [SubCommand...] [Arguments...] or /<command> help"
 permissions:
   saika.command:
     description: default command permission
@@ -37,7 +42,7 @@ permissions:
     default: op
   saika.list:
     description: list pool information
-    default: op
+    default: true
 
   saika.open:
     description: open a forge UI
