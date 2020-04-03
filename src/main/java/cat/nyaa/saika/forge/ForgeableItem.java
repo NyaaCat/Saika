@@ -8,8 +8,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
-import org.bukkit.inventory.meta.tags.ItemTagType;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.Map;
 
@@ -46,11 +46,11 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
     public static void addCostTagTo(ItemStack itemStack, int cost) {
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {
-            CustomItemTagContainer customTag = itemMeta.getCustomTagContainer().getCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER);
+            PersistentDataContainer customTag = itemMeta.getPersistentDataContainer().get(ITEM_TAG, PersistentDataType.TAG_CONTAINER);
             if (customTag != null) {
-                customTag.setCustomTag(FORGE_COST, ItemTagType.INTEGER, cost);
+                customTag.set(FORGE_COST, PersistentDataType.INTEGER, cost);
             }
-            itemMeta.getCustomTagContainer().setCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER, customTag);
+            itemMeta.getPersistentDataContainer().set(ITEM_TAG, PersistentDataType.TAG_CONTAINER, customTag);
             itemStack.setItemMeta(itemMeta);
         }
     }
@@ -58,9 +58,9 @@ public class ForgeableItem extends ForgeItem implements Elementable, Levelable, 
     public static int getCostTag(ItemStack itemStack) {
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {
-            CustomItemTagContainer customTag = itemMeta.getCustomTagContainer().getCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER);
+            PersistentDataContainer customTag = itemMeta.getPersistentDataContainer().get(ITEM_TAG, PersistentDataType.TAG_CONTAINER);
             if (customTag != null) {
-                Integer cost = customTag.getCustomTag(FORGE_COST, ItemTagType.INTEGER);
+                Integer cost = customTag.get(FORGE_COST, PersistentDataType.INTEGER);
                 if (cost != null) {
                     return cost;
                 }

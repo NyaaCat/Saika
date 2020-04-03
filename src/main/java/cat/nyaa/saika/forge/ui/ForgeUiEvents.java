@@ -27,7 +27,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.tags.ItemTagType;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -68,7 +68,7 @@ public class ForgeUiEvents implements Listener {
                 ItemStack item = inventory.getItem(i);
                 if (item != null) {
                     ItemMeta itemMeta = item.getItemMeta();
-                    if (itemMeta == null || !itemMeta.getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
+                    if (itemMeta == null || !itemMeta.getPersistentDataContainer().has(INDICATOR, PersistentDataType.STRING)) {
                         if (!InventoryUtils.addItem(ev.getPlayer().getInventory(), item)) {
                             Location location = ev.getPlayer().getLocation();
                             World world = ev.getPlayer().getWorld();
@@ -192,7 +192,7 @@ public class ForgeUiEvents implements Listener {
         if (ev.getSlot() == 2) {
             if (notValidResultAction(ev, cursor)) return;
             if (currentItem != null && currentItem.getItemMeta() != null) {
-                if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
+                if (currentItem.getItemMeta().getPersistentDataContainer().has(INDICATOR, PersistentDataType.STRING)) {
                     repulseUi.updateValidation();
                     ItemStack itemStack = repulseUi.onRepulse();
                     if (itemStack != null) {
@@ -229,7 +229,7 @@ public class ForgeUiEvents implements Listener {
         if (ev.getSlot() == 2) {
             if (notValidResultAction(ev, cursor)) return;
             if (currentItem != null && currentItem.getItemMeta() != null) {
-                if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
+                if (currentItem.getItemMeta().getPersistentDataContainer().has(INDICATOR, PersistentDataType.STRING)) {
                     recycleUi.updateValidation();
                     ItemStack item = recycleUi.onRecycle();
                     if (item != null) {
@@ -279,7 +279,7 @@ public class ForgeUiEvents implements Listener {
         if (ev.getSlot() == 2) {
             if (notValidResultAction(ev, cursor)) return;
             if (currentItem != null && currentItem.getItemMeta() != null) {
-                if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
+                if (currentItem.getItemMeta().getPersistentDataContainer().has(INDICATOR, PersistentDataType.STRING)) {
                     int expCost = plugin.getConfigure().enchantExp * enchantUi.getLevels();
                     int exp = ExperienceUtils.getExpPoints(player);
                     enchantUi.updateValidation(exp);
@@ -307,13 +307,14 @@ public class ForgeUiEvents implements Listener {
     }
 
     private void forgeUiClicked(InventoryClickEvent ev, Inventory clickedInventory) {
+        ClickType click = ev.getClick();
         ItemStack cursor = ev.getCursor();
         ItemStack currentItem = ev.getCurrentItem();
         ForgeUi forgeUi = forgeUiList.get(clickedInventory);
         if (ev.getSlot() == 2) {
             if (notValidResultAction(ev, cursor)) return;
             if (currentItem != null && currentItem.getItemMeta() != null) {
-                if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
+                if (currentItem.getItemMeta().getPersistentDataContainer().has(INDICATOR, PersistentDataType.STRING)) {
                     forgeUi.updateValidation();
                     ForgeableItem item = forgeUi.onForge();
                     ForgeRecipe recipe = forgeUi.getRecipe();
@@ -537,7 +538,7 @@ public class ForgeUiEvents implements Listener {
             ev.setCancelled(true);
             return;
         }
-        if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
+        if (currentItem.getItemMeta().getPersistentDataContainer().has(INDICATOR, PersistentDataType.STRING)) {
             ev.setCancelled(true);
             return;
         }
@@ -570,7 +571,7 @@ public class ForgeUiEvents implements Listener {
         Inventory targetInv = ev.getView().getBottomInventory();
         ItemMeta itemMeta = currentItem.getItemMeta();
         if (itemMeta!=null) {
-            if (itemMeta.getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
+            if (itemMeta.getPersistentDataContainer().has(INDICATOR, PersistentDataType.STRING)) {
                 ev.setCancelled(true);
                 return;
             }
@@ -604,7 +605,7 @@ public class ForgeUiEvents implements Listener {
             ev.setCancelled(true);
             return;
         }
-        if (currentItem.getItemMeta().getCustomTagContainer().hasCustomTag(INDICATOR, ItemTagType.STRING)) {
+        if (currentItem.getItemMeta().getPersistentDataContainer().has(INDICATOR, PersistentDataType.STRING)) {
             ev.setCancelled(true);
             return;
         }

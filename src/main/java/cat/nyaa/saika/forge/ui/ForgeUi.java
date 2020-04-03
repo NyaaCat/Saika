@@ -15,8 +15,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
-import org.bukkit.inventory.meta.tags.ItemTagType;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
@@ -47,8 +47,8 @@ public class ForgeUi implements InventoryHolder {
 
     private void addMeta(ItemStack item, String title, String lore) {
         ItemMeta itemMeta = item.getItemMeta();
-        CustomItemTagContainer customTagContainer = itemMeta.getCustomTagContainer();
-        customTagContainer.setCustomTag(new NamespacedKey(Saika.plugin, "indicator"), ItemTagType.STRING, "indicatior");
+        PersistentDataContainer customTagContainer = itemMeta.getPersistentDataContainer();
+        customTagContainer.set(new NamespacedKey(Saika.plugin, "indicator"), PersistentDataType.STRING, "indicatior");
         itemMeta.setDisplayName(I18n.format(title));
         String formattedLore = I18n.format(lore);
         List<String> split = new ArrayList<>(Arrays.asList(formattedLore.split("\n")));

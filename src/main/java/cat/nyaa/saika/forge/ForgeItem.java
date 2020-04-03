@@ -6,8 +6,8 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
-import org.bukkit.inventory.meta.tags.ItemTagType;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 public abstract class ForgeItem implements BaseManager.NbtedISerializable {
     public static final NamespacedKey ITEM_TAG = new NamespacedKey(Saika.plugin, "forgeItem");
@@ -25,16 +25,16 @@ public abstract class ForgeItem implements BaseManager.NbtedISerializable {
 
     public static void addItemTag(ItemStack itemStack, String id){
         ItemMeta itemMeta = itemStack.getItemMeta();
-        CustomItemTagContainer forgeItemTags = null;
+        PersistentDataContainer forgeItemTags = null;
         if (itemMeta != null) {
-            CustomItemTagContainer customTagContainer = itemMeta.getCustomTagContainer();
-            if (customTagContainer.hasCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER)) {
-                forgeItemTags = customTagContainer.getCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER);
+            PersistentDataContainer customTagContainer = itemMeta.getPersistentDataContainer();
+            if (customTagContainer.has(ITEM_TAG, PersistentDataType.TAG_CONTAINER)) {
+                forgeItemTags = customTagContainer.get(ITEM_TAG, PersistentDataType.TAG_CONTAINER);
             } else {
                 forgeItemTags = createItemTag(customTagContainer);
             }
-            forgeItemTags.setCustomTag(ITEM_ID, ItemTagType.STRING, id);
-            customTagContainer.setCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER, forgeItemTags);
+            forgeItemTags.set(ITEM_ID, PersistentDataType.STRING, id);
+            customTagContainer.set(ITEM_TAG, PersistentDataType.TAG_CONTAINER, forgeItemTags);
             itemStack.setItemMeta(itemMeta);
         }
     }
@@ -59,9 +59,9 @@ public abstract class ForgeItem implements BaseManager.NbtedISerializable {
         return ItemStackUtils.itemToBase64(clone);
     }
 
-    private static CustomItemTagContainer createItemTag(CustomItemTagContainer customTagContainer) {
-        CustomItemTagContainer newContainer = customTagContainer.getAdapterContext().newTagContainer();
-        customTagContainer.setCustomTag(ITEM_TAG, ItemTagType.TAG_CONTAINER, newContainer);
+    private static PersistentDataContainer createItemTag(PersistentDataContainer customTagContainer) {
+        PersistentDataContainer newContainer = customTagContainer.getAdapterContext().newPersistentDataContainer();
+        customTagContainer.set(ITEM_TAG, PersistentDataType.TAG_CONTAINER, newContainer);
         return newContainer;
     }
 
