@@ -6,11 +6,9 @@ import cat.nyaa.nyaacore.utils.ExperienceUtils;
 import cat.nyaa.nyaacore.utils.InventoryUtils;
 import cat.nyaa.saika.Configure;
 import cat.nyaa.saika.I18n;
+import cat.nyaa.saika.ListCommand;
 import cat.nyaa.saika.Saika;
-import cat.nyaa.saika.forge.ForgeIron;
-import cat.nyaa.saika.forge.ForgeItem;
-import cat.nyaa.saika.forge.ForgeManager;
-import cat.nyaa.saika.forge.ForgeableItem;
+import cat.nyaa.saika.forge.*;
 import cat.nyaa.saika.forge.roll.ForgeRecipe;
 import cat.nyaa.saika.log.Logger;
 import org.bukkit.*;
@@ -312,10 +310,29 @@ public class ForgeUiEvents implements Listener {
         ItemStack currentItem = ev.getCurrentItem();
         ForgeUi forgeUi = forgeUiList.get(clickedInventory);
         if (ev.getSlot() == 2) {
-            if (notValidResultAction(ev, cursor)) return;
+            if (notValidResultAction(ev, cursor)) {
+                if (click.equals(ClickType.RIGHT)){
+                    ev.setCancelled(true);
+                    ForgeManager forgeManager = ForgeManager.getForgeManager();
+                    ItemStack iron = clickedInventory.getItem(0);
+                    ItemStack element = clickedInventory.getItem(1);
+                    forgeUi.updateValidation();
+
+                    ForgeIron iron1 = forgeManager.getIron(iron);
+                    ForgeElement element1 = forgeManager.getElement(element);
+                    if (iron1 == null || element1 == null){
+                        return;
+                    }
+                    ListCommand.sendListInfo(ev.getWhoClicked(), iron1, element1, iron.getAmount());
+                    ev.getView().close();
+
+                }
+                return;
+            }
             if (currentItem != null && currentItem.getItemMeta() != null) {
                 if (currentItem.getItemMeta().getPersistentDataContainer().has(INDICATOR, PersistentDataType.STRING)) {
                     forgeUi.updateValidation();
+                    ev.setCancelled(true);
                     ForgeableItem item = forgeUi.onForge();
                     ForgeRecipe recipe = forgeUi.getRecipe();
                     if (item != null) {
@@ -334,7 +351,6 @@ public class ForgeUiEvents implements Listener {
                         }
                         showForgeEffect(ev);
                     }
-                    ev.setCancelled(true);
                     forgeUi.updateValidationLater();
                     return;
                 }

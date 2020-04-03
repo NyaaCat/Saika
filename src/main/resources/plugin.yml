@@ -42,7 +42,7 @@ permissions:
     default: op
   saika.list:
     description: list pool information
-    default: true
+    default: op
 
   saika.open:
     description: open a forge UI

@@ -84,9 +84,15 @@ public class ListCommand extends CommandReceiver {
         }
 
         ForgeManager forgeManager = ForgeManager.getForgeManager();
-        List<ForgeableItem> s = forgeManager.listItem(level, element,ironAmount);
         ForgeIron iron = forgeManager.getIron(level);
         ForgeElement element1 = forgeManager.getElement(element);
+
+        sendListInfo(sender, iron, element1, ironAmount);
+    }
+
+    public static void sendListInfo(CommandSender sender, ForgeIron iron, ForgeElement element, int ironAmount) {
+        ForgeManager forgeManager = ForgeManager.getForgeManager();
+        List<ForgeableItem> s = forgeManager.listItem(iron.getLevel(), element.getElement(),ironAmount);
 
         s.sort(Comparator.comparingInt(ForgeableItem::getWeight));
         double weightSum = s.stream()
@@ -95,7 +101,7 @@ public class ListCommand extends CommandReceiver {
         if (!s.isEmpty()) {
             ItemStack clone = iron.getItemStack().clone();
             clone.setAmount(ironAmount);
-            new Message("").append(I18n.format("list.success"), element1.getItemStack(), clone)
+            new Message("").append(I18n.format("list.success"), element.getItemStack(), clone)
                     .send(sender);
             s.forEach(forgeableItem -> {
                 Message message = new Message("")
