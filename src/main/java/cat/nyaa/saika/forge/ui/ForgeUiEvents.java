@@ -324,8 +324,12 @@ public class ForgeUiEvents implements Listener {
                         return;
                     }
                     ListCommand.sendListInfo(ev.getWhoClicked(), iron1, element1, iron.getAmount());
-                    ev.getView().close();
-
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            ev.getView().close();
+                        }
+                    }.runTaskLater(Saika.plugin, 1);
                 }
                 return;
             }
