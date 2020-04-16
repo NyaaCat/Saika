@@ -589,6 +589,7 @@ public class ForgeUiEvents implements Listener {
 
     private void moveCurrentItemDown(InventoryClickEvent ev, ItemStack currentItem) {
         Inventory targetInv = ev.getView().getBottomInventory();
+        if (currentItem == null)return;
         ItemMeta itemMeta = currentItem.getItemMeta();
         if (itemMeta!=null) {
             if (itemMeta.getPersistentDataContainer().has(INDICATOR, PersistentDataType.STRING)) {
