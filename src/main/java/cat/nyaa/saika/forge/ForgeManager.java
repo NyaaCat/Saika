@@ -359,6 +359,7 @@ public class ForgeManager {
                 }
             }
         }.runTaskAsynchronously(plugin);
+        saveManager(forgeableItemManager);
         return item;
     }
 
@@ -507,6 +508,14 @@ public class ForgeManager {
 
     public Collection<? extends String> getBonusIds() {
         return bonusManager.itemMap.keySet();
+    }
+
+    public ForgeEnchantBook getEnchantBook(String id) {
+        return enchantBookManager.enchants.getItem(id);
+    }
+
+    public ForgeRepulse getRepulse(String id) {
+        return enchantBookManager.repulses.getItem(id);
     }
 
     class ForgeableItemManager extends BaseManager<ForgeableItem> {

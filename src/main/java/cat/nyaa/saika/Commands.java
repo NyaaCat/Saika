@@ -4,6 +4,7 @@ import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.cmdreceiver.Arguments;
+import cat.nyaa.nyaacore.cmdreceiver.BadCommandException;
 import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
 import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import cat.nyaa.nyaacore.utils.InventoryUtils;
@@ -18,10 +19,15 @@ import cat.nyaa.saika.forge.ui.ForgeUi;
 import cat.nyaa.saika.forge.ui.RecycleUi;
 import cat.nyaa.saika.forge.ui.RepulseUi;
 import cat.nyaa.saika.log.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
@@ -585,6 +591,91 @@ public class Commands extends CommandReceiver {
             new Message(I18n.format("list.error.no_result"))
                     .send(sender);
         }
+    }
+
+    @SubCommand(value = "get", permission = PERMISSION_ADMIN,tabCompleter = "getCompleter")
+    public void onGet(CommandSender sender, Arguments arguments){
+        Player player;
+        if (sender instanceof Player){
+            player = asPlayer(sender);
+        }else {
+            player = arguments.nextPlayer();
+        }
+        String type = arguments.nextString();
+        String id = arguments.nextString();
+        ForgeManager forgeManager = ForgeManager.getForgeManager();
+        ItemStack itemStack = null;
+        switch (type){
+            case "element":
+                ForgeElement element = forgeManager.getElement(id);
+                itemStack = element.getItemStack();
+                break;
+            case "iron":
+                ForgeIron iron = forgeManager.getIron(id);
+                itemStack = iron.getItemStack();
+                break;
+            case "repulse":
+                ForgeRepulse repulse = forgeManager.getRepulse(id);
+                itemStack = repulse.getItemStack();
+                break;
+            case "enchant":
+                ForgeEnchantBook enchantBook = forgeManager.getEnchantBook(id);
+                itemStack = enchantBook.getItemStack();
+                break;
+        }
+        if (itemStack == null){
+            throw new BadCommandException();
+        }
+        itemStack.setAmount(itemStack.getMaxStackSize());
+        giveItemToBackpack(player.getInventory(), itemStack);
+    }
+
+    private void giveItemToBackpack(Inventory ev, ItemStack itemStack) {
+        if (!InventoryUtils.addItem(ev, itemStack)) {
+            Location location = ev.getLocation();
+            World world = location.getWorld();
+            if (world != null){
+                world.dropItem(location, itemStack);
+            }
+        }
+    }
+
+    public List<String> getCompleter(CommandSender sender, Arguments arguments){
+        List<String> completeStr = new ArrayList<>();
+        int remains = arguments.remains();
+        if (!(sender instanceof Player)){
+            remains--;
+        }
+        switch (remains){
+            case 0:
+                completeStr.addAll(Bukkit.getOnlinePlayers().stream().map(HumanEntity::getName).collect(Collectors.toList()));
+                break;
+            case 1:
+                completeStr.addAll(Arrays.asList("element", "iron", "repulse", "enchant"));
+                break;
+            case 2:
+                if (!(sender instanceof Player)){
+                    arguments.next();
+                }
+                String action = arguments.next();
+                ForgeManager forgeManager = ForgeManager.getForgeManager();
+                switch (action){
+                    case "element":
+                        completeStr.addAll(forgeManager.getElementList());
+                        break;
+                    case"iron":
+                        completeStr.addAll(forgeManager.getIronList());
+                        break;
+                    case "repulse":
+                        completeStr.addAll(forgeManager.getRepulseIds());
+                        break;
+                    case "enchant":
+                        completeStr.addAll(forgeManager.getEnchantBookIds());
+                        break;
+                }
+                break;
+        }
+        return filtered(arguments, completeStr);
     }
 
     public static class InspectInfo{

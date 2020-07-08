@@ -52,7 +52,7 @@ public class Saika extends JavaPlugin{
     @Override
     public void onDisable() {
         super.onDisable();
-        this.save();
+//        this.save();
     }
 
     private void save() {

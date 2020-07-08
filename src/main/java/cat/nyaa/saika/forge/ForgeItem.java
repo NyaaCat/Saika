@@ -49,7 +49,7 @@ public abstract class ForgeItem implements BaseManager.NbtedISerializable {
     }
 
     public ItemStack getItemStack(){
-        return itemStack;
+        return itemStack.clone();
     }
 
     @Override

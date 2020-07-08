@@ -65,8 +65,8 @@ public class ForgeUi implements InventoryHolder {
         ForgeElement element = forgeManager.getElement(fuel);
         ForgeIron iron = forgeManager.getIron(smelting);
         int va = 0;
-        if (element != null) va += 0x10;
-        if (iron != null) va += 0x01;
+        if (element != null) va |= 0x10;
+        if (iron != null) va |= 0x01;
         validation = RecipieValidation.ofState(va);
         if (element == null || iron == null) {
             return ForgeRecipe.INVALID;
