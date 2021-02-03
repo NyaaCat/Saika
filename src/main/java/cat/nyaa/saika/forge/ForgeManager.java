@@ -308,12 +308,7 @@ public class ForgeManager {
     }
 
     public void saveItem(String id) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                forgeableItemManager.saveItem(id);
-            }
-        }.runTaskAsynchronously(plugin);
+        forgeableItemManager.saveItem(id);
     }
 
     public List<ForgeableItem> listItem(String level, String element, int ironAmount) {
