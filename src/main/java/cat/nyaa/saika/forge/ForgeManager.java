@@ -338,7 +338,7 @@ public class ForgeManager {
         ForgeableItem item = new ForgeableItem(itemInMainHand, level, element, cost, weight);
         String id = forgeableItemManager.addItem(item);
         item.setId(id);
-        saveManager(forgeableItemManager);
+        saveItem(id);
         return item;
     }
 
