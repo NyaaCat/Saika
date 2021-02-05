@@ -88,7 +88,7 @@ public class RecycleUi implements InventoryHolder {
                         return;
                     }
                 }
-                if (recycle == null || recycle.max - recycle.min <= 0 || recycle.min < 0 || recycle.max <= 0) {
+                if (recycle == null || recycle.max - recycle.min < 0 || recycle.min < 0 || recycle.max < 0) {
                     onInvalid();
                     return;
                 }
@@ -149,7 +149,7 @@ public class RecycleUi implements InventoryHolder {
                 return null;
             }
             ForgeableItem.RecycleInfo recycle = forgeableItem.getRecycle();
-            if (recycle.max - recycle.min <= 0 || recycle.min < 0 || recycle.max <= 0) {
+            if (recycle.max - recycle.min < 0 || recycle.min < 0 || recycle.max < 0) {
                 onInvalid();
                 return null;
             }
@@ -161,7 +161,7 @@ public class RecycleUi implements InventoryHolder {
                 }
             }
             itemCost = is.getAmount();
-            int recycleResult = random.nextInt(recycle.max - recycle.min) + recycle.min;
+            int recycleResult = recycle.max - recycle.min <= 0 ? 0 : random.nextInt(recycle.max - recycle.min) + recycle.min;
             int costTag = ForgeableItem.getCostTag(itemStack);
             int amount;
             if (costTag == -1) {
