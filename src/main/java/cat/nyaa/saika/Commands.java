@@ -443,22 +443,23 @@ public class Commands extends CommandReceiver {
             case "recycle":
                 Objects.requireNonNull(value);
                 String action = arguments.nextString();
+                final String val = arguments.next();
                 ForgeableItem.RecycleInfo recycle = forgeableItem.getRecycle();
                 switch (action) {
                     case "min":
-                        int min = Integer.parseInt(value);
+                        int min = Integer.parseInt(val);
                         forgeableItem.setRecycle(min, recycle.max, recycle.hard, recycle.bonus.item, recycle.bonus.chance);
                         new Message("").append(I18n.format("modify.success.recycle.min", min), forgeableItem.getItemStack())
                                 .send(sender);
                         break;
                     case "max":
-                        int max = Integer.parseInt(value);
+                        int max = Integer.parseInt(val);
                         forgeableItem.setRecycle(recycle.min, max, recycle.hard, recycle.bonus.item, recycle.bonus.chance);
                         new Message("").append(I18n.format("modify.success.recycle.max", max), forgeableItem.getItemStack())
                                 .send(sender);
                         break;
                     case "hard":
-                        int hard = Integer.parseInt(value);
+                        int hard = Integer.parseInt(val );
                         forgeableItem.setRecycle(recycle.min, recycle.max, hard, recycle.bonus.item, recycle.bonus.chance);
                         new Message("").append(I18n.format("modify.success.recycle.hard", hard), forgeableItem.getItemStack())
                                 .send(sender);
