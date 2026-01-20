@@ -941,7 +941,7 @@ public class Commands extends CommandReceiver {
             else match = false;
             if (!match) {
                 new Message("")
-                        .append(I18n.format("open.error.no_required_block", forgeUiDistance), Collections.singletonMap("{block}", LocaleUtils.getNameComponent(new ItemStack(forgeBlock))))
+                        .append(I18n.format("open.error.no_required_block", forgeUiDistance), Collections.singletonMap("{block}", new ItemStack(forgeBlock).displayName()))
                         .send(sender);
             }
         }

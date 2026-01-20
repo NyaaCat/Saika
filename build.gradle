@@ -5,16 +5,16 @@ plugins {
 group 'Nyaacat'
 version '1.6'
 
-ext.minecraftVersion = "1.15.1"
+ext.minecraftVersion = "1.21.11"
 
-sourceCompatibility = 1.8
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+}
 
 repositories {
     mavenCentral()
-    maven { name 'Spigot';      url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
-    maven { name 'Sonatype';    url 'https://oss.sonatype.org/content/groups/public' }
+    maven { name 'papermc';     url 'https://repo.papermc.io/repository/maven-public/' }
     maven { name 'NyaaCat';     url 'https://ci.nyaacat.com/maven/' }
-    maven { name 'NyaaCentral'; url 'https://raw.githubusercontent.com/NyaaCat/NyaaCentral/maven-repo'}
     maven { name 'aikar';     url 'https://repo.aikar.co/content/groups/aikar/' }
 }
 
@@ -23,7 +23,11 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile('cat.nyaa:nyaacore:7.1-SNAPSHOT')
-    compileOnly "org.spigotmc:spigot-api:${minecraftVersion}-R0.1-SNAPSHOT"
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.3'
+    implementation('cat.nyaa:nyaacore:9.10')
+    compileOnly "io.papermc.paper:paper-api:${minecraftVersion}-R0.1-SNAPSHOT"
+}
+
+test {
+    useJUnitPlatform()
 }
