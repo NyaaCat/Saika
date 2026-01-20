@@ -37,6 +37,7 @@ public class ForgeManager {
     private IronManager ironManager;
     private Roller roller;
     private Map<String, ForgeItem> nbtMap;
+    private boolean nbtUpdated = false;
 
     private File dataDir;
 
@@ -177,6 +178,7 @@ public class ForgeManager {
     }
 
     private void load() {
+        nbtUpdated = false;
         File ids = new File(dataDir, "ids.yml");
         YamlConfiguration idConf;
         try {
@@ -208,6 +210,10 @@ public class ForgeManager {
         });
 
         loadNbtMap(managers);
+        if (nbtUpdated) {
+            save();
+            nbtUpdated = false;
+        }
     }
 
     private void addItemNbt(ForgeItem is) {
@@ -550,6 +556,13 @@ public class ForgeManager {
                             conf.load(f);
                             ForgeableItem item = new ForgeableItem();
                             item.deserialize(conf);
+                            if (item.itemStack != null) {
+                                String refreshed = ItemStackUtils.itemToBase64(item.itemStack);
+                                if (!refreshed.equals(item.nbt)) {
+                                    item.nbt = refreshed;
+                                    nbtUpdated = true;
+                                }
+                            }
                             addItem(item.id, item);
                         }
                     }
@@ -767,7 +780,11 @@ public class ForgeManager {
                     forgeRepulse.deserialize(repulseSection.getConfigurationSection(s));
                     this.addItem(s, forgeRepulse);
                     forgeRepulse.setId(s);
+                    String previousNbt = forgeRepulse.nbt;
                     forgeRepulse.setItem(ItemStackUtils.itemFromBase64(forgeRepulse.nbt));
+                    if (!Objects.equals(previousNbt, forgeRepulse.nbt)) {
+                        nbtUpdated = true;
+                    }
                     addItemNbt(forgeRepulse);
                 });
                 OptionalInt max = keys.stream().mapToInt(s -> Integer.parseInt(s)).max();
@@ -819,6 +836,11 @@ public class ForgeManager {
                             conf.load(f);
                             BonusItem bonusItem = new BonusItem();
                             bonusItem.deserialize(conf);
+                            String refreshed = refreshBase64(bonusItem.nbt);
+                            if (!Objects.equals(refreshed, bonusItem.nbt)) {
+                                bonusItem.nbt = refreshed;
+                                nbtUpdated = true;
+                            }
                             itemMap.put(bonusItem.id, bonusItem);
                         }
                     } catch (IOException | InvalidConfigurationException e) {
@@ -859,6 +881,13 @@ public class ForgeManager {
                     itemMap.forEach((s, element1) -> {
                         element1.id = s;
                         element1.itemStack = ItemStackUtils.itemFromBase64(element1.nbt);
+                        if (element1.itemStack != null) {
+                            String refreshed = ItemStackUtils.itemToBase64(element1.itemStack);
+                            if (!Objects.equals(refreshed, element1.nbt)) {
+                                element1.nbt = refreshed;
+                                nbtUpdated = true;
+                            }
+                        }
                     });
                 }
 
@@ -897,6 +926,13 @@ public class ForgeManager {
                     itemMap.forEach((s, recycler) -> {
                         recycler.id = s;
                         recycler.itemStack = ItemStackUtils.itemFromBase64(recycler.nbt);
+                        if (recycler.itemStack != null) {
+                            String refreshed = ItemStackUtils.itemToBase64(recycler.itemStack);
+                            if (!Objects.equals(refreshed, recycler.nbt)) {
+                                recycler.nbt = refreshed;
+                                nbtUpdated = true;
+                            }
+                        }
                     });
                 }
                 OptionalInt max = itemMap.keySet().stream().mapToInt(s -> Integer.parseInt(s)).max();
@@ -936,6 +972,13 @@ public class ForgeManager {
                     itemMap.forEach((s, iron) -> {
                         iron.id = s;
                         iron.itemStack = ItemStackUtils.itemFromBase64(iron.nbt);
+                        if (iron.itemStack != null) {
+                            String refreshed = ItemStackUtils.itemToBase64(iron.itemStack);
+                            if (!Objects.equals(refreshed, iron.nbt)) {
+                                iron.nbt = refreshed;
+                                nbtUpdated = true;
+                            }
+                        }
                     });
                 }
 //                OptionalInt max = itemMap.keySet().stream().mapToInt(s -> Integer.parseInt(s)).max();
@@ -963,6 +1006,21 @@ public class ForgeManager {
             }
         } catch (IOException e) {
             plugin.getServer().getLogger().log(Level.SEVERE, "exception while backing up bonus items.", e);
+        }
+    }
+
+    private static String refreshBase64(String base64) {
+        if (base64 == null || base64.isEmpty()) {
+            return base64;
+        }
+        try {
+            ItemStack itemStack = ItemStackUtils.itemFromBase64(base64);
+            if (itemStack == null) {
+                return base64;
+            }
+            return ItemStackUtils.itemToBase64(itemStack);
+        } catch (Exception ex) {
+            return base64;
         }
     }
 
