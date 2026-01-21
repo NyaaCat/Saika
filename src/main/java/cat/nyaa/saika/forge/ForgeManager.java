@@ -392,7 +392,7 @@ public class ForgeManager {
         if (forgeItem instanceof ForgeElement) {
             return (ForgeElement) forgeItem;
         }
-        return null;
+        return matchPlainText(is, elementManager.itemMap.values());
     }
 
     public ForgeIron getIron(ItemStack iron) {
@@ -404,7 +404,7 @@ public class ForgeManager {
         if (forgeItem instanceof ForgeIron) {
             return (ForgeIron) forgeItem;
         }
-        return null;
+        return matchPlainText(is, ironManager.itemMap.values());
     }
 
     public ForgeIron getIron(String level) {
@@ -442,7 +442,7 @@ public class ForgeManager {
         if (forgeItem != null && forgeItem instanceof ForgeRecycler) {
             return (ForgeRecycler) forgeItem;
         }
-        return null;
+        return matchPlainText(clone, recycleManager.itemMap.values());
     }
 
     public ForgeRepulse getRepulse(ItemStack itemStack) {
@@ -454,7 +454,8 @@ public class ForgeManager {
         ForgeItem forgeItem = nbtMap.get(ItemStackUtils.itemToBase64(clone));
         if (forgeItem != null && forgeItem instanceof ForgeRepulse) {
             return (ForgeRepulse) forgeItem;
-        } else return null;
+        }
+        return matchPlainText(clone, enchantBookManager.repulses.itemMap.values());
     }
 
     public BonusItem getBonus(String bonusId) {
@@ -513,6 +514,23 @@ public class ForgeManager {
 
     public Collection<? extends String> getBonusIds() {
         return bonusManager.itemMap.keySet();
+    }
+
+    private <T extends ForgeItem> T matchPlainText(ItemStack input, Collection<T> items) {
+        if (input == null || items == null || items.isEmpty()) {
+            return null;
+        }
+        Material material = input.getType();
+        for (T item : items) {
+            ItemStack template = item.getItemStack();
+            if (template == null || template.getType() != material) {
+                continue;
+            }
+            if (ItemStackUtils.isSimilarPlainText(template, input)) {
+                return item;
+            }
+        }
+        return null;
     }
 
     class ForgeableItemManager extends BaseManager<ForgeableItem> {
